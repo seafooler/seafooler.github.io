@@ -177,7 +177,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2021-12-01 09:07:56" itemprop="dateModified" datetime="2021-12-01T09:07:56+08:00">2021-12-01</time>
+                <time title="Modified: 2021-12-01 09:23:45" itemprop="dateModified" datetime="2021-12-01T09:23:45+08:00">2021-12-01</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -256,6 +256,7 @@
 </li>
 </ul>
 <p>After long enough, one of Case 1, Case 2.1, and Case 2.2 will take place, thus achieving <strong>liveness</strong>. However, nobody knows the exact time. <strong>That’s the reason why <code>Tendermint</code> is not responsive</strong>.</p>
+<h2 id="References"><a href="#References" class="headerlink" title="References"></a>References</h2><p>[1] Buchman, E. “Tendermint: Byzantine fault tolerance in the age of blockchains.” Doctoral dissertation, 2016.<br>[2] Dwork, C., Lynch, N., &amp; Stockmeyer, L. “Consensus in the presence of partial synchrony.” Journal of the ACM (JACM), 1988, 35(2), pp. 288-323.</p>
 
       
     </div>
@@ -306,7 +307,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2021-12-01 09:07:51" itemprop="dateModified" datetime="2021-12-01T09:07:51+08:00">2021-12-01</time>
+                <time title="Modified: 2021-12-01 09:23:40" itemprop="dateModified" datetime="2021-12-01T09:23:40+08:00">2021-12-01</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -384,6 +385,7 @@
 </blockquote>
 <h3 id="A-How-does-PBFT-achieve-safety"><a href="#A-How-does-PBFT-achieve-safety" class="headerlink" title="A. How does PBFT achieve safety?"></a>A. How does <code>PBFT</code> achieve <strong>safety</strong>?</h3><p>If a request $r$ with $i$ is committed, it must have been <code>prepared</code> by 2/3+ replicas.<br>Collection of 2/3+ <code>prepared</code> messages in the view-switch process can ensure that if $r$ with $i$ has been committed before, at least one <code>prepared</code> opinion on $r$ will be received by each replica.<br>Since a <code>prepared</code> opinion is consisted of 2/3+ votes (<code>prepare</code> message), it is enough for a replica to make judgements with only one <code>prepared</code> opinion on $i$.<br>Therefore, <strong>safety</strong> is guaranteed.</p>
 <h3 id="B-How-does-PBFT-achieve-liveness"><a href="#B-How-does-PBFT-achieve-liveness" class="headerlink" title="B. How does PBFT achieve liveness?"></a>B. How does <code>PBFT</code> achieve <strong>liveness</strong>?</h3><p>On one hand, each replica only needs to wait for 2/3+ messages, which can be assured by the model assumption.<br>On the other hand, all the honest replicas can make a consistent and correct judgement. A new uncontradicted request will finally receive 2/3+ votes (<code>prepare</code> and <code>commit</code> messages), and got committed.</p>
+<h2 id="References"><a href="#References" class="headerlink" title="References"></a>References</h2><p>[1] Castro, M., &amp; Liskov, B. “Practical byzantine fault tolerance.” In Proceedings of the 3rd USENIX Symposium on Operating Systems Design and Implementation (OSDI’99), pp. 173-186.<br>[2] Yin, M., Malkhi, D., Reiter, M. K., Gueta, G. G., &amp; Abraham, I. “HotStuff: BFT consensus with linearity and responsiveness.” In Proceedings of the 2019 ACM Symposium on Principles of Distributed Computing (PODC’19), pp. 347-356.</p>
 
       
     </div>

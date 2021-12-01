@@ -29,7 +29,7 @@
 <meta property="og:description" content="As for a Byzantine Fault Tolerance (BFT) consensus, there are mainly two design routines: PBFT-like and Tendermint-like. The former contains a complex view-change phase, while the latter includes a no">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2021-09-11T16:00:00.000Z">
-<meta property="article:modified_time" content="2021-12-01T01:07:51.626Z">
+<meta property="article:modified_time" content="2021-12-01T01:23:40.879Z">
 <meta property="article:author" content="Seafooler">
 <meta property="article:tag" content="Consensus">
 <meta property="article:tag" content="BFT">
@@ -185,7 +185,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2021-12-01 09:07:51" itemprop="dateModified" datetime="2021-12-01T09:07:51+08:00">2021-12-01</time>
+                <time title="Modified: 2021-12-01 09:23:40" itemprop="dateModified" datetime="2021-12-01T09:23:40+08:00">2021-12-01</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -263,6 +263,7 @@
 </blockquote>
 <h3 id="A-How-does-PBFT-achieve-safety"><a href="#A-How-does-PBFT-achieve-safety" class="headerlink" title="A. How does PBFT achieve safety?"></a>A. How does <code>PBFT</code> achieve <strong>safety</strong>?</h3><p>If a request $r$ with $i$ is committed, it must have been <code>prepared</code> by 2/3+ replicas.<br>Collection of 2/3+ <code>prepared</code> messages in the view-switch process can ensure that if $r$ with $i$ has been committed before, at least one <code>prepared</code> opinion on $r$ will be received by each replica.<br>Since a <code>prepared</code> opinion is consisted of 2/3+ votes (<code>prepare</code> message), it is enough for a replica to make judgements with only one <code>prepared</code> opinion on $i$.<br>Therefore, <strong>safety</strong> is guaranteed.</p>
 <h3 id="B-How-does-PBFT-achieve-liveness"><a href="#B-How-does-PBFT-achieve-liveness" class="headerlink" title="B. How does PBFT achieve liveness?"></a>B. How does <code>PBFT</code> achieve <strong>liveness</strong>?</h3><p>On one hand, each replica only needs to wait for 2/3+ messages, which can be assured by the model assumption.<br>On the other hand, all the honest replicas can make a consistent and correct judgement. A new uncontradicted request will finally receive 2/3+ votes (<code>prepare</code> and <code>commit</code> messages), and got committed.</p>
+<h2 id="References"><a href="#References" class="headerlink" title="References"></a>References</h2><p>[1] Castro, M., &amp; Liskov, B. “Practical byzantine fault tolerance.” In Proceedings of the 3rd USENIX Symposium on Operating Systems Design and Implementation (OSDI’99), pp. 173-186.<br>[2] Yin, M., Malkhi, D., Reiter, M. K., Gueta, G. G., &amp; Abraham, I. “HotStuff: BFT consensus with linearity and responsiveness.” In Proceedings of the 2019 ACM Symposium on Principles of Distributed Computing (PODC’19), pp. 347-356.</p>
 
     </div>
 
@@ -346,7 +347,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#I-Basic-Concepts-of-BFT-Consensus"><span class="nav-number">1.</span> <span class="nav-text">I. Basic Concepts of BFT Consensus</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#II-One-phase-protocol"><span class="nav-number">2.</span> <span class="nav-text">II. One-phase protocol</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#III-One-phase-view-switch-protocol"><span class="nav-number">3.</span> <span class="nav-text">III. One-phase + view-switch protocol</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#A-Judgement-rule-1-based-on-collection-of-other-replicas%E2%80%99-opinions"><span class="nav-number">3.1.</span> <span class="nav-text">A. Judgement rule 1: based on collection of other replicas’ opinions</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#IV-Two-phase-view-switch-protocol"><span class="nav-number">4.</span> <span class="nav-text">IV. Two-phase + view-switch protocol</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#A-How-does-PBFT-achieve-safety"><span class="nav-number">4.1.</span> <span class="nav-text">A. How does PBFT achieve safety?</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#B-How-does-PBFT-achieve-liveness"><span class="nav-number">4.2.</span> <span class="nav-text">B. How does PBFT achieve liveness?</span></a></li></ol></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#I-Basic-Concepts-of-BFT-Consensus"><span class="nav-number">1.</span> <span class="nav-text">I. Basic Concepts of BFT Consensus</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#II-One-phase-protocol"><span class="nav-number">2.</span> <span class="nav-text">II. One-phase protocol</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#III-One-phase-view-switch-protocol"><span class="nav-number">3.</span> <span class="nav-text">III. One-phase + view-switch protocol</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#A-Judgement-rule-1-based-on-collection-of-other-replicas%E2%80%99-opinions"><span class="nav-number">3.1.</span> <span class="nav-text">A. Judgement rule 1: based on collection of other replicas’ opinions</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#IV-Two-phase-view-switch-protocol"><span class="nav-number">4.</span> <span class="nav-text">IV. Two-phase + view-switch protocol</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#A-How-does-PBFT-achieve-safety"><span class="nav-number">4.1.</span> <span class="nav-text">A. How does PBFT achieve safety?</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#B-How-does-PBFT-achieve-liveness"><span class="nav-number">4.2.</span> <span class="nav-text">B. How does PBFT achieve liveness?</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#References"><span class="nav-number">5.</span> <span class="nav-text">References</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
