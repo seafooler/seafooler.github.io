@@ -21,28 +21,35 @@
     var CONFIG = {"hostname":"example.com","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
   </script>
 
-  <meta property="og:type" content="website">
-<meta property="og:title" content="Seafooler&#39;s Blog">
-<meta property="og:url" content="http://example.com/index.html">
+  <meta name="description" content="In the last two blogs, we derivated the design of two-phase BFT consensuses. We picked two different routines, namely PBFT and Tendermint. In this blog, we try to carry out a unification of two-phase">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Unification of Two-phase Consensus">
+<meta property="og:url" content="http://example.com/2021/09/18/unification-2pc/index.html">
 <meta property="og:site_name" content="Seafooler&#39;s Blog">
+<meta property="og:description" content="In the last two blogs, we derivated the design of two-phase BFT consensuses. We picked two different routines, namely PBFT and Tendermint. In this blog, we try to carry out a unification of two-phase">
 <meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2021-09-17T16:00:00.000Z">
+<meta property="article:modified_time" content="2021-12-04T10:22:55.049Z">
 <meta property="article:author" content="Seafooler">
+<meta property="article:tag" content="Consensus">
+<meta property="article:tag" content="BFT">
+<meta property="article:tag" content="Blockchain">
 <meta name="twitter:card" content="summary">
 
-<link rel="canonical" href="http://example.com/">
+<link rel="canonical" href="http://example.com/2021/09/18/unification-2pc/">
 
 
 <script id="page-configurations">
   // https://hexo.io/docs/variables.html
   CONFIG.page = {
     sidebar: "",
-    isHome : true,
-    isPost : false,
+    isHome : false,
+    isPost : true,
     lang   : 'en'
   };
 </script>
 
-  <title>Seafooler's Blog</title>
+  <title>Unification of Two-phase Consensus | Seafooler's Blog</title>
   
 
 
@@ -140,9 +147,10 @@
         <div class="content-wrap">
           
 
-          <div class="content index posts-expand">
+          <div class="content post posts-expand">
             
-      
+
+    
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
@@ -158,10 +166,9 @@
       <meta itemprop="name" content="Seafooler's Blog">
     </span>
       <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2021/09/18/unification-2pc/" class="post-title-link" itemprop="url">Unification of Two-phase Consensus</a>
-        </h2>
+        <h1 class="post-title" itemprop="name headline">
+          Unification of Two-phase Consensus
+        </h1>
 
         <div class="post-meta">
             <span class="post-meta-item">
@@ -200,7 +207,7 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <p>In the last two blogs, we derivated the design of two-phase BFT consensuses. We picked two different routines, namely <a target="_blank" rel="noopener" href="https://seafooler.github.io/2021/09/12/design-bft-pbft/">PBFT</a> and <a target="_blank" rel="noopener" href="https://seafooler.github.io/2021/09/15/design-bft-tendermint/">Tendermint</a>. In this blog, we try to carry out a unification of two-phase consensus. Based on the unification model, we will clarify how PBFT/Tendermint implements the model in the upcoming blogs.</p>
+        <p>In the last two blogs, we derivated the design of two-phase BFT consensuses. We picked two different routines, namely <a target="_blank" rel="noopener" href="https://seafooler.github.io/2021/09/12/design-bft-pbft/">PBFT</a> and <a target="_blank" rel="noopener" href="https://seafooler.github.io/2021/09/15/design-bft-tendermint/">Tendermint</a>. In this blog, we try to carry out a unification of two-phase consensus. Based on the unification model, we will clarify how PBFT/Tendermint implements the model in the upcoming blogs.</p>
 <h2 id="i.-three-ingredients">I. Three Ingredients</h2>
 <p>Almost all the two-phase consensus consists of three ingredients:</p>
 <ul>
@@ -351,290 +358,35 @@ C(r)=1 \Longrightarrow \forall \space rep_j \space |\{o | o \in O_j \&amp; o = f
 <li>Yin, M., Malkhi, D., Reiter, M. K., Gueta, G. G., &amp; Abraham, I. "HotStuff: BFT consensus with linearity and responsiveness." In Proceedings of the 2019 ACM Symposium on Principles of Distributed Computing (PODC'19), pp. 347-356.</li>
 </ol>
 
-      
     </div>
 
     
     
     
+
       <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
+          <div class="post-tags">
+              <a href="/tags/Consensus/" rel="tag"># Consensus</a>
+              <a href="/tags/BFT/" rel="tag"># BFT</a>
+              <a href="/tags/Blockchain/" rel="tag"># Blockchain</a>
+          </div>
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://example.com/2021/09/15/design-bft-tendermint/">
+        
 
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="Seafooler">
-      <meta itemprop="description" content="">
-    </span>
 
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Seafooler's Blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2021/09/15/design-bft-tendermint/" class="post-title-link" itemprop="url">Consensus From One-phase To Two-phase, A Routine Of Tendermint</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2021-09-15 00:00:00" itemprop="dateCreated datePublished" datetime="2021-09-15T00:00:00+08:00">2021-09-15</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2021-12-04 18:23:04" itemprop="dateModified" datetime="2021-12-04T18:23:04+08:00">2021-12-04</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">In</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Consensus/" itemprop="url" rel="index"><span itemprop="name">Consensus</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>As a sequel of <a target="_blank" rel="noopener" href="https://seafooler.github.io/2021/09/12/design-bft-pbft/">the last blog</a>, this blog picks the routine of <code>Tendermint</code> to derivate a two-phase BFT consensus. Particularly, we will analyze:</p>
-<ol type="1">
-<li>What is the function of the <code>lock</code> notion?</li>
-<li>Why are two phases necessary, from the perspective of <code>Tendermint</code>?</li>
-<li>Why is <code>Tendermint</code> a right consensus, which can achieves both <code>safety</code> and <code>liveness</code>?</li>
-<li>Why is <code>Tendermint</code> not responsive?</li>
-</ol>
-<p>Common contents with <a target="_blank" rel="noopener" href="https://seafooler.github.io/2021/09/12/design-bft-pbft/">the last blog</a> (including "basic concepts" and "one-phase protocol") are omitted here.</p>
-<p>In the next blog, we will try to compare and unify <code>PBFT</code> and <code>Tendermint</code>.</p>
-<h2 id="i.-one-phase-view-switch-protocol">I. One-phase + view-switch protocol</h2>
-<p>To extricate the system from halting, a view-switch (i.e., <code>round-change</code> in <code>Tendermint</code>) mechanism is necessary. The view-switch mechanism in <code>Tendermint</code> is also passive.</p>
-<p>As discussed in <a target="_blank" rel="noopener" href="https://seafooler.github.io/2021/09/12/design-bft-pbft/">the last blog</a>, when the view is switched, each replica must make a judgement if a request <span class="math inline">\(r\)</span> has been committed in the old view.</p>
-<p>Review that: &gt; there are mainly two ways to design the judgement rules: (1) based on the collection of other replicas' opinions; (2) based on its local status. <code>PBFT</code>-like routine picks the first one, while <code>Tendermint</code>-like routine picks the second.</p>
-<p>The first judgement rule has been discussed in <a target="_blank" rel="noopener" href="https://seafooler.github.io/2021/09/12/design-bft-pbft/">the last blog</a>. Let us analyze talk about the second judgement rule next.</p>
-<h3 id="a.-judgement-rule-2-based-on-its-local-status">A. Judgement rule 2: based on its local status</h3>
-<p><code>DLS</code> protocol also takes this rule, which is quite simple: each replica judges whether to vote for a new request only based on its voting status. If a replica has voted for a request <code>r</code> with <code>i</code>, it will never vote for any request <code>r'</code> with <code>i</code> later.</p>
-<p>This simple rule can guarantee <strong>safety</strong>, but it cannot ensure <strong>liveness</strong>. Take an example to illustrate the <strong>liveness</strong> problem as follows:</p>
-<ul>
-<li>In view <span class="math inline">\(v\)</span>, the leader has broadcast <code>r</code> with <code>i</code> and <span class="math inline">\(f\)</span> correct replicas have voted for <code>r</code>.</li>
-<li>View is switched to <span class="math inline">\(v+1\)</span>.</li>
-<li>The new correct leader in view <span class="math inline">\(v+1\)</span> broadcasts <code>r'</code> with <code>i</code> and other <span class="math inline">\(f+1\)</span> correct replicas (not the <span class="math inline">\(f\)</span> correct replicas above) vote for <code>r'</code>.</li>
-<li>From now on, if all the byzantine replicas keep silent, the protocol will halt, thus compromising <strong>liveness</strong>.</li>
-</ul>
-<h2 id="ii.-two-phase-view-switch-protocol">II. Two-phase + view-switch protocol</h2>
-<p>From Section I., we know <code>one-phase + view-switch</code> is not enough for a correct BFT consensus. <code>Tendermint</code> augments it with an additional phase, whose specification can be succinctly described as follows. Note that to faciliate the promising comparison between <code>PBFT</code> and <code>Tendermint</code>, the blockchain-related terminologies of <code>Tendermint</code> are removed here.</p>
-<blockquote>
-<p>Two phases in <code>Tendermint</code> are named as <code>prevote</code> and <code>precommit</code> respectively.</p>
-<p>A replica will lock on a replica <span class="math inline">\(r\)</span> with <span class="math inline">\(i\)</span> if it has colleted 2/3+ <code>prevote</code>s on <span class="math inline">\(r\)</span>.</p>
-<p>A replica will never <code>prevote</code> for <span class="math inline">\(r&#39;\)</span> with <span class="math inline">\(i\)</span> later, if it has locked on <span class="math inline">\(r\)</span>.</p>
-<p>Other parts are quite similar to Section I.</p>
-</blockquote>
-<p>As an analogy of Section II.A, it is easy to draw the conclusion that <code>Tendermint</code> satifies <strong>safety</strong>. Next, we analyze how <code>Tendermint</code> achieves <strong>livenss</strong>.</p>
-<h3 id="a.-how-does-tendermint-achieve-liveness">A. How does <code>Tendermint</code> achieve <strong>liveness</strong>?</h3>
-<p>Note that we do some modifications to <code>Tendermint</code> to make it more similar to <code>PBFT</code>. Without relying on the blockchain-related structures, we claim that <strong>there will be isolated locks for each index <span class="math inline">\(i\)</span></strong>.</p>
-<p>If a replica insists on locking on <span class="math inline">\(r\)</span> with <span class="math inline">\(i\)</span>, the protocol may get halted and compromise <strong>liveness</strong>. Take an example to illustrate the <strong>liveness</strong> problem as follows:</p>
-<ul>
-<li>In view <span class="math inline">\(v\)</span>, <span class="math inline">\(f\)</span> correct nodes locked on <span class="math inline">\(r\)</span> with <span class="math inline">\(i\)</span>.</li>
-<li>View is switched to <span class="math inline">\(v+1\)</span>.</li>
-<li>The new leader in <span class="math inline">\(v+1\)</span> broadcasts <span class="math inline">\(r&#39;\)</span> with <span class="math inline">\(i\)</span>. All the <span class="math inline">\(f+1\)</span> correct nodes except the above <span class="math inline">\(f\)</span> ones and <span class="math inline">\(f\)</span> byzantine nodes <code>prevote</code> for <span class="math inline">\(r&#39;\)</span>. Therefore, the <span class="math inline">\(f+1\)</span> correct nodes can lock on <span class="math inline">\(r&#39;\)</span> with <span class="math inline">\(i\)</span>.</li>
-<li>From now on, if all the byzantine replicas keep silent, the protocol will halt, thus compromising <strong>liveness</strong>.</li>
-</ul>
-<p>To deal with the above problem, <code>Tendermint</code> adds a new rule (i.e., <code>unlock-on-polka</code>), where polka means 2/3+ <code>prevote</code>s for an index <span class="math inline">\(i\)</span>. The <code>unlock-on-polka</code> rule states that if a replica sees a newer <span class="math inline">\(r&#39;\)</span> with <span class="math inline">\(i\)</span>, it will release the lock on the old request (<span class="math inline">\(r\)</span>) and relock on the new one (<span class="math inline">\(r&#39;\)</span>).</p>
-<p>With this rule, <span class="math inline">\(f\)</span> correct nodes locking on <span class="math inline">\(r\)</span> in the above example are expected to switch to lock on <span class="math inline">\(r&#39;\)</span>. Thus, all the correct nodes may broadcast <code>precommit</code> messages and <span class="math inline">\(r&#39;\)</span> can get committed.</p>
-<h3 id="b.-will-unlock-on-polka-compromise-safety">B. Will <code>unlock-on-polka</code> compromise <strong>safety</strong>?</h3>
-<p>No! The reason is as follows:</p>
-<p>Assume a replica locks on <span class="math inline">\(r\)</span> with <span class="math inline">\(i\)</span> and it receives a polka on a newer <span class="math inline">\(r&#39;\)</span> with <span class="math inline">\(i\)</span>. We further assume the oldest polka with a newer request than <span class="math inline">\(r\)</span> is <span class="math inline">\(r^o\)</span> (<span class="math inline">\(r^o\)</span> may equal <span class="math inline">\(r&#39;\)</span>): <span class="math inline">\(r^o = min\{r_i|r_i &gt; r\}\)</span>. <span class="math inline">\(r^o\)</span> must have got <code>prevotes</code> from 2/3+ replicas. Besides, since <span class="math inline">\(r^o\)</span> is the oldest one newer than <span class="math inline">\(r\)</span>, and a replica only <code>prevotes</code> for its locked request or when it lock on nothing, all the replicas <code>prevoting</code> for <span class="math inline">\(r^o\)</span> must lock on nothing. Therefore, there are at least 2/3+ replicas locked on nothing at that time. Since 2/3+ replicas locked on nothing, any replica can neither get 2/3+ <code>precommit</code> for <span class="math inline">\(r\)</span> nor commit <span class="math inline">\(r\)</span>. Therefore, it is <strong>safe</strong> to release the lock on <span class="math inline">\(r\)</span>.</p>
-<p>From another perspective, if a replica has committed <span class="math inline">\(r\)</span> with <span class="math inline">\(i\)</span>, no <span class="math inline">\(r&#39;\)</span> with <span class="math inline">\(i\)</span> can get locked or even committed later. By contrast, if there is a polka for a newer <span class="math inline">\(r&#39;\)</span> with <span class="math inline">\(i\)</span>, we can assure that no older <span class="math inline">\(r\)</span> with <span class="math inline">\(i\)</span> has been committed.</p>
-<h3 id="c.-when-will-a-lock-on-an-uncommitted-request-be-released-or-be-committed-finally">C. When will a lock on an uncommitted request be released or be committed finally?</h3>
-<p>Nobody knows and nothing can guarantee it in <code>Tendermint</code>. Let us take an example to explain it.</p>
-<p>Assume a replica locks on <span class="math inline">\(r\)</span> but does not commit <span class="math inline">\(r\)</span> with <span class="math inline">\(i\)</span>, there can be two cases. - Case 1 (<span class="math inline">\(f+1\)</span> or more correct replicas lock on <span class="math inline">\(r\)</span>): <span class="math inline">\(r\)</span> will be finally committed. - Case 2 (<span class="math inline">\(f\)</span> or less correct replicas lock on <span class="math inline">\(r\)</span>): there are two subcases - Case 2.1: a new leader proposes <span class="math inline">\(r&#39;\)</span>, and each replica without locking on <span class="math inline">\(r\)</span> can prevote for <span class="math inline">\(r&#39;\)</span>. <span class="math inline">\(r&#39;\)</span> can be locked and even committed later. - Case 2.2: a new leader proposes <span class="math inline">\(r\)</span>, and each correct replica can prevote for <span class="math inline">\(r\)</span>. <span class="math inline">\(r\)</span> can be locked by more replicas and committed later.</p>
-<p>After long enough, one of Case 1, Case 2.1, and Case 2.2 will take place, thus achieving <strong>liveness</strong>. However, nobody knows the exact time. <strong>That's the reason why <code>Tendermint</code> is not responsive</strong>.</p>
-<h2 id="references">References</h2>
-<ol type="1">
-<li>Buchman, E. "Tendermint: Byzantine fault tolerance in the age of blockchains." Doctoral dissertation, 2016.</li>
-<li>Dwork, C., Lynch, N., &amp; Stockmeyer, L. "Consensus in the presence of partial synchrony." Journal of the ACM (JACM), 1988, 35(2), pp. 288-323.</li>
-</ol>
-
-      
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/09/15/design-bft-tendermint/" rel="prev" title="Consensus From One-phase To Two-phase, A Routine Of Tendermint">
+      <i class="fa fa-chevron-left"></i> Consensus From One-phase To Two-phase, A Routine Of Tendermint
+    </a></div>
+      <div class="post-nav-item"></div>
     </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
       </footer>
+    
   </article>
   
   
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://example.com/2021/09/12/design-bft-pbft/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="Seafooler">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Seafooler's Blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2021/09/12/design-bft-pbft/" class="post-title-link" itemprop="url">Consensus From One-phase To Two-phase, A Routine Of PBFT</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2021-09-12 00:00:00" itemprop="dateCreated datePublished" datetime="2021-09-12T00:00:00+08:00">2021-09-12</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2021-12-04 18:22:40" itemprop="dateModified" datetime="2021-12-04T18:22:40+08:00">2021-12-04</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">In</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Consensus/" itemprop="url" rel="index"><span itemprop="name">Consensus</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>As for a Byzantine Fault Tolerance (BFT) consensus, there are mainly two design routines: <code>PBFT</code>-like and <code>Tendermint</code>-like. The former contains a complex <code>view-change</code> phase, while the latter includes a notion of <code>lock</code>.</p>
-<p>In this blog, we try to derivate a two-phase BFT consensus, along the routine of <code>PBFT</code>. Particularly, we will analyze:</p>
-<ol type="1">
-<li>Why is a view-switch process necessary?</li>
-<li>What is the function of the view-switch process?</li>
-<li>Why are two phases necessary?</li>
-<li>Why is <code>PBFT</code> a correct consensus algorithm?</li>
-</ol>
-<p>In <a target="_blank" rel="noopener" href="https://seafooler.github.io/2021/09/15/design-bft-tendermint/">the next blog</a>, we will pick the other routine (i.e., <code>Tendermint</code>) and derivate the design of <code>Tendermint</code>.</p>
-<p>After that, a blog trying to compare and unify <code>PBFT</code> and <code>Tendermint</code> will be posted, since both of them are two-phase consensus and similar to each other.</p>
-<h2 id="i.-basic-concepts-of-bft-consensus">I. Basic Concepts of BFT Consensus</h2>
-<p>Before going ahead, we must first clarify some basic terminologies:</p>
-<ul>
-<li><strong>Request</strong>: A command to be agreed and processed by the BFT cluster.</li>
-<li><strong>Commit</strong>: Any request having been agreed can be considered committed, which will not be rolled back.</li>
-<li><strong>Index</strong>: Each committed request will correspond to an index, indicating its execution sequence.</li>
-</ul>
-<p>Also, a correct BFT consensus must satisfy two properties:</p>
-<ul>
-<li><strong>Safety</strong>: It requires that if a request <span class="math inline">\(r\)</span> with index <span class="math inline">\(i\)</span> is committed by an honest replica, any other correct replicas <strong>cannot</strong> commit a request <span class="math inline">\(r&#39;\)</span> (<span class="math inline">\(r&#39; \neq r\)</span>) with index <span class="math inline">\(i\)</span>.</li>
-<li><strong>Liveness</strong>: It requires that if the indexes of committed requests should keep increasing. In other words, the system will never halt.</li>
-</ul>
-<h2 id="ii.-one-phase-protocol">II. One-phase protocol</h2>
-<p>Let us start with an one-phase protocol as follows:</p>
-<ul>
-<li>As a leader: broadcast the request <span class="math inline">\(r\)</span> with index <span class="math inline">\(i\)</span> to all the replicas</li>
-<li>As a replica: broadcast the vote (<span class="math inline">\(v_r\)</span>) for <span class="math inline">\(r\)</span></li>
-<li>As a replica: commit <span class="math inline">\(r\)</span> once collecting 2/3+ votes</li>
-</ul>
-<p>This protocol can satisfy <strong>safety</strong> but missing <strong>liveness</strong>. It is easy to understand its satisfication of <strong>safety</strong>. Violation of <strong>liveness</strong> will take place if:</p>
-<ol type="1">
-<li>Either the leader is evil and sends contradictory requests to different honest replicas intentionally;</li>
-<li>Or the leader is not evil but crashes unintentionally.</li>
-</ol>
-<h2 id="iii.-one-phase-view-switch-protocol">III. One-phase + view-switch protocol</h2>
-<p>To extricate the system from halting, a view-switch (i.e., <code>view-change</code> in <code>PBFT</code>) mechanism is necessary. The view-switch mechanism can be passive or active:</p>
-<ul>
-<li>Passive view-switch: view will be switched after a failure detection, e.g., <code>view-change</code> in <code>PBFT</code> and <code>round-change</code> in <code>Tendermint</code></li>
-<li>Active view-switch: view will be switched for each new request, e.g., <code>new-view</code> in <code>Basic HotStuff</code>.</li>
-</ul>
-<p>The view-switch process can occur either when some replicas have committed a request <span class="math inline">\(r\)</span> or when no one has committed this request. According to the <strong>safety</strong> requirement, an honest replica should reject a request <span class="math inline">\(r&#39;\)</span> in the new view if <span class="math inline">\(r&#39;\)</span> has the same index with a committed <span class="math inline">\(r\)</span>. Therefore, it is necessary to judge if <span class="math inline">\(r\)</span> has been committed and reject/accept <span class="math inline">\(r&#39;\)</span> based on the judgement.</p>
-<p>There are mainly two ways to design the judgement rules: (1) based on the collection of other replicas' opinions; (2) based on its local status. In the <code>PBFT</code>-like routine, the first judgement rule is picked. The second judgement rule will be presented in <a target="_blank" rel="noopener" href="https://seafooler.github.io/2021/09/15/design-bft-tendermint/">the next blog</a> (e.g., <code>Tendermint</code>-like routine).</p>
-<p>However, it is challenging or even impossible for a replica without committing <span class="math inline">\(r\)</span> to judge if someone else has committed <span class="math inline">\(r\)</span>, in the case of an <code>one-phase + view-switch</code> protocol. We elaborate on the reason for the first judgement rule here, with the second rule to be discussed in <a target="_blank" rel="noopener" href="https://seafooler.github.io/2021/09/15/design-bft-tendermint/">the next blog</a>.</p>
-<h3 id="a.-judgement-rule-1-based-on-collection-of-other-replicas-opinions">A. Judgement rule 1: based on collection of other replicas' opinions</h3>
-<p>This rule combined with the view-switch specification can be considered as a simplified version of <code>PBFT</code> (one-phase <code>PBFT</code>). The rule can be described as follows:</p>
-<ul>
-<li>When the view is changed, each replica broadcasts its opinion on an index <span class="math inline">\(i\)</span>. If it has voted for a request <span class="math inline">\(r\)</span> with <span class="math inline">\(i\)</span> before, it will broadcast an opinion of <span class="math inline">\(r_i\)</span>; otherwise, it broadcasts an opinion of <code>empty</code>.</li>
-<li>A replica will try to collect 2/3+ replicas' opinions on the index <span class="math inline">\(i\)</span>. If 2/3 opinions are of the format <span class="math inline">\(r_i\)</span>, the replica can judge that <span class="math inline">\(r\)</span> with <span class="math inline">\(i\)</span> has been committed before; or if 2/3 opinions are of the format <code>empty</code>, the replica can judge that no request with <span class="math inline">\(i\)</span> has been committed before.</li>
-</ul>
-<p>However, if there are no matching 2/3 opinions collected by a replica, it will be stuck in a dilemma. Accepting a new request with <span class="math inline">\(i\)</span> may vialate <strong>safety</strong>, while rejecting a new request with <span class="math inline">\(i\)</span> may compromise <strong>liveness</strong>.</p>
-<p>In fact, the judgement rule above is a little different from <code>PBFT</code>. To be more specific, a replica broascasts its opinion in the above description. By contrast in <code>PBFT</code>, it only sends its opinion to the new leader and the leader further packages and broadcasts the opinions. However, the underlying essentials are the same.</p>
-<h2 id="iv.-two-phase-view-switch-protocol">IV. Two-phase + view-switch protocol</h2>
-<p>From Section III., we know <code>one-phase + view-switch</code> is not enough for a correct BFT consensus. <code>PBFT</code> augments it with an additional phase, whose specification can be succinctly described as follows:</p>
-<blockquote>
-<p>Two phases in <code>PBFT</code> are named as <code>prepare</code> and <code>commit</code> respectively. It requires that a replica has to receive 2/3+ <code>commit</code> messages before it finally commits (executes) a request.</p>
-<p>When the view is changed, each replica broadcasts its <code>prepared</code> opinions on <span class="math inline">\(i\)</span>.</p>
-<p>Other parts are quite similar to Section III.</p>
-</blockquote>
-<h3 id="a.-how-does-pbft-achieve-safety">A. How does <code>PBFT</code> achieve <strong>safety</strong>?</h3>
-<p>If a request <span class="math inline">\(r\)</span> with <span class="math inline">\(i\)</span> is committed, it must have been <code>prepared</code> by 2/3+ replicas. Collection of 2/3+ <code>prepared</code> messages in the view-switch process can ensure that if <span class="math inline">\(r\)</span> with <span class="math inline">\(i\)</span> has been committed before, at least one <code>prepared</code> opinion on <span class="math inline">\(r\)</span> will be received by each replica. Since a <code>prepared</code> opinion is consisted of 2/3+ votes (<code>prepare</code> message), it is enough for a replica to make judgements with only one <code>prepared</code> opinion on <span class="math inline">\(i\)</span>. Therefore, <strong>safety</strong> is guaranteed.</p>
-<h3 id="b.-how-does-pbft-achieve-liveness">B. How does <code>PBFT</code> achieve <strong>liveness</strong>?</h3>
-<p>On one hand, each replica only needs to wait for 2/3+ messages, which can be assured by the model assumption. On the other hand, all the honest replicas can make a consistent and correct judgement. A new uncontradicted request will finally receive 2/3+ votes (<code>prepare</code> and <code>commit</code> messages), and got committed.</p>
-<h2 id="references">References</h2>
-<ol type="1">
-<li>Castro, M., &amp; Liskov, B. "Practical byzantine fault tolerance." In Proceedings of the 3rd USENIX Symposium on Operating Systems Design and Implementation (OSDI'99), pp. 173-186.</li>
-<li>Yin, M., Malkhi, D., Reiter, M. K., Gueta, G. G., &amp; Abraham, I. "HotStuff: BFT consensus with linearity and responsiveness." In Proceedings of the 2019 ACM Symposium on Principles of Distributed Computing (PODC'19), pp. 347-356.</li>
-</ol>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-
   
 
 
@@ -687,6 +439,7 @@ C(r)=1 \Longrightarrow \forall \space rep_j \space |\{o | o \in O_j \&amp; o = f
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#i.-three-ingredients"><span class="nav-number">1.</span> <span class="nav-text">I. Three Ingredients</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ii.-necessity-of-three-ingredients"><span class="nav-number">2.</span> <span class="nav-text">II. Necessity of Three Ingredients</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#iii.-how-to-achieve-safety-without-compromising-liveness"><span class="nav-number">3.</span> <span class="nav-text">III. How to Achieve Safety Without Compromising Liveness?</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#a.-formats-of-opinion-expression"><span class="nav-number">3.1.</span> <span class="nav-text">A. Formats of opinion expression</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#b.-pe-format"><span class="nav-number">3.2.</span> <span class="nav-text">B. PE format</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#an-optimization-to-pe-consistent-judgement-results"><span class="nav-number">3.2.1.</span> <span class="nav-text">An optimization to PE: consistent judgement results</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#c.-tf-format"><span class="nav-number">3.3.</span> <span class="nav-text">C. TF format</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#rule-1-based-on-one-true-no-safety-or-no-liveness"><span class="nav-number">3.3.1.</span> <span class="nav-text">1. Rule 1: based on One true （no safety or no liveness）</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#rule-2-based-on-23-true-no-safety"><span class="nav-number">3.3.2.</span> <span class="nav-text">2. Rule 2: based on 2&#x2F;3+ true (no safety)</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#a-remedy-to-rule-2-rule-3-add-a-new-phase"><span class="nav-number">3.3.3.</span> <span class="nav-text">3. A remedy to rule 2 (Rule 3): Add a new phase</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#an-optimization-to-rule-3"><span class="nav-number">3.3.3.1.</span> <span class="nav-text">An optimization to rule 3</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#rule-4-based-on-23-false-no-liveness"><span class="nav-number">3.3.4.</span> <span class="nav-text">4. Rule 4: based on 2&#x2F;3+ false (no liveness)</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#a-remedy-to-rule-4-rule-5"><span class="nav-number">3.3.5.</span> <span class="nav-text">5. A remedy to rule 4 (rule 5)</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#another-remedy-to-rule-4-rule-6"><span class="nav-number">3.3.6.</span> <span class="nav-text">6. Another remedy to rule 4 (rule 6)</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#references"><span class="nav-number">4.</span> <span class="nav-text">References</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 

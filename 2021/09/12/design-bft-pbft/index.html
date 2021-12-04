@@ -29,7 +29,7 @@
 <meta property="og:description" content="As for a Byzantine Fault Tolerance (BFT) consensus, there are mainly two design routines: PBFT-like and Tendermint-like. The former contains a complex view-change phase, while the latter includes a no">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2021-09-11T16:00:00.000Z">
-<meta property="article:modified_time" content="2021-12-01T01:23:40.879Z">
+<meta property="article:modified_time" content="2021-12-04T10:22:40.268Z">
 <meta property="article:author" content="Seafooler">
 <meta property="article:tag" content="Consensus">
 <meta property="article:tag" content="BFT">
@@ -185,7 +185,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2021-12-01 09:23:40" itemprop="dateModified" datetime="2021-12-01T09:23:40+08:00">2021-12-01</time>
+                <time title="Modified: 2021-12-04 18:22:40" itemprop="dateModified" datetime="2021-12-04T18:22:40+08:00">2021-12-04</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -271,7 +271,10 @@
 <h3 id="b.-how-does-pbft-achieve-liveness">B. How does <code>PBFT</code> achieve <strong>liveness</strong>?</h3>
 <p>On one hand, each replica only needs to wait for 2/3+ messages, which can be assured by the model assumption. On the other hand, all the honest replicas can make a consistent and correct judgement. A new uncontradicted request will finally receive 2/3+ votes (<code>prepare</code> and <code>commit</code> messages), and got committed.</p>
 <h2 id="references">References</h2>
-<p>[1] Castro, M., &amp; Liskov, B. "Practical byzantine fault tolerance." In Proceedings of the 3rd USENIX Symposium on Operating Systems Design and Implementation (OSDI'99), pp. 173-186. [2] Yin, M., Malkhi, D., Reiter, M. K., Gueta, G. G., &amp; Abraham, I. "HotStuff: BFT consensus with linearity and responsiveness." In Proceedings of the 2019 ACM Symposium on Principles of Distributed Computing (PODC'19), pp. 347-356.</p>
+<ol type="1">
+<li>Castro, M., &amp; Liskov, B. "Practical byzantine fault tolerance." In Proceedings of the 3rd USENIX Symposium on Operating Systems Design and Implementation (OSDI'99), pp. 173-186.</li>
+<li>Yin, M., Malkhi, D., Reiter, M. K., Gueta, G. G., &amp; Abraham, I. "HotStuff: BFT consensus with linearity and responsiveness." In Proceedings of the 2019 ACM Symposium on Principles of Distributed Computing (PODC'19), pp. 347-356.</li>
+</ol>
 
     </div>
 
@@ -369,7 +372,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">2</span>
+          <span class="site-state-item-count">3</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>

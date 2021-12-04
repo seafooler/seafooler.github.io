@@ -29,7 +29,7 @@
 <meta property="og:description" content="As a sequel of the last blog, this blog picks the routine of Tendermint to derivate a two-phase BFT consensus. Particularly, we will analyze:  What is the function of the lock notion? Why are two phas">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2021-09-14T16:00:00.000Z">
-<meta property="article:modified_time" content="2021-12-01T01:23:45.192Z">
+<meta property="article:modified_time" content="2021-12-04T10:23:04.848Z">
 <meta property="article:author" content="Seafooler">
 <meta property="article:tag" content="Consensus">
 <meta property="article:tag" content="BFT">
@@ -184,7 +184,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2021-12-01 09:23:45" itemprop="dateModified" datetime="2021-12-01T09:23:45+08:00">2021-12-01</time>
+                <time title="Modified: 2021-12-04 18:23:04" itemprop="dateModified" datetime="2021-12-04T18:23:04+08:00">2021-12-04</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -259,7 +259,10 @@
 <p>Assume a replica locks on <span class="math inline">\(r\)</span> but does not commit <span class="math inline">\(r\)</span> with <span class="math inline">\(i\)</span>, there can be two cases. - Case 1 (<span class="math inline">\(f+1\)</span> or more correct replicas lock on <span class="math inline">\(r\)</span>): <span class="math inline">\(r\)</span> will be finally committed. - Case 2 (<span class="math inline">\(f\)</span> or less correct replicas lock on <span class="math inline">\(r\)</span>): there are two subcases - Case 2.1: a new leader proposes <span class="math inline">\(r&#39;\)</span>, and each replica without locking on <span class="math inline">\(r\)</span> can prevote for <span class="math inline">\(r&#39;\)</span>. <span class="math inline">\(r&#39;\)</span> can be locked and even committed later. - Case 2.2: a new leader proposes <span class="math inline">\(r\)</span>, and each correct replica can prevote for <span class="math inline">\(r\)</span>. <span class="math inline">\(r\)</span> can be locked by more replicas and committed later.</p>
 <p>After long enough, one of Case 1, Case 2.1, and Case 2.2 will take place, thus achieving <strong>liveness</strong>. However, nobody knows the exact time. <strong>That's the reason why <code>Tendermint</code> is not responsive</strong>.</p>
 <h2 id="references">References</h2>
-<p>[1] Buchman, E. "Tendermint: Byzantine fault tolerance in the age of blockchains." Doctoral dissertation, 2016. [2] Dwork, C., Lynch, N., &amp; Stockmeyer, L. "Consensus in the presence of partial synchrony." Journal of the ACM (JACM), 1988, 35(2), pp. 288-323.</p>
+<ol type="1">
+<li>Buchman, E. "Tendermint: Byzantine fault tolerance in the age of blockchains." Doctoral dissertation, 2016.</li>
+<li>Dwork, C., Lynch, N., &amp; Stockmeyer, L. "Consensus in the presence of partial synchrony." Journal of the ACM (JACM), 1988, 35(2), pp. 288-323.</li>
+</ol>
 
     </div>
 
@@ -283,7 +286,10 @@
     <a href="/2021/09/12/design-bft-pbft/" rel="prev" title="Consensus From One-phase To Two-phase, A Routine Of PBFT">
       <i class="fa fa-chevron-left"></i> Consensus From One-phase To Two-phase, A Routine Of PBFT
     </a></div>
-      <div class="post-nav-item"></div>
+      <div class="post-nav-item">
+    <a href="/2021/09/18/unification-2pc/" rel="next" title="Unification of Two-phase Consensus">
+      Unification of Two-phase Consensus <i class="fa fa-chevron-right"></i>
+    </a></div>
     </div>
       </footer>
     
@@ -356,7 +362,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">2</span>
+          <span class="site-state-item-count">3</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
