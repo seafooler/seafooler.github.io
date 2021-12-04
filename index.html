@@ -177,7 +177,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2021-12-04 18:22:55" itemprop="dateModified" datetime="2021-12-04T18:22:55+08:00">2021-12-04</time>
+                <time title="Modified: 2021-12-04 18:34:50" itemprop="dateModified" datetime="2021-12-04T18:34:50+08:00">2021-12-04</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -200,157 +200,15 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <p>In the last two blogs, we derivated the design of two-phase BFT consensuses. We picked two different routines, namely <a target="_blank" rel="noopener" href="https://seafooler.github.io/2021/09/12/design-bft-pbft/">PBFT</a> and <a target="_blank" rel="noopener" href="https://seafooler.github.io/2021/09/15/design-bft-tendermint/">Tendermint</a>. In this blog, we try to carry out a unification of two-phase consensus. Based on the unification model, we will clarify how PBFT/Tendermint implements the model in the upcoming blogs.</p>
-<h2 id="i.-three-ingredients">I. Three Ingredients</h2>
-<p>Almost all the two-phase consensus consists of three ingredients:</p>
-<ul>
-<li>1st-phase vote (<code>1PV</code>)</li>
-<li>2nd-phase vote (<code>2PV</code>)</li>
-<li>View change process (<code>VC</code>)</li>
-</ul>
-<p><code>1PV</code> corresponds to <code>prepare</code> phase in <code>PBFT</code> or <code>prevote</code> phase in <code>Tendermint</code>; <code>2PV</code> corresponds to <code>commit</code> phase in <code>PBFT</code> or <code>precommit</code> phase in <code>Tendermint</code>; <code>VC</code> corresponds to <code>view change</code> in <code>PBFT</code> or <code>round change</code> in <code>Tendermint</code>.</p>
-<h2 id="ii.-necessity-of-three-ingredients">II. Necessity of Three Ingredients</h2>
-<p>It is easy to understand that one-phase vote is necessary for a BFT consensus.</p>
-<p>To rescue the system from a halting status (faulty leader), <code>VC</code> is also necessary.</p>
-<p>However, the single-phase vote cannot assure <code>safety</code> across views. To achieve across-view <code>safety</code>, an extra phase of vote is needed. The reason why an extra phase of vote can do it will be presented below.</p>
-<p>Note that <strong>the newly-added phase of vote is considered as <code>1PV</code></strong> in Section I, while the preexisting phase of vote is considered as <code>2PV</code> in Section I. The reason is that <code>2PV</code> specifies the time to commit a request, which matches the specification of the preexisting phase of vote.</p>
-<h2 id="iii.-how-to-achieve-safety-without-compromising-liveness">III. How to Achieve <code>Safety</code> Without Compromising <code>Liveness</code>?</h2>
-<p>For the sake of presentation, we borrow a notion of <code>polka</code> from <code>Tendermint</code>. The 2/3+ votes in <code>1PV</code> constitutes a <code>polka</code>.</p>
-<p>As already talked about in <a target="_blank" rel="noopener" href="https://seafooler.github.io/2021/09/12/design-bft-pbft/">the PBFT blog</a>, the most challenge task to achieve across-view <code>safety</code> is to <strong>judge if a request <span class="math inline">\(r\)</span> has been committed in the old view</strong>. Besides, designing the judgement method cannot compromise <code>liveness</code>. Based on the judgement, a replica decices if it should vote for a new request or not:</p>
-<ul>
-<li>If a replica judges <span class="math inline">\(r\)</span> has been <code>committed</code> before in the index <span class="math inline">\(i\)</span>, it will decline to vote for any other <span class="math inline">\(r&#39;\)</span> (<span class="math inline">\(r&#39; \neq r\)</span>);</li>
-<li>Otherwise, it will vote for any <span class="math inline">\(r&#39;\)</span>.</li>
-</ul>
-<p>For a replica to make a judgement, a natural manner is to communicate with other replicas and collect others' opinions. In the remaining parts, we will talk about how to express an opinion and how to make a judgement.</p>
-<h3 id="a.-formats-of-opinion-expression">A. Formats of opinion expression</h3>
-<p>The expression of opinions can be of two formats naturally:</p>
-<ul>
-<li><code>Polka</code>/<code>empty</code> (<code>PE</code> in short): a replica broadcasts <code>polka</code> if there is one, otherwise <code>empty</code>;</li>
-<li><code>True</code>/<code>false</code> (<code>TF</code> in short): a replica broadcasts <code>true</code> if there is a <code>polka</code>, othwewise <code>false</code>;</li>
-</ul>
-<h3 id="b.-pe-format">B. <code>PE</code> format</h3>
-<p>The <code>PE</code> format is usually assisted with the following judgement rule:</p>
-<ol type="1">
-<li>If a replica receives any <code>polka</code> for <span class="math inline">\(r\)</span>, it will judge <span class="math inline">\(r\)</span> as <code>committed</code> before.</li>
-<li>Otherwise, a replica will judge <span class="math inline">\(r\)</span> as <code>uncommitted</code> before.</li>
-</ol>
-<p>The <code>PE</code> format can deduce deterministic, partly-correct, and partly-consistent judgement results in all the correct replicas. To be more specific, when a replica collects 2/3+ opinions for a request <span class="math inline">\(r\)</span>, we can get the following deduction: <span class="math display">\[
-C(r)=1 \Longrightarrow \forall \space rep_j \space \exists \space polka_r \in O_j
-\]</span> where <span class="math inline">\(C\)</span> denotes whether <span class="math inline">\(r\)</span> has been committed before, while <span class="math inline">\(O_j\)</span> represents the set of opinions collected by replica <span class="math inline">\(rep_j\)</span>.</p>
-<p>Namely, if <span class="math inline">\(r\)</span> has been committed before, <strong>each</strong> (correct) replica must collect a opinion of <code>polka</code> on <span class="math inline">\(r\)</span> and makes the judgement as <code>committed</code>. In this case, all the replicas can make correct and consistent judgements.</p>
-<p>By contrast, if <span class="math inline">\(r\)</span> has not been committed before, some replicas may collect a opinion of <code>polka</code> on <span class="math inline">\(r\)</span> and make the judgement as <code>committed</code>, while others may collect all the opinions of <code>empty</code> and make the judgement as <code>uncommitted</code>. In this case, replicas may make <strong>inconsistent</strong> judgements and some of them may be <strong>wrong</strong>. We refer to the wrong result (mistaking uncommitted as <code>committed</code>) as <code>False Committed</code> (<code>FC</code>), as an analogy with <code>false positive</code> in machine learning fields.</p>
-<p>To sum up, <code>PE</code> format and direct broadcasting of opinions will lead to partly-correct and partly-consistent judgement results.</p>
-<ul>
-<li><strong>Partly-correct</strong>: Note that <code>FC</code> results (mistaking an uncommitted request as <code>committed</code>) are acceptable, which will not violate the <code>safety</code> property.</li>
-<li><strong>Partly-consistent</strong>: Inconsistent results are acceptable too. When the replica with <code>committed</code> result becomes the leader, it will <strong>repropose</strong> <span class="math inline">\(r\)</span>, which will get votes from all the replicas and finally be committed.</li>
-</ul>
-<p>Besides, the judgement rule will not lead the system to halt, which guarantee the <code>liveness</code>.</p>
-<h4 id="an-optimization-to-pe-consistent-judgement-results">An optimization to <code>PE</code>: consistent judgement results</h4>
-<p>Although the <code>PE</code> format and the assistant judgement rule above are enough to make a correct judgement, it may be inefficient. Particularly, when inconsistent results are gotten by different replicas, the leaders may be switched many times until the replica with <code>committed</code> result becomes the leader.</p>
-<p>On the contrary, if all the replicas can get (totally) consistent judgement results, either totally <code>FC</code> or totally correct, the new request proposed by a new leader can be committed soon.</p>
-<p>To get the (totally) consistent judgement results, we can carry out an optimization as follows:</p>
-<ul>
-<li>Replicas send their opinions to the new leader instead of a broadcast. The new leader packages and broadcasts the collected 2/3+ opinions.</li>
-</ul>
-<p>Actually, this optimization is introduced by <code>PBFT</code>, where the opinion is named <code>view change</code> message and the package of opinions is named <code>new view</code> message. From this point, <strong><code>PBFT</code> can be classified as more a three-phase consensus than a two-phase one</strong>, since <code>view change</code> is also a phase of message broadcasting.</p>
-<p>With this optimization, <code>PBFT</code> can commit new requests at the pace of network delay, thus achieving <code>responsiveness</code>.</p>
-<h3 id="c.-tf-format">C. <code>TF</code> format</h3>
-<p>First of all, the <code>TF</code> format seems to bring lower communication complexity (tiny size of <code>true</code>/<code>false</code> messages) than <code>PE</code> format. However, it also bring some troubles. Following the judgement rule of <code>PE</code> format, the <code>TF</code> format can be assisted with two different judgement rules (rules 1 &amp; 2). However, as we will see below, both rule 1 and rule 2 cannot work well. Therefore, more variants of rules are proposed.</p>
-<h4 id="rule-1-based-on-one-true-no-safety-or-no-liveness">1. Rule 1: based on One <code>true</code> （no <code>safety</code> or no <code>liveness</code>）</h4>
-<p>The first judgement rule is quite similar to that in <code>PE</code> format:</p>
-<ol type="1">
-<li>If a replica receives any <code>true</code> for <span class="math inline">\(r\)</span>, it will judge <span class="math inline">\(r\)</span> as <code>committed</code> before.</li>
-<li>Otherwise, a replica will judge <span class="math inline">\(r\)</span> as <code>uncommitted</code> before.</li>
-</ol>
-<p>A similar deduction can be expressed as follows: <span class="math display">\[
-C(r)=1 \Longrightarrow \forall \space rep_j \space \exists \space true_r \in O_j
-\]</span></p>
-<p>It seems that we can next apply the analysis for <code>PE</code> format in Section I.C.2 to here too. Unfortunately, we <strong>cannot</strong>! The most essential reason is that an opinion of <code>TF</code> format can be falstified easily. To be more specific, although an committed request <span class="math inline">\(r\)</span> must correspond to a <code>true</code> in <span class="math inline">\(O_j\)</span>, a byzantine replica can easily falstify and broadcast a opinion of <code>true</code> for <span class="math inline">\(r&#39;\)</span>. A replica with two <code>true</code> opinions for contradictory requests (<span class="math inline">\(r\)</span> and <span class="math inline">\(r&#39;\)</span>) cannot distinguish which one was exactly <code>committed</code>. If a replica elects <span class="math inline">\(r\)</span> or <span class="math inline">\(r&#39;\)</span> casually, the system may get a wrong result, thus violating <code>safety</code>. On the contrary, if a replica declines to elect either one, the system may get halted, thus compromising <code>liveness</code>.</p>
-<p>By contrast, with the <code>PE</code> format, there would never be two <code>polkas</code> for contradictory requests.</p>
-<p>In conclusion, <code>TF</code> format plus rule 1 cannot work well.</p>
-<h4 id="rule-2-based-on-23-true-no-safety">2. Rule 2: based on 2/3+ <code>true</code> (no <code>safety</code>)</h4>
-<p>The second judgement rule is more conservative:</p>
-<ol type="1">
-<li>If a replica receives 2/3+ <code>true</code> for <span class="math inline">\(r\)</span>, it will judge <span class="math inline">\(r\)</span> as <code>committed</code> before.</li>
-<li>Otherwise, a replica will judge <span class="math inline">\(r\)</span> as <code>uncommitted</code> before.</li>
-</ol>
-<p>First of all, different from rule 1, rule 2 can guarantee that:</p>
-<ul>
-<li>A correct replica will judge at most <strong>one</strong> request as <code>committed</code>;</li>
-<li>If two correct replicas judge <span class="math inline">\(r\)</span> and <span class="math inline">\(r&#39;\)</span> as <code>committed</code> respectively, <span class="math inline">\(r\)</span> must equal <span class="math inline">\(r&#39;\)</span>.</li>
-</ul>
-<p>However, collection of 2/3+ <code>true</code> for <span class="math inline">\(r\)</span> can be <strong>non-deterministic</strong>, even if <span class="math inline">\(r\)</span> has been committed before. In other words, a committed request may be mistaken as <code>uncommitted</code> in the new view, which violates <code>safety</code>. In fact, this problem can be named as <code>false uncommitted</code> (<code>FU</code>), which mistakes a committed request as <code>uncommitted</code>. <code>FU</code> is unacceptable.</p>
-<h4 id="a-remedy-to-rule-2-rule-3-add-a-new-phase">3. A remedy to rule 2 (Rule 3): Add a new phase</h4>
-<p>Exactly, we do not need all the correct replicas to judge the committed request (<span class="math inline">\(r\)</span>) as <code>committed</code>. As long as there are 1/3+ correct replicas do it, there cannot be enough votes for <span class="math inline">\(r&#39;\)</span>, thus guaranteeing <code>safety</code>.</p>
-<p>To achieve this, a new phase is added to the normal case, which transforms the two-phase consensus (<code>2PC</code> in short) to a three-phase one (<code>3PC</code> in short), as follows:</p>
-<ul>
-<li>1st-phase vote (<code>1PV</code>)</li>
-<li>2nd-phase vote (<code>2PV</code>)</li>
-<li>3rd-phase vote (<code>3PV</code>)</li>
-<li>View change process (<code>VC</code>)</li>
-</ul>
-<p>Note that <code>3PV</code> in <code>3PC</code> corresponds to <code>2PV</code> in <code>2PC</code>, and <code>1PV</code> in <code>3PC</code> corresponds to <code>1PV</code> in <code>2PC</code>. <code>2PV</code> in <code>3PC</code> corresponds to the judgement process. The core design of <code>3PC</code> can be described as folllows:</p>
-<ul>
-<li><code>1PV</code> in <code>3PC</code> works in the same way as that in <code>2PC</code>;</li>
-<li>In <code>2PV</code>, a replica will broadcast <code>true</code> opinion if it possesses a <code>polka</code>; otherwise, broadcast <code>false</code>;</li>
-<li>If a replica receives 2/3+ <code>true</code> in <code>2PV</code>, it will broadcast <code>true</code> opinion in <code>3PV</code>; otherwise, broadcast <code>false</code>;</li>
-<li>Only 2/3+ votes are collected in <code>3PV</code>, will the request <span class="math inline">\(r\)</span> be committed.</li>
-</ul>
-<p>For the sake of presentation, we denote the 2/3+ <code>true</code> votes collected in <code>2PV</code> as <code>kalpo</code>. Therefore, a replica with <code>kalpo</code> will judge <span class="math inline">\(r\)</span> as <code>committed</code>.</p>
-<p>Next, we talk about how <code>3PC</code> achieves <code>safety</code> and <code>liveness</code> respectively.</p>
-<ul>
-<li><code>Safety</code>: If <span class="math inline">\(r\)</span> is committed, at least 1/3+ <strong>correct</strong> replicas possess a <code>kalpo</code>. These replicas will not vote for another <span class="math inline">\(r&#39;\)</span>, thus achieving <code>safety</code>.</li>
-<li><code>Liveness</code>: (1) If no correct replica possesses <code>kalpo</code>, which means each correct replica judges <span class="math inline">\(r\)</span> as <code>uncommitted</code>, all the correct replicas will vote for a new request <span class="math inline">\(r&#39;\)</span>. Thus, <span class="math inline">\(r&#39;\)</span> can be committed finally and <code>liveness</code> is achieved. (2) If at least one correct replica possesses <code>kalpo</code>, when it becomes the leader, it will repropose <span class="math inline">\(r\)</span>. <span class="math inline">\(r\)</span> will be voted by all the correct replicas and be committed. Therefore, <code>liveness</code> can also be achieved.</li>
-</ul>
-<h5 id="an-optimization-to-rule-3">An optimization to rule 3</h5>
-<p>As stated in the discussion of <code>liveness</code>, if one correct replica (<span class="math inline">\(p\)</span>) possesses <code>kalpo</code>, the system will not commit a new request, until the <span class="math inline">\(p\)</span> becomes the leader. This can be inefficient.</p>
-<p>To accelerate the consensus, an optimization is added to rule 3:</p>
-<ul>
-<li>In <code>VC</code>, each replica will broadcast its <code>polka/empty</code> to the new leader;</li>
-<li>If the new leader receives a <code>polka</code> for <span class="math inline">\(r\)</span>, it will propose <span class="math inline">\(r\)</span>; otherwise, it can propose an arbitrary request.</li>
-</ul>
-<p>As stated before, if any correct replica possesses a <code>kalpo</code> for <span class="math inline">\(r\)</span>, at least 1/3+ correct replicas possess a <code>polka</code> for <span class="math inline">\(r\)</span>. With this optimization, the new leader can definitely receive a <code>polka</code> from the 1/3+ replicas. Therefore, the new leader can definitely propose <span class="math inline">\(r\)</span> voted by all the correct replicas.</p>
-<p>Exacty, <code>Hotstuff</code> elects this routine: <code>TF</code> format + rule 3 + optimization.</p>
-<h4 id="rule-4-based-on-23-false-no-liveness">4. Rule 4: based on 2/3+ <code>false</code> (no <code>liveness</code>)</h4>
-<p>Since collecting 2/3+ <code>true</code> opinions in rule 2 may violate <code>safety</code>, what if we choose the opposite side:</p>
-<ol type="1">
-<li>If a replica receives 2/3+ <code>false</code> for <span class="math inline">\(r\)</span>, it will judge <span class="math inline">\(r\)</span> as <code>uncommitted</code> before.</li>
-<li>Otherwise, it will judge <span class="math inline">\(r\)</span> as <code>committed</code> before.</li>
-</ol>
-<p>On the other hand, we can get the deduction as follows: <span class="math display">\[
-C(r)=1 \Longrightarrow \forall \space rep_j \space |\{o | o \in O_j \&amp; o = false\}|&lt;2/3
-\]</span> This deduction plus rule 4 can guarantee <code>safety</code>. The reason is that if <span class="math inline">\(r\)</span> was <code>committed</code> before, none of replicas can collect 2/3+ <code>false</code> opinions, thus judging <span class="math inline">\(r\)</span> as <code>uncommitted</code>. On the other hand, if <span class="math inline">\(r\)</span> was not committed before, some replicas may judge it as <code>uncommitted</code> while others judge it as <code>committed</code>. In this regard, there will also be a situation of <code>false committed</code> (<code>FC</code>). Fortunately, <code>FC</code> will not violate <code>safety</code> property, whose reason has been presented in Section III.B.</p>
-<p>However, rule 4 cannot guarantee <code>liveness</code>. Consider the example as follows:</p>
-<ul>
-<li>A byzantine replica arbitrarily broadcasts <code>true</code> opinion for the uncommitted <span class="math inline">\(r\)</span>.</li>
-<li>Each correct replica makes the judgement of <span class="math inline">\(r\)</span> as <code>committed</code>. However, <span class="math inline">\(r\)</span> received by the correct replicas are totally different. When a correct replica becomes the leader and propose a request, the request will be rejected by all the other correct replicas.</li>
-<li>When byzantine replicas become leaders, they do not propose any request.</li>
-<li>The system halts.</li>
-</ul>
-<h4 id="a-remedy-to-rule-4-rule-5">5. A remedy to rule 4 (rule 5)</h4>
-<p>On the basis of rule 4, we can futher ask any replica broadcasting <code>true</code> to attach <code>polka</code>. <code>polka</code> can prevent a Byzantine replica from broadcasting an arbitrary request. Therefore, if two correct replicas judge two requests as <code>committed</code>, these requests must be the same.</p>
-<h4 id="another-remedy-to-rule-4-rule-6">6. Another remedy to rule 4 (rule 6)</h4>
-<p>The <code>liveness</code> problem in Section III.C.4 occurs when a Byzantine replica sends different arbitrary <span class="math inline">\(r_j\)</span> to different replicas (<span class="math inline">\(rep_j\)</span>) and <span class="math inline">\(rep_j\)</span> happens to receive <span class="math inline">\(r_j\)</span> as its 2/3 opinions. In this case, each correct replica <span class="math inline">\(rep_j\)</span> mistakes <span class="math inline">\(r_j\)</span> as <code>committed</code> and will not for any other request.</p>
-<p>However, if each replica does not make any judgement as <code>committed</code> according to the collection of <code>TF</code> opinions, judgement result will not be polluted by Byzantine replicas and <code>liveness</code> can be achieved. Therefore, another remedy to rule 4 (rule 6) is as follows:</p>
-<ol type="1">
-<li>If a replica has a <code>polka</code> for <span class="math inline">\(r\)</span>, it will judge <span class="math inline">\(r\)</span> as <code>committed</code> before;</li>
-<li>If a replica receives 2/3+ <code>false</code> for <span class="math inline">\(r\)</span>, it will judge <span class="math inline">\(r\)</span> as <code>uncommitted</code> before;</li>
-<li>Otherwise, just keep waiting.</li>
-</ol>
-<p>This rule can guarantee that if multiple replicas make judgements as <code>committed</code> for requests, all the requests are equal to each other. With this rule, let us discuss two cases:</p>
-<ul>
-<li>Case 1 (At least a correct replica possesses a <code>polka</code> for <span class="math inline">\(r\)</span>): When one of these replicas becomes the new leader, it will propose <span class="math inline">\(r\)</span>. All the replicas (either judge it as <code>committed</code> or <code>uncommitted</code>) will vote for it. <span class="math inline">\(r\)</span> will finally be committed by all the replicas.</li>
-<li>Case 2 (No correct relica possesses a <code>polka</code> for <span class="math inline">\(r\)</span>): Each correct replica will definitely receive 2/3+ <code>false</code> from all the correct replicas and judges <span class="math inline">\(r\)</span> as <code>uncommitted</code>. In this regard, no matter a new leader propose any new request <span class="math inline">\(r&#39;\)</span> (<span class="math inline">\(r&#39;\)</span> may equal <span class="math inline">\(r\)</span>), each correct replica will vote for it. <span class="math inline">\(r&#39;\)</span> will finally be committed by all the replicas.</li>
-</ul>
-<p>To sum up, <code>liveness</code> property can be achieved.</p>
-<p><strong>Actually, <code>Tendermint</code> elects this routine: <code>TF</code> format plus rule 6.</strong></p>
-<h2 id="references">References</h2>
-<ol type="1">
-<li>Castro, M., &amp; Liskov, B. "Practical byzantine fault tolerance." In Proceedings of the 3rd USENIX Symposium on Operating Systems Design and Implementation (OSDI'99), pp. 173-186.</li>
-<li>Buchman, E. "Tendermint: Byzantine fault tolerance in the age of blockchains." Doctoral dissertation, 2016.</li>
-<li>Yin, M., Malkhi, D., Reiter, M. K., Gueta, G. G., &amp; Abraham, I. "HotStuff: BFT consensus with linearity and responsiveness." In Proceedings of the 2019 ACM Symposium on Principles of Distributed Computing (PODC'19), pp. 347-356.</li>
-</ol>
-
+          <p>In the last two blogs, we derived the design of two-phase BFT consensuses. We picked two different routines, namely <a target="_blank" rel="noopener" href="https://seafooler.github.io/2021/09/12/design-bft-pbft/">PBFT</a> and <a target="_blank" rel="noopener" href="https://seafooler.github.io/2021/09/15/design-bft-tendermint/">Tendermint</a>. In this blog, we try to carry out a unification of two-phase consensus.
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2021/09/18/unification-2pc/#more" rel="contents">
+                Read more &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
       
     </div>
 
@@ -400,7 +258,7 @@ C(r)=1 \Longrightarrow \forall \space rep_j \space |\{o | o \in O_j \&amp; o = f
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2021-12-04 18:23:04" itemprop="dateModified" datetime="2021-12-04T18:23:04+08:00">2021-12-04</time>
+                <time title="Modified: 2021-12-04 18:34:14" itemprop="dateModified" datetime="2021-12-04T18:34:14+08:00">2021-12-04</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -423,63 +281,15 @@ C(r)=1 \Longrightarrow \forall \space rep_j \space |\{o | o \in O_j \&amp; o = f
     <div class="post-body" itemprop="articleBody">
 
       
-          <p>As a sequel of <a target="_blank" rel="noopener" href="https://seafooler.github.io/2021/09/12/design-bft-pbft/">the last blog</a>, this blog picks the routine of <code>Tendermint</code> to derivate a two-phase BFT consensus. Particularly, we will analyze:</p>
-<ol type="1">
-<li>What is the function of the <code>lock</code> notion?</li>
-<li>Why are two phases necessary, from the perspective of <code>Tendermint</code>?</li>
-<li>Why is <code>Tendermint</code> a right consensus, which can achieves both <code>safety</code> and <code>liveness</code>?</li>
-<li>Why is <code>Tendermint</code> not responsive?</li>
-</ol>
-<p>Common contents with <a target="_blank" rel="noopener" href="https://seafooler.github.io/2021/09/12/design-bft-pbft/">the last blog</a> (including "basic concepts" and "one-phase protocol") are omitted here.</p>
-<p>In the next blog, we will try to compare and unify <code>PBFT</code> and <code>Tendermint</code>.</p>
-<h2 id="i.-one-phase-view-switch-protocol">I. One-phase + view-switch protocol</h2>
-<p>To extricate the system from halting, a view-switch (i.e., <code>round-change</code> in <code>Tendermint</code>) mechanism is necessary. The view-switch mechanism in <code>Tendermint</code> is also passive.</p>
-<p>As discussed in <a target="_blank" rel="noopener" href="https://seafooler.github.io/2021/09/12/design-bft-pbft/">the last blog</a>, when the view is switched, each replica must make a judgement if a request <span class="math inline">\(r\)</span> has been committed in the old view.</p>
-<p>Review that: &gt; there are mainly two ways to design the judgement rules: (1) based on the collection of other replicas' opinions; (2) based on its local status. <code>PBFT</code>-like routine picks the first one, while <code>Tendermint</code>-like routine picks the second.</p>
-<p>The first judgement rule has been discussed in <a target="_blank" rel="noopener" href="https://seafooler.github.io/2021/09/12/design-bft-pbft/">the last blog</a>. Let us analyze talk about the second judgement rule next.</p>
-<h3 id="a.-judgement-rule-2-based-on-its-local-status">A. Judgement rule 2: based on its local status</h3>
-<p><code>DLS</code> protocol also takes this rule, which is quite simple: each replica judges whether to vote for a new request only based on its voting status. If a replica has voted for a request <code>r</code> with <code>i</code>, it will never vote for any request <code>r'</code> with <code>i</code> later.</p>
-<p>This simple rule can guarantee <strong>safety</strong>, but it cannot ensure <strong>liveness</strong>. Take an example to illustrate the <strong>liveness</strong> problem as follows:</p>
-<ul>
-<li>In view <span class="math inline">\(v\)</span>, the leader has broadcast <code>r</code> with <code>i</code> and <span class="math inline">\(f\)</span> correct replicas have voted for <code>r</code>.</li>
-<li>View is switched to <span class="math inline">\(v+1\)</span>.</li>
-<li>The new correct leader in view <span class="math inline">\(v+1\)</span> broadcasts <code>r'</code> with <code>i</code> and other <span class="math inline">\(f+1\)</span> correct replicas (not the <span class="math inline">\(f\)</span> correct replicas above) vote for <code>r'</code>.</li>
-<li>From now on, if all the byzantine replicas keep silent, the protocol will halt, thus compromising <strong>liveness</strong>.</li>
-</ul>
-<h2 id="ii.-two-phase-view-switch-protocol">II. Two-phase + view-switch protocol</h2>
-<p>From Section I., we know <code>one-phase + view-switch</code> is not enough for a correct BFT consensus. <code>Tendermint</code> augments it with an additional phase, whose specification can be succinctly described as follows. Note that to faciliate the promising comparison between <code>PBFT</code> and <code>Tendermint</code>, the blockchain-related terminologies of <code>Tendermint</code> are removed here.</p>
-<blockquote>
-<p>Two phases in <code>Tendermint</code> are named as <code>prevote</code> and <code>precommit</code> respectively.</p>
-<p>A replica will lock on a replica <span class="math inline">\(r\)</span> with <span class="math inline">\(i\)</span> if it has colleted 2/3+ <code>prevote</code>s on <span class="math inline">\(r\)</span>.</p>
-<p>A replica will never <code>prevote</code> for <span class="math inline">\(r&#39;\)</span> with <span class="math inline">\(i\)</span> later, if it has locked on <span class="math inline">\(r\)</span>.</p>
-<p>Other parts are quite similar to Section I.</p>
-</blockquote>
-<p>As an analogy of Section II.A, it is easy to draw the conclusion that <code>Tendermint</code> satifies <strong>safety</strong>. Next, we analyze how <code>Tendermint</code> achieves <strong>livenss</strong>.</p>
-<h3 id="a.-how-does-tendermint-achieve-liveness">A. How does <code>Tendermint</code> achieve <strong>liveness</strong>?</h3>
-<p>Note that we do some modifications to <code>Tendermint</code> to make it more similar to <code>PBFT</code>. Without relying on the blockchain-related structures, we claim that <strong>there will be isolated locks for each index <span class="math inline">\(i\)</span></strong>.</p>
-<p>If a replica insists on locking on <span class="math inline">\(r\)</span> with <span class="math inline">\(i\)</span>, the protocol may get halted and compromise <strong>liveness</strong>. Take an example to illustrate the <strong>liveness</strong> problem as follows:</p>
-<ul>
-<li>In view <span class="math inline">\(v\)</span>, <span class="math inline">\(f\)</span> correct nodes locked on <span class="math inline">\(r\)</span> with <span class="math inline">\(i\)</span>.</li>
-<li>View is switched to <span class="math inline">\(v+1\)</span>.</li>
-<li>The new leader in <span class="math inline">\(v+1\)</span> broadcasts <span class="math inline">\(r&#39;\)</span> with <span class="math inline">\(i\)</span>. All the <span class="math inline">\(f+1\)</span> correct nodes except the above <span class="math inline">\(f\)</span> ones and <span class="math inline">\(f\)</span> byzantine nodes <code>prevote</code> for <span class="math inline">\(r&#39;\)</span>. Therefore, the <span class="math inline">\(f+1\)</span> correct nodes can lock on <span class="math inline">\(r&#39;\)</span> with <span class="math inline">\(i\)</span>.</li>
-<li>From now on, if all the byzantine replicas keep silent, the protocol will halt, thus compromising <strong>liveness</strong>.</li>
-</ul>
-<p>To deal with the above problem, <code>Tendermint</code> adds a new rule (i.e., <code>unlock-on-polka</code>), where polka means 2/3+ <code>prevote</code>s for an index <span class="math inline">\(i\)</span>. The <code>unlock-on-polka</code> rule states that if a replica sees a newer <span class="math inline">\(r&#39;\)</span> with <span class="math inline">\(i\)</span>, it will release the lock on the old request (<span class="math inline">\(r\)</span>) and relock on the new one (<span class="math inline">\(r&#39;\)</span>).</p>
-<p>With this rule, <span class="math inline">\(f\)</span> correct nodes locking on <span class="math inline">\(r\)</span> in the above example are expected to switch to lock on <span class="math inline">\(r&#39;\)</span>. Thus, all the correct nodes may broadcast <code>precommit</code> messages and <span class="math inline">\(r&#39;\)</span> can get committed.</p>
-<h3 id="b.-will-unlock-on-polka-compromise-safety">B. Will <code>unlock-on-polka</code> compromise <strong>safety</strong>?</h3>
-<p>No! The reason is as follows:</p>
-<p>Assume a replica locks on <span class="math inline">\(r\)</span> with <span class="math inline">\(i\)</span> and it receives a polka on a newer <span class="math inline">\(r&#39;\)</span> with <span class="math inline">\(i\)</span>. We further assume the oldest polka with a newer request than <span class="math inline">\(r\)</span> is <span class="math inline">\(r^o\)</span> (<span class="math inline">\(r^o\)</span> may equal <span class="math inline">\(r&#39;\)</span>): <span class="math inline">\(r^o = min\{r_i|r_i &gt; r\}\)</span>. <span class="math inline">\(r^o\)</span> must have got <code>prevotes</code> from 2/3+ replicas. Besides, since <span class="math inline">\(r^o\)</span> is the oldest one newer than <span class="math inline">\(r\)</span>, and a replica only <code>prevotes</code> for its locked request or when it lock on nothing, all the replicas <code>prevoting</code> for <span class="math inline">\(r^o\)</span> must lock on nothing. Therefore, there are at least 2/3+ replicas locked on nothing at that time. Since 2/3+ replicas locked on nothing, any replica can neither get 2/3+ <code>precommit</code> for <span class="math inline">\(r\)</span> nor commit <span class="math inline">\(r\)</span>. Therefore, it is <strong>safe</strong> to release the lock on <span class="math inline">\(r\)</span>.</p>
-<p>From another perspective, if a replica has committed <span class="math inline">\(r\)</span> with <span class="math inline">\(i\)</span>, no <span class="math inline">\(r&#39;\)</span> with <span class="math inline">\(i\)</span> can get locked or even committed later. By contrast, if there is a polka for a newer <span class="math inline">\(r&#39;\)</span> with <span class="math inline">\(i\)</span>, we can assure that no older <span class="math inline">\(r\)</span> with <span class="math inline">\(i\)</span> has been committed.</p>
-<h3 id="c.-when-will-a-lock-on-an-uncommitted-request-be-released-or-be-committed-finally">C. When will a lock on an uncommitted request be released or be committed finally?</h3>
-<p>Nobody knows and nothing can guarantee it in <code>Tendermint</code>. Let us take an example to explain it.</p>
-<p>Assume a replica locks on <span class="math inline">\(r\)</span> but does not commit <span class="math inline">\(r\)</span> with <span class="math inline">\(i\)</span>, there can be two cases. - Case 1 (<span class="math inline">\(f+1\)</span> or more correct replicas lock on <span class="math inline">\(r\)</span>): <span class="math inline">\(r\)</span> will be finally committed. - Case 2 (<span class="math inline">\(f\)</span> or less correct replicas lock on <span class="math inline">\(r\)</span>): there are two subcases - Case 2.1: a new leader proposes <span class="math inline">\(r&#39;\)</span>, and each replica without locking on <span class="math inline">\(r\)</span> can prevote for <span class="math inline">\(r&#39;\)</span>. <span class="math inline">\(r&#39;\)</span> can be locked and even committed later. - Case 2.2: a new leader proposes <span class="math inline">\(r\)</span>, and each correct replica can prevote for <span class="math inline">\(r\)</span>. <span class="math inline">\(r\)</span> can be locked by more replicas and committed later.</p>
-<p>After long enough, one of Case 1, Case 2.1, and Case 2.2 will take place, thus achieving <strong>liveness</strong>. However, nobody knows the exact time. <strong>That's the reason why <code>Tendermint</code> is not responsive</strong>.</p>
-<h2 id="references">References</h2>
-<ol type="1">
-<li>Buchman, E. "Tendermint: Byzantine fault tolerance in the age of blockchains." Doctoral dissertation, 2016.</li>
-<li>Dwork, C., Lynch, N., &amp; Stockmeyer, L. "Consensus in the presence of partial synchrony." Journal of the ACM (JACM), 1988, 35(2), pp. 288-323.</li>
-</ol>
-
+          <p>As a sequel of <a target="_blank" rel="noopener" href="https://seafooler.github.io/2021/09/12/design-bft-pbft/">the last blog</a>, this blog picks the routine of <code>Tendermint</code> to derive a two-phase BFT consensus.
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2021/09/15/design-bft-tendermint/#more" rel="contents">
+                Read more &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
       
     </div>
 
@@ -529,7 +339,7 @@ C(r)=1 \Longrightarrow \forall \space rep_j \space |\{o | o \in O_j \&amp; o = f
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2021-12-04 18:22:40" itemprop="dateModified" datetime="2021-12-04T18:22:40+08:00">2021-12-04</time>
+                <time title="Modified: 2021-12-04 18:34:12" itemprop="dateModified" datetime="2021-12-04T18:34:12+08:00">2021-12-04</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -553,73 +363,15 @@ C(r)=1 \Longrightarrow \forall \space rep_j \space |\{o | o \in O_j \&amp; o = f
 
       
           <p>As for a Byzantine Fault Tolerance (BFT) consensus, there are mainly two design routines: <code>PBFT</code>-like and <code>Tendermint</code>-like. The former contains a complex <code>view-change</code> phase, while the latter includes a notion of <code>lock</code>.</p>
-<p>In this blog, we try to derivate a two-phase BFT consensus, along the routine of <code>PBFT</code>. Particularly, we will analyze:</p>
-<ol type="1">
-<li>Why is a view-switch process necessary?</li>
-<li>What is the function of the view-switch process?</li>
-<li>Why are two phases necessary?</li>
-<li>Why is <code>PBFT</code> a correct consensus algorithm?</li>
-</ol>
-<p>In <a target="_blank" rel="noopener" href="https://seafooler.github.io/2021/09/15/design-bft-tendermint/">the next blog</a>, we will pick the other routine (i.e., <code>Tendermint</code>) and derivate the design of <code>Tendermint</code>.</p>
-<p>After that, a blog trying to compare and unify <code>PBFT</code> and <code>Tendermint</code> will be posted, since both of them are two-phase consensus and similar to each other.</p>
-<h2 id="i.-basic-concepts-of-bft-consensus">I. Basic Concepts of BFT Consensus</h2>
-<p>Before going ahead, we must first clarify some basic terminologies:</p>
-<ul>
-<li><strong>Request</strong>: A command to be agreed and processed by the BFT cluster.</li>
-<li><strong>Commit</strong>: Any request having been agreed can be considered committed, which will not be rolled back.</li>
-<li><strong>Index</strong>: Each committed request will correspond to an index, indicating its execution sequence.</li>
-</ul>
-<p>Also, a correct BFT consensus must satisfy two properties:</p>
-<ul>
-<li><strong>Safety</strong>: It requires that if a request <span class="math inline">\(r\)</span> with index <span class="math inline">\(i\)</span> is committed by an honest replica, any other correct replicas <strong>cannot</strong> commit a request <span class="math inline">\(r&#39;\)</span> (<span class="math inline">\(r&#39; \neq r\)</span>) with index <span class="math inline">\(i\)</span>.</li>
-<li><strong>Liveness</strong>: It requires that if the indexes of committed requests should keep increasing. In other words, the system will never halt.</li>
-</ul>
-<h2 id="ii.-one-phase-protocol">II. One-phase protocol</h2>
-<p>Let us start with an one-phase protocol as follows:</p>
-<ul>
-<li>As a leader: broadcast the request <span class="math inline">\(r\)</span> with index <span class="math inline">\(i\)</span> to all the replicas</li>
-<li>As a replica: broadcast the vote (<span class="math inline">\(v_r\)</span>) for <span class="math inline">\(r\)</span></li>
-<li>As a replica: commit <span class="math inline">\(r\)</span> once collecting 2/3+ votes</li>
-</ul>
-<p>This protocol can satisfy <strong>safety</strong> but missing <strong>liveness</strong>. It is easy to understand its satisfication of <strong>safety</strong>. Violation of <strong>liveness</strong> will take place if:</p>
-<ol type="1">
-<li>Either the leader is evil and sends contradictory requests to different honest replicas intentionally;</li>
-<li>Or the leader is not evil but crashes unintentionally.</li>
-</ol>
-<h2 id="iii.-one-phase-view-switch-protocol">III. One-phase + view-switch protocol</h2>
-<p>To extricate the system from halting, a view-switch (i.e., <code>view-change</code> in <code>PBFT</code>) mechanism is necessary. The view-switch mechanism can be passive or active:</p>
-<ul>
-<li>Passive view-switch: view will be switched after a failure detection, e.g., <code>view-change</code> in <code>PBFT</code> and <code>round-change</code> in <code>Tendermint</code></li>
-<li>Active view-switch: view will be switched for each new request, e.g., <code>new-view</code> in <code>Basic HotStuff</code>.</li>
-</ul>
-<p>The view-switch process can occur either when some replicas have committed a request <span class="math inline">\(r\)</span> or when no one has committed this request. According to the <strong>safety</strong> requirement, an honest replica should reject a request <span class="math inline">\(r&#39;\)</span> in the new view if <span class="math inline">\(r&#39;\)</span> has the same index with a committed <span class="math inline">\(r\)</span>. Therefore, it is necessary to judge if <span class="math inline">\(r\)</span> has been committed and reject/accept <span class="math inline">\(r&#39;\)</span> based on the judgement.</p>
-<p>There are mainly two ways to design the judgement rules: (1) based on the collection of other replicas' opinions; (2) based on its local status. In the <code>PBFT</code>-like routine, the first judgement rule is picked. The second judgement rule will be presented in <a target="_blank" rel="noopener" href="https://seafooler.github.io/2021/09/15/design-bft-tendermint/">the next blog</a> (e.g., <code>Tendermint</code>-like routine).</p>
-<p>However, it is challenging or even impossible for a replica without committing <span class="math inline">\(r\)</span> to judge if someone else has committed <span class="math inline">\(r\)</span>, in the case of an <code>one-phase + view-switch</code> protocol. We elaborate on the reason for the first judgement rule here, with the second rule to be discussed in <a target="_blank" rel="noopener" href="https://seafooler.github.io/2021/09/15/design-bft-tendermint/">the next blog</a>.</p>
-<h3 id="a.-judgement-rule-1-based-on-collection-of-other-replicas-opinions">A. Judgement rule 1: based on collection of other replicas' opinions</h3>
-<p>This rule combined with the view-switch specification can be considered as a simplified version of <code>PBFT</code> (one-phase <code>PBFT</code>). The rule can be described as follows:</p>
-<ul>
-<li>When the view is changed, each replica broadcasts its opinion on an index <span class="math inline">\(i\)</span>. If it has voted for a request <span class="math inline">\(r\)</span> with <span class="math inline">\(i\)</span> before, it will broadcast an opinion of <span class="math inline">\(r_i\)</span>; otherwise, it broadcasts an opinion of <code>empty</code>.</li>
-<li>A replica will try to collect 2/3+ replicas' opinions on the index <span class="math inline">\(i\)</span>. If 2/3 opinions are of the format <span class="math inline">\(r_i\)</span>, the replica can judge that <span class="math inline">\(r\)</span> with <span class="math inline">\(i\)</span> has been committed before; or if 2/3 opinions are of the format <code>empty</code>, the replica can judge that no request with <span class="math inline">\(i\)</span> has been committed before.</li>
-</ul>
-<p>However, if there are no matching 2/3 opinions collected by a replica, it will be stuck in a dilemma. Accepting a new request with <span class="math inline">\(i\)</span> may vialate <strong>safety</strong>, while rejecting a new request with <span class="math inline">\(i\)</span> may compromise <strong>liveness</strong>.</p>
-<p>In fact, the judgement rule above is a little different from <code>PBFT</code>. To be more specific, a replica broascasts its opinion in the above description. By contrast in <code>PBFT</code>, it only sends its opinion to the new leader and the leader further packages and broadcasts the opinions. However, the underlying essentials are the same.</p>
-<h2 id="iv.-two-phase-view-switch-protocol">IV. Two-phase + view-switch protocol</h2>
-<p>From Section III., we know <code>one-phase + view-switch</code> is not enough for a correct BFT consensus. <code>PBFT</code> augments it with an additional phase, whose specification can be succinctly described as follows:</p>
-<blockquote>
-<p>Two phases in <code>PBFT</code> are named as <code>prepare</code> and <code>commit</code> respectively. It requires that a replica has to receive 2/3+ <code>commit</code> messages before it finally commits (executes) a request.</p>
-<p>When the view is changed, each replica broadcasts its <code>prepared</code> opinions on <span class="math inline">\(i\)</span>.</p>
-<p>Other parts are quite similar to Section III.</p>
-</blockquote>
-<h3 id="a.-how-does-pbft-achieve-safety">A. How does <code>PBFT</code> achieve <strong>safety</strong>?</h3>
-<p>If a request <span class="math inline">\(r\)</span> with <span class="math inline">\(i\)</span> is committed, it must have been <code>prepared</code> by 2/3+ replicas. Collection of 2/3+ <code>prepared</code> messages in the view-switch process can ensure that if <span class="math inline">\(r\)</span> with <span class="math inline">\(i\)</span> has been committed before, at least one <code>prepared</code> opinion on <span class="math inline">\(r\)</span> will be received by each replica. Since a <code>prepared</code> opinion is consisted of 2/3+ votes (<code>prepare</code> message), it is enough for a replica to make judgements with only one <code>prepared</code> opinion on <span class="math inline">\(i\)</span>. Therefore, <strong>safety</strong> is guaranteed.</p>
-<h3 id="b.-how-does-pbft-achieve-liveness">B. How does <code>PBFT</code> achieve <strong>liveness</strong>?</h3>
-<p>On one hand, each replica only needs to wait for 2/3+ messages, which can be assured by the model assumption. On the other hand, all the honest replicas can make a consistent and correct judgement. A new uncontradicted request will finally receive 2/3+ votes (<code>prepare</code> and <code>commit</code> messages), and got committed.</p>
-<h2 id="references">References</h2>
-<ol type="1">
-<li>Castro, M., &amp; Liskov, B. "Practical byzantine fault tolerance." In Proceedings of the 3rd USENIX Symposium on Operating Systems Design and Implementation (OSDI'99), pp. 173-186.</li>
-<li>Yin, M., Malkhi, D., Reiter, M. K., Gueta, G. G., &amp; Abraham, I. "HotStuff: BFT consensus with linearity and responsiveness." In Proceedings of the 2019 ACM Symposium on Principles of Distributed Computing (PODC'19), pp. 347-356.</li>
-</ol>
-
+<p>In this blog, we try to derive a two-phase BFT consensus, along the routine of <code>PBFT</code>.
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2021/09/12/design-bft-pbft/#more" rel="contents">
+                Read more &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
       
     </div>
 

@@ -21,15 +21,15 @@
     var CONFIG = {"hostname":"example.com","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
   </script>
 
-  <meta name="description" content="As a sequel of the last blog, this blog picks the routine of Tendermint to derivate a two-phase BFT consensus. Particularly, we will analyze:  What is the function of the lock notion? Why are two phas">
+  <meta name="description" content="As a sequel of the last blog, this blog picks the routine of Tendermint to derive a two-phase BFT consensus.">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Consensus From One-phase To Two-phase, A Routine Of Tendermint">
 <meta property="og:url" content="http://example.com/2021/09/15/design-bft-tendermint/index.html">
 <meta property="og:site_name" content="Seafooler&#39;s Blog">
-<meta property="og:description" content="As a sequel of the last blog, this blog picks the routine of Tendermint to derivate a two-phase BFT consensus. Particularly, we will analyze:  What is the function of the lock notion? Why are two phas">
+<meta property="og:description" content="As a sequel of the last blog, this blog picks the routine of Tendermint to derive a two-phase BFT consensus.">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2021-09-14T16:00:00.000Z">
-<meta property="article:modified_time" content="2021-12-04T10:23:04.848Z">
+<meta property="article:modified_time" content="2021-12-04T10:34:14.592Z">
 <meta property="article:author" content="Seafooler">
 <meta property="article:tag" content="Consensus">
 <meta property="article:tag" content="BFT">
@@ -184,7 +184,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2021-12-04 18:23:04" itemprop="dateModified" datetime="2021-12-04T18:23:04+08:00">2021-12-04</time>
+                <time title="Modified: 2021-12-04 18:34:14" itemprop="dateModified" datetime="2021-12-04T18:34:14+08:00">2021-12-04</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -207,7 +207,7 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <p>As a sequel of <a target="_blank" rel="noopener" href="https://seafooler.github.io/2021/09/12/design-bft-pbft/">the last blog</a>, this blog picks the routine of <code>Tendermint</code> to derivate a two-phase BFT consensus. Particularly, we will analyze:</p>
+        <p>As a sequel of <a target="_blank" rel="noopener" href="https://seafooler.github.io/2021/09/12/design-bft-pbft/">the last blog</a>, this blog picks the routine of <code>Tendermint</code> to derive a two-phase BFT consensus. <span id="more"></span> Particularly, we will analyze:</p>
 <ol type="1">
 <li>What is the function of the <code>lock</code> notion?</li>
 <li>Why are two phases necessary, from the perspective of <code>Tendermint</code>?</li>
