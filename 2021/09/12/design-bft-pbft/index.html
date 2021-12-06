@@ -29,7 +29,7 @@
 <meta property="og:description" content="As for a Byzantine Fault Tolerance (BFT) consensus, there are mainly two design routines: PBFT-like and Tendermint-like. The former contains a complex view-change phase, while the latter includes a no">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2021-09-11T16:00:00.000Z">
-<meta property="article:modified_time" content="2021-12-04T10:34:12.563Z">
+<meta property="article:modified_time" content="2021-12-06T04:01:17.880Z">
 <meta property="article:author" content="Seafooler">
 <meta property="article:tag" content="Consensus">
 <meta property="article:tag" content="BFT">
@@ -185,7 +185,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2021-12-04 18:34:12" itemprop="dateModified" datetime="2021-12-04T18:34:12+08:00">2021-12-04</time>
+                <time title="Modified: 2021-12-06 12:01:17" itemprop="dateModified" datetime="2021-12-06T12:01:17+08:00">2021-12-06</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -217,7 +217,7 @@
 <li>Why is <code>PBFT</code> a correct consensus algorithm?</li>
 </ol>
 <p>In <a target="_blank" rel="noopener" href="https://seafooler.github.io/2021/09/15/design-bft-tendermint/">the next blog</a>, we will pick the other routine (i.e., <code>Tendermint</code>) and derive the design of <code>Tendermint</code>.</p>
-<p>After that, a blog trying to compare and unify <code>PBFT</code> and <code>Tendermint</code> will be posted, since both of them are two-phase consensus and similar to each other.</p>
+<p>After that, a <a target="_blank" rel="noopener" href="http://seafooler.github.io/2021/09/18/unification-2pc/">blog</a> trying to compare and unify <code>PBFT</code> and <code>Tendermint</code> will be posted, since both of them are two-phase consensus and similar to each other.</p>
 <h2 id="i.-basic-concepts-of-bft-consensus">I. Basic Concepts of BFT Consensus</h2>
 <p>Before going ahead, we must first clarify some basic terminologies:</p>
 <ul>
@@ -227,15 +227,15 @@
 </ul>
 <p>Also, a correct BFT consensus must satisfy two properties:</p>
 <ul>
-<li><strong>Safety</strong>: It requires that if a request <span class="math inline">\(r\)</span> with index <span class="math inline">\(i\)</span> is committed by an honest replica, any other correct replicas <strong>cannot</strong> commit a request <span class="math inline">\(r&#39;\)</span> (<span class="math inline">\(r&#39; \neq r\)</span>) with index <span class="math inline">\(i\)</span>.</li>
+<li><strong>Safety</strong>: It requires that if an index <span class="math inline">\(i\)</span> is committed with a request <span class="math inline">\(r\)</span> by an honest replica, any other correct replicas <strong>cannot</strong> commit <span class="math inline">\(i\)</span> with a different request <span class="math inline">\(r&#39;\)</span> (<span class="math inline">\(r&#39; \neq r\)</span>).</li>
 <li><strong>Liveness</strong>: It requires that if the indexes of committed requests should keep increasing. In other words, the system will never halt.</li>
 </ul>
 <h2 id="ii.-one-phase-protocol">II. One-phase protocol</h2>
 <p>Let us start with an one-phase protocol as follows:</p>
 <ul>
-<li>As a leader: broadcast the request <span class="math inline">\(r\)</span> with index <span class="math inline">\(i\)</span> to all the replicas</li>
+<li>As a leader: broadcast the index <span class="math inline">\(i\)</span> with a request <span class="math inline">\(r\)</span> to all the replicas</li>
 <li>As a replica: broadcast the vote (<span class="math inline">\(v_r\)</span>) for <span class="math inline">\(r\)</span></li>
-<li>As a replica: commit <span class="math inline">\(r\)</span> once collecting 2/3+ votes</li>
+<li>As a replica: commit <span class="math inline">\(i\)</span> with <span class="math inline">\(r\)</span> once collecting 2/3+ votes</li>
 </ul>
 <p>This protocol can satisfy <strong>safety</strong> but missing <strong>liveness</strong>. It is easy to understand its satisfication of <strong>safety</strong>. Violation of <strong>liveness</strong> will take place if:</p>
 <ol type="1">
@@ -248,14 +248,14 @@
 <li>Passive view-switch: view will be switched after a failure detection, e.g., <code>view-change</code> in <code>PBFT</code> and <code>round-change</code> in <code>Tendermint</code></li>
 <li>Active view-switch: view will be switched for each new request, e.g., <code>new-view</code> in <code>Basic HotStuff</code>.</li>
 </ul>
-<p>The view-switch process can occur either when some replicas have committed a request <span class="math inline">\(r\)</span> or when no one has committed this request. According to the <strong>safety</strong> requirement, an honest replica should reject a request <span class="math inline">\(r&#39;\)</span> in the new view if <span class="math inline">\(r&#39;\)</span> has the same index with a committed <span class="math inline">\(r\)</span>. Therefore, it is necessary to judge if <span class="math inline">\(r\)</span> has been committed and reject/accept <span class="math inline">\(r&#39;\)</span> based on the judgement.</p>
+<p>The view-switch process can occur either when some replicas have committed <span class="math inline">\(i\)</span> with a request <span class="math inline">\(r\)</span> or when no one has committed <span class="math inline">\(i\)</span>. According to the <strong>safety</strong> requirement, a correct replica should reject a different request <span class="math inline">\(r&#39;\)</span> (<span class="math inline">\(r&#39;\neq r\)</span>) at <span class="math inline">\(i\)</span> in the new view. Therefore, it is necessary to judge if <span class="math inline">\(r\)</span> has been committed and reject/accept <span class="math inline">\(r&#39;\)</span> based on the judgement.</p>
 <p>There are mainly two ways to design the judgement rules: (1) based on the collection of other replicas' opinions; (2) based on its local status. In the <code>PBFT</code>-like routine, the first judgement rule is picked. The second judgement rule will be presented in <a target="_blank" rel="noopener" href="https://seafooler.github.io/2021/09/15/design-bft-tendermint/">the next blog</a> (e.g., <code>Tendermint</code>-like routine).</p>
-<p>However, it is challenging or even impossible for a replica without committing <span class="math inline">\(r\)</span> to judge if someone else has committed <span class="math inline">\(r\)</span>, in the case of an <code>one-phase + view-switch</code> protocol. We elaborate on the reason for the first judgement rule here, with the second rule to be discussed in <a target="_blank" rel="noopener" href="https://seafooler.github.io/2021/09/15/design-bft-tendermint/">the next blog</a>.</p>
+<p>However, with an <code>one-phase + view-switch</code> protocol, it is challenging or even impossible for a replica without committing <span class="math inline">\(i\)</span> to judge if someone else has committed <span class="math inline">\(i\)</span>. We elaborate on the reason for the first judgement rule here, with the second rule to be discussed in <a target="_blank" rel="noopener" href="https://seafooler.github.io/2021/09/15/design-bft-tendermint/">the next blog</a>.</p>
 <h3 id="a.-judgement-rule-1-based-on-collection-of-other-replicas-opinions">A. Judgement rule 1: based on collection of other replicas' opinions</h3>
 <p>This rule combined with the view-switch specification can be considered as a simplified version of <code>PBFT</code> (one-phase <code>PBFT</code>). The rule can be described as follows:</p>
 <ul>
-<li>When the view is changed, each replica broadcasts its opinion on an index <span class="math inline">\(i\)</span>. If it has voted for a request <span class="math inline">\(r\)</span> with <span class="math inline">\(i\)</span> before, it will broadcast an opinion of <span class="math inline">\(r_i\)</span>; otherwise, it broadcasts an opinion of <code>empty</code>.</li>
-<li>A replica will try to collect 2/3+ replicas' opinions on the index <span class="math inline">\(i\)</span>. If 2/3 opinions are of the format <span class="math inline">\(r_i\)</span>, the replica can judge that <span class="math inline">\(r\)</span> with <span class="math inline">\(i\)</span> has been committed before; or if 2/3 opinions are of the format <code>empty</code>, the replica can judge that no request with <span class="math inline">\(i\)</span> has been committed before.</li>
+<li>When the view is changed, each replica broadcasts its opinion on an index <span class="math inline">\(i\)</span>. If it has voted for a request <span class="math inline">\(r\)</span> at <span class="math inline">\(i\)</span> before, it will broadcast an opinion of {<span class="math inline">\(r\)</span>, <span class="math inline">\(i\)</span>}; otherwise, it broadcasts an opinion of {<code>empty</code>, <span class="math inline">\(i\)</span>}.</li>
+<li>A replica will try to collect 2/3+ replicas' opinions on the index <span class="math inline">\(i\)</span>. If 2/3 opinions are of the format {<span class="math inline">\(r\)</span>, <span class="math inline">\(i\)</span>}, the replica can judge that <span class="math inline">\(i\)</span> has been committed with <span class="math inline">\(r\)</span> before; or if 2/3 opinions are of the format {<code>empty</code>, <span class="math inline">\(i\)</span>}, the replica can judge that <span class="math inline">\(i\)</span> has been committed before.</li>
 </ul>
 <p>However, if there are no matching 2/3 opinions collected by a replica, it will be stuck in a dilemma. Accepting a new request with <span class="math inline">\(i\)</span> may vialate <strong>safety</strong>, while rejecting a new request with <span class="math inline">\(i\)</span> may compromise <strong>liveness</strong>.</p>
 <p>In fact, the judgement rule above is a little different from <code>PBFT</code>. To be more specific, a replica broascasts its opinion in the above description. By contrast in <code>PBFT</code>, it only sends its opinion to the new leader and the leader further packages and broadcasts the opinions. However, the underlying essentials are the same.</p>
@@ -263,13 +263,13 @@
 <p>From Section III., we know <code>one-phase + view-switch</code> is not enough for a correct BFT consensus. <code>PBFT</code> augments it with an additional phase, whose specification can be succinctly described as follows:</p>
 <blockquote>
 <p>Two phases in <code>PBFT</code> are named as <code>prepare</code> and <code>commit</code> respectively. It requires that a replica has to receive 2/3+ <code>commit</code> messages before it finally commits (executes) a request.</p>
-<p>When the view is changed, each replica broadcasts its <code>prepared</code> opinions on <span class="math inline">\(i\)</span>.</p>
-<p>Other parts are quite similar to Section III.</p>
+<p>When the view is changed, each replica broadcasts its <code>prepared</code> opinions on <span class="math inline">\(i\)</span>, in the format {<code>prepared</code>, <span class="math inline">\(r\)</span>, <span class="math inline">\(i\)</span>}.</p>
+<p>Other parts are quite similar to Section III.A.</p>
 </blockquote>
 <h3 id="a.-how-does-pbft-achieve-safety">A. How does <code>PBFT</code> achieve <strong>safety</strong>?</h3>
-<p>If a request <span class="math inline">\(r\)</span> with <span class="math inline">\(i\)</span> is committed, it must have been <code>prepared</code> by 2/3+ replicas. Collection of 2/3+ <code>prepared</code> messages in the view-switch process can ensure that if <span class="math inline">\(r\)</span> with <span class="math inline">\(i\)</span> has been committed before, at least one <code>prepared</code> opinion on <span class="math inline">\(r\)</span> will be received by each replica. Since a <code>prepared</code> opinion is consisted of 2/3+ votes (<code>prepare</code> message), it is enough for a replica to make judgements with only one <code>prepared</code> opinion on <span class="math inline">\(i\)</span>. Therefore, <strong>safety</strong> is guaranteed.</p>
+<p>If <span class="math inline">\(i\)</span> is committed with a request <span class="math inline">\(r\)</span>, it must have been <code>prepared</code> by 2/3+ replicas. Collection of 2/3+ <code>prepared</code> messages in the view-switch process can ensure that if <span class="math inline">\(i\)</span> has been committed with <span class="math inline">\(r\)</span> before, at least one <code>prepared</code> opinion of {<code>prepared</code>, <span class="math inline">\(r\)</span>, <span class="math inline">\(i\)</span>} will be received by each replica. Since a <code>prepared</code> opinion is consisted of 2/3+ votes, it is enough for a replica to make judgements that <span class="math inline">\(i\)</span> is committed with at most one request <span class="math inline">\(r\)</span> and it will only vote for <span class="math inline">\(r\)</span>. Therefore, <strong>safety</strong> is guaranteed.</p>
 <h3 id="b.-how-does-pbft-achieve-liveness">B. How does <code>PBFT</code> achieve <strong>liveness</strong>?</h3>
-<p>On one hand, each replica only needs to wait for 2/3+ messages, which can be assured by the model assumption. On the other hand, all the honest replicas can make a consistent and correct judgement. A new uncontradicted request will finally receive 2/3+ votes (<code>prepare</code> and <code>commit</code> messages), and got committed.</p>
+<p>On one hand, each replica only needs to wait for 2/3+ messages, which can be assured by the model assumption. On the other hand, all the honest replicas can make a consistent and correct judgement. A new uncontradicted request will finally receive 2/3+ votes (<code>prepare</code> and <code>commit</code> messages) and got committed.</p>
 <h2 id="references">References</h2>
 <ol type="1">
 <li>Castro, M., &amp; Liskov, B. "Practical byzantine fault tolerance." In Proceedings of the 3rd USENIX Symposium on Operating Systems Design and Implementation (OSDI'99), pp. 173-186.</li>
