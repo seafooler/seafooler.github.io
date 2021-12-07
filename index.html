@@ -18,7 +18,7 @@
 
 <script id="hexo-configurations">
     var NexT = window.NexT || {};
-    var CONFIG = {"hostname":"seafooler.com","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+    var CONFIG = {"hostname":"seafooler.com","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":{"disqus":{"text":"Load Disqus","order":-1}}},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
   </script>
 
   <meta property="og:type" content="website">
@@ -114,6 +114,21 @@
     <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
 
   </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>About</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a>
+
+  </li>
         <li class="menu-item menu-item-archives">
 
     <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
@@ -142,6 +157,88 @@
 
           <div class="content index posts-expand">
             
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://seafooler.com/2021/09/30/blockchain-ds-function/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Seafooler">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Seafooler's Blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2021/09/30/blockchain-ds-function/" class="post-title-link" itemprop="url">What Benefits Can Blockchain Structure Bring To Consensus?</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2021-09-30 00:00:00" itemprop="dateCreated datePublished" datetime="2021-09-30T00:00:00+08:00">2021-09-30</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2021-12-07 17:37:07" itemprop="dateModified" datetime="2021-12-07T17:37:07+08:00">2021-12-07</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Consensus/" itemprop="url" rel="index"><span itemprop="name">Consensus</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>The birth of blockchain brings a new option when designing a consensus algorithm, that the requests can be packaged as blocks and blocks can be linked with the hash values. Almost all the newly born consensus algorithms, such as <code>Tendermint</code>, <code>HotStuff</code>, <code>Pala</code>, and <code>Streamlet</code>, adopt the blockchain structures.</p>
+<p>A question is that <strong>what benefits can the blockchain structure bring to the consensus design</strong>? Or in other words, <strong>what problem can the blockchain structures deal with</strong>? Besides, another relevant question is that <strong>how does the consensus (e.g., <code>PBFT</code>) without adopting the blockchain strucuture deal with the same problem?</strong>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2021/09/30/blockchain-ds-function/#more" rel="contents">
+                Read more &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
       
   
   
@@ -177,7 +274,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2021-12-07 14:06:53" itemprop="dateModified" datetime="2021-12-07T14:06:53+08:00">2021-12-07</time>
+                <time title="Modified: 2021-12-07 17:33:55" itemprop="dateModified" datetime="2021-12-07T17:33:55+08:00">2021-12-07</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -258,7 +355,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2021-12-07 12:08:42" itemprop="dateModified" datetime="2021-12-07T12:08:42+08:00">2021-12-07</time>
+                <time title="Modified: 2021-12-07 16:45:21" itemprop="dateModified" datetime="2021-12-07T16:45:21+08:00">2021-12-07</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -281,7 +378,7 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <p>In the last two blogs, we derived the design of two-phase BFT consensuses. We picked two different routines, namely <a target="_blank" rel="noopener" href="https://seafooler.github.io/2021/09/12/design-bft-pbft/">PBFT</a> and <a target="_blank" rel="noopener" href="https://seafooler.github.io/2021/09/15/design-bft-tendermint/">Tendermint</a>. In this blog, we try to unify two-phase consensus by a judgement model.
+          <p>In the last two blogs, we derived the design of two-phase BFT consensuses. We picked two different routines, namely <a target="_blank" rel="noopener" href="https://seafooler.github.io/2021/09/08/design-bft-pbft/">PBFT</a> and <a target="_blank" rel="noopener" href="https://seafooler.github.io/2021/09/15/design-bft-tendermint/">Tendermint</a>. In this blog, we try to unify two-phase consensus by a judgement model.
           <!--noindex-->
             <div class="post-button">
               <a class="btn" href="/2021/09/18/unification-2pc/#more" rel="contents">
@@ -339,7 +436,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2021-12-06 12:00:54" itemprop="dateModified" datetime="2021-12-06T12:00:54+08:00">2021-12-06</time>
+                <time title="Modified: 2021-12-07 16:45:05" itemprop="dateModified" datetime="2021-12-07T16:45:05+08:00">2021-12-07</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -362,7 +459,7 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <p>As a sequel of <a target="_blank" rel="noopener" href="https://seafooler.github.io/2021/09/12/design-bft-pbft/">the last blog</a>, this blog picks the routine of <code>Tendermint</code> to derive a two-phase BFT consensus.
+          <p>As a sequel of <a target="_blank" rel="noopener" href="https://seafooler.github.io/2021/09/08/design-bft-pbft/">the last blog</a>, this blog picks the routine of <code>Tendermint</code> to derive a two-phase BFT consensus.
           <!--noindex-->
             <div class="post-button">
               <a class="btn" href="/2021/09/15/design-bft-tendermint/#more" rel="contents">
@@ -389,7 +486,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://seafooler.com/2021/09/12/design-bft-pbft/">
+    <link itemprop="mainEntityOfPage" href="http://seafooler.com/2021/09/08/design-bft-pbft/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
@@ -403,7 +500,7 @@
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
-            <a href="/2021/09/12/design-bft-pbft/" class="post-title-link" itemprop="url">Consensus From One-phase To Two-phase, A Routine Of PBFT</a>
+            <a href="/2021/09/08/design-bft-pbft/" class="post-title-link" itemprop="url">Consensus From One-phase To Two-phase, A Routine Of PBFT</a>
         </h2>
 
         <div class="post-meta">
@@ -413,14 +510,14 @@
               </span>
               <span class="post-meta-item-text">Posted on</span>
 
-              <time title="Created: 2021-09-12 00:00:00" itemprop="dateCreated datePublished" datetime="2021-09-12T00:00:00+08:00">2021-09-12</time>
+              <time title="Created: 2021-09-08 00:00:00" itemprop="dateCreated datePublished" datetime="2021-09-08T00:00:00+08:00">2021-09-08</time>
             </span>
               <span class="post-meta-item">
                 <span class="post-meta-item-icon">
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2021-12-06 12:01:17" itemprop="dateModified" datetime="2021-12-06T12:01:17+08:00">2021-12-06</time>
+                <time title="Modified: 2021-12-07 15:11:54" itemprop="dateModified" datetime="2021-12-07T15:11:54+08:00">2021-12-07</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -447,7 +544,7 @@
 <p>In this blog, we try to derive a two-phase BFT consensus, along the routine of <code>PBFT</code>.
           <!--noindex-->
             <div class="post-button">
-              <a class="btn" href="/2021/09/12/design-bft-pbft/#more" rel="contents">
+              <a class="btn" href="/2021/09/08/design-bft-pbft/#more" rel="contents">
                 Read more &raquo;
               </a>
             </div>
@@ -533,20 +630,29 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">4</span>
+          <span class="site-state-item-count">5</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
         <span class="site-state-item-count">1</span>
-        <span class="site-state-item-name">categories</span>
+        <span class="site-state-item-name">categories</span></a>
       </div>
       <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
         <span class="site-state-item-count">4</span>
-        <span class="site-state-item-name">tags</span>
+        <span class="site-state-item-name">tags</span></a>
       </div>
   </nav>
 </div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="mailto:seafooler@gmail.com" title="E-Mail → mailto:seafooler@gmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
 
 
 
@@ -613,6 +719,26 @@
 
 
 
+  <script>
+  if (CONFIG.page.isPost) {
+    wpac_init = window.wpac_init || [];
+    wpac_init.push({
+      widget: 'Rating',
+      id    : ,
+      el    : 'wpac-rating',
+      color : 'fc6423'
+    });
+    (function() {
+      if ('WIDGETPACK_LOADED' in window) return;
+      WIDGETPACK_LOADED = true;
+      var mc = document.createElement('script');
+      mc.type = 'text/javascript';
+      mc.async = true;
+      mc.src = '//embed.widgetpack.com/widget.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(mc, s.nextSibling);
+    })();
+  }
+  </script>
 
 
 

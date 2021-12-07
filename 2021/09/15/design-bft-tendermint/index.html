@@ -18,7 +18,7 @@
 
 <script id="hexo-configurations">
     var NexT = window.NexT || {};
-    var CONFIG = {"hostname":"seafooler.com","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+    var CONFIG = {"hostname":"seafooler.com","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":{"disqus":{"text":"Load Disqus","order":-1}}},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
   </script>
 
   <meta name="description" content="As a sequel of the last blog, this blog picks the routine of Tendermint to derive a two-phase BFT consensus.">
@@ -29,7 +29,7 @@
 <meta property="og:description" content="As a sequel of the last blog, this blog picks the routine of Tendermint to derive a two-phase BFT consensus.">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2021-09-14T16:00:00.000Z">
-<meta property="article:modified_time" content="2021-12-06T04:00:54.913Z">
+<meta property="article:modified_time" content="2021-12-07T08:45:05.479Z">
 <meta property="article:author" content="Seafooler">
 <meta property="article:tag" content="Consensus">
 <meta property="article:tag" content="BFT">
@@ -121,6 +121,21 @@
     <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
 
   </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>About</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a>
+
+  </li>
         <li class="menu-item menu-item-archives">
 
     <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
@@ -184,7 +199,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2021-12-06 12:00:54" itemprop="dateModified" datetime="2021-12-06T12:00:54+08:00">2021-12-06</time>
+                <time title="Modified: 2021-12-07 16:45:05" itemprop="dateModified" datetime="2021-12-07T16:45:05+08:00">2021-12-07</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -207,23 +222,23 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <p>As a sequel of <a target="_blank" rel="noopener" href="https://seafooler.github.io/2021/09/12/design-bft-pbft/">the last blog</a>, this blog picks the routine of <code>Tendermint</code> to derive a two-phase BFT consensus. <span id="more"></span> Particularly, we will analyze:</p>
+        <p>As a sequel of <a target="_blank" rel="noopener" href="https://seafooler.github.io/2021/09/08/design-bft-pbft/">the last blog</a>, this blog picks the routine of <code>Tendermint</code> to derive a two-phase BFT consensus. <span id="more"></span> Particularly, we will analyze:</p>
 <ol type="1">
 <li>What is the function of the <code>lock</code> notion?</li>
 <li>Why are two phases necessary, from the perspective of <code>Tendermint</code>?</li>
 <li>Why is <code>Tendermint</code> a right consensus, which can achieves both <code>safety</code> and <code>liveness</code>?</li>
 <li>Why is <code>Tendermint</code> not responsive?</li>
 </ol>
-<p>Common contents with <a target="_blank" rel="noopener" href="https://seafooler.github.io/2021/09/12/design-bft-pbft/">the last blog</a> (including "basic concepts" and "one-phase protocol") are omitted here.</p>
+<p>Common contents with <a target="_blank" rel="noopener" href="https://seafooler.github.io/2021/09/08/design-bft-pbft/">the last blog</a> (including "basic concepts" and "one-phase protocol") are omitted here.</p>
 <p>In <a target="_blank" rel="noopener" href="http://seafooler.github.io/2021/09/18/unification-2pc/">the next blog</a>, we will try to compare and unify <code>PBFT</code> and <code>Tendermint</code>.</p>
 <h2 id="i.-one-phase-view-switch-protocol">I. One-phase + view-switch protocol</h2>
 <p>To extricate the system from halting, a view-switch (i.e., <code>round-change</code> in <code>Tendermint</code>) mechanism is necessary. The view-switch mechanism in <code>Tendermint</code> is also passive.</p>
-<p>As discussed in <a target="_blank" rel="noopener" href="https://seafooler.github.io/2021/09/12/design-bft-pbft/">the last blog</a>, when the view is switched, each replica must make a judgement if an index <span class="math inline">\(i\)</span> has been committed in the old view.</p>
+<p>As discussed in <a target="_blank" rel="noopener" href="https://seafooler.github.io/2021/09/08/design-bft-pbft/">the last blog</a>, when the view is switched, each replica must make a judgement if an index <span class="math inline">\(i\)</span> has been committed in the old view.</p>
 <p>Review that:</p>
 <blockquote>
 <p>there are mainly two ways to design the judgement rules: (1) based on the collection of other replicas' opinions; (2) based on its local status. <code>PBFT</code>-like routine picks the first one, while <code>Tendermint</code>-like routine picks the second.</p>
 </blockquote>
-<p>The first judgement rule has been discussed in <a target="_blank" rel="noopener" href="https://seafooler.github.io/2021/09/12/design-bft-pbft/">the last blog</a>. Let us analyze talk about the second judgement rule here.</p>
+<p>The first judgement rule has been discussed in <a target="_blank" rel="noopener" href="https://seafooler.github.io/2021/09/08/design-bft-pbft/">the last blog</a>. Let us analyze talk about the second judgement rule here.</p>
 <h3 id="a.-judgement-rule-2-based-on-its-local-status">A. Judgement rule 2: based on its local status</h3>
 <p><code>DLS</code> protocol also takes this rule, which is quite simple: each replica judges whether to vote for a new request only based on its voting status. If a replica has voted for a request <span class="math inline">\(r\)</span> at <span class="math inline">\(i\)</span>, it will never vote for any contradictory request <span class="math inline">\(r&#39;\)</span> at <span class="math inline">\(i\)</span> later.</p>
 <p>This simple rule can guarantee <strong>safety</strong>, but it cannot ensure <strong>liveness</strong>. Take an example to illustrate the <strong>liveness</strong> problem as follows:</p>
@@ -282,12 +297,17 @@
           </div>
 
         
+  <div class="post-widgets">
+    <div class="wp_rating">
+      <div id="wpac-rating"></div>
+    </div>
+  </div>
 
 
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/2021/09/12/design-bft-pbft/" rel="prev" title="Consensus From One-phase To Two-phase, A Routine Of PBFT">
+    <a href="/2021/09/08/design-bft-pbft/" rel="prev" title="Consensus From One-phase To Two-phase, A Routine Of PBFT">
       <i class="fa fa-chevron-left"></i> Consensus From One-phase To Two-phase, A Routine Of PBFT
     </a></div>
       <div class="post-nav-item">
@@ -366,20 +386,29 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">4</span>
+          <span class="site-state-item-count">5</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
         <span class="site-state-item-count">1</span>
-        <span class="site-state-item-name">categories</span>
+        <span class="site-state-item-name">categories</span></a>
       </div>
       <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
         <span class="site-state-item-count">4</span>
-        <span class="site-state-item-name">tags</span>
+        <span class="site-state-item-name">tags</span></a>
       </div>
   </nav>
 </div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="mailto:seafooler@gmail.com" title="E-Mail → mailto:seafooler@gmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
 
 
 
@@ -446,6 +475,26 @@
 
 
 
+  <script>
+  if (CONFIG.page.isPost) {
+    wpac_init = window.wpac_init || [];
+    wpac_init.push({
+      widget: 'Rating',
+      id    : ,
+      el    : 'wpac-rating',
+      color : 'fc6423'
+    });
+    (function() {
+      if ('WIDGETPACK_LOADED' in window) return;
+      WIDGETPACK_LOADED = true;
+      var mc = document.createElement('script');
+      mc.type = 'text/javascript';
+      mc.async = true;
+      mc.src = '//embed.widgetpack.com/widget.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(mc, s.nextSibling);
+    })();
+  }
+  </script>
 
 
 
