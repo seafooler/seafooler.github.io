@@ -21,15 +21,15 @@
     var CONFIG = {"hostname":"example.com","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
   </script>
 
-  <meta name="description" content="It seems that many readers ignore the checkpoint mechainsm described in the PBFT paper. In this blog, I will share my thoughts about the checkpoint mechainsm. Let us start with a problem. I. A Problem">
+  <meta name="description" content="It seems that many readers ignore the checkpoint mechainsm described in the PBFT paper. In this blog, I will share my thoughts about the checkpoint mechainsm.">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Thoughts about Checkpoint Mechanism in PBFT">
+<meta property="og:title" content="Thoughts About Checkpoint Mechanism In PBFT">
 <meta property="og:url" content="http://example.com/2021/09/23/think-checkpoint-pbft/index.html">
 <meta property="og:site_name" content="Seafooler&#39;s Blog">
-<meta property="og:description" content="It seems that many readers ignore the checkpoint mechainsm described in the PBFT paper. In this blog, I will share my thoughts about the checkpoint mechainsm. Let us start with a problem. I. A Problem">
+<meta property="og:description" content="It seems that many readers ignore the checkpoint mechainsm described in the PBFT paper. In this blog, I will share my thoughts about the checkpoint mechainsm.">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2021-09-22T16:00:00.000Z">
-<meta property="article:modified_time" content="2021-12-07T05:29:43.917Z">
+<meta property="article:modified_time" content="2021-12-07T06:06:53.348Z">
 <meta property="article:author" content="Seafooler">
 <meta property="article:tag" content="Consensus">
 <meta property="article:tag" content="BFT">
@@ -50,7 +50,7 @@
   };
 </script>
 
-  <title>Thoughts about Checkpoint Mechanism in PBFT | Seafooler's Blog</title>
+  <title>Thoughts About Checkpoint Mechanism In PBFT | Seafooler's Blog</title>
   
 
 
@@ -168,7 +168,7 @@
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
-          Thoughts about Checkpoint Mechanism in PBFT
+          Thoughts About Checkpoint Mechanism In PBFT
         </h1>
 
         <div class="post-meta">
@@ -185,7 +185,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2021-12-07 13:29:43" itemprop="dateModified" datetime="2021-12-07T13:29:43+08:00">2021-12-07</time>
+                <time title="Modified: 2021-12-07 14:06:53" itemprop="dateModified" datetime="2021-12-07T14:06:53+08:00">2021-12-07</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -208,42 +208,34 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <p>It seems that many readers ignore the checkpoint mechainsm described in the PBFT <a target="_blank" rel="noopener" href="https://pmg.csail.mit.edu/papers/osdi99.pdf">paper</a>. In this blog, I will share my thoughts about the checkpoint mechainsm.</p>
-<p>Let us start with a problem.</p>
-<h2 id="i.-a-problem-an-increasing-size-of-messages">I. A Problem: an increasing size of messages</h2>
-<p>As we talked about in <a target="_blank" rel="noopener" href="http://seafooler.github.io/2021/09/18/unification-2pc/">the last blog</a>, when view is switched, each replica (including the leader) has to judge if an index <span class="math inline">\(i\)</span> has been <code>committed</code> in the old view. In some blockchain-structure consensus (e.g., <code>Tendermint</code> and <code>HotStuff</code>), the index being considered as <code>committed</code> is also named as <code>locked</code>. To make such judgements, some consensus algorithms simply rely on its local status (<code>local judgement</code> for short), while others rely on collected opinions (<code>interactive judgement</code> for short).</p>
-<p>To carry out the <code>local judgements</code>, a replica has to maintain the messages collected for each index <span class="math inline">\(i\)</span>. To carry out the <code>interactive judgements</code>, a replica has to not only maintain the messages collected for each index <span class="math inline">\(i\)</span>, but also broadcast them when the view is changed. <code>PBFT</code> takes the routine of <code>interactive judgements</code>.</p>
-<p>As time goes by, <span class="math inline">\(i\)</span> keeps increasing. Messages being maintained (i.e., "storage overhead") and later broadcast (i.e., "communication overhead") in <code>PBFT</code> will be more and more.</p>
-<p>Therefore, a problem in designing <code>PBFT</code> would be "<strong>how to reduce the storage overhead in a replica and the communication overhead in the process of view change?</strong>"</p>
-<h2 id="ii.-how-does-pbft-deal-with-this-problem">II. How does <code>PBFT</code> deal with this problem</h2>
-<p>To deal with it, <code>PBFT</code> introduces three notions of <code>checkpoint</code>, <code>stable checkpoint</code>, and <code>low-water mark</code>. A replica will produce a checkpoint every time when <span class="math inline">\(k\)</span> (e.g., 100) more requests are executed. Once a replica generates a checkpoint for an index <span class="math inline">\(i\)</span>, it will broadcast a <code>CKP</code> message in the format {<code>CKP</code>, <span class="math inline">\(i\)</span>}. If a replica collects 2/3+ <code>CKP</code> messages for the same index <span class="math inline">\(i\)</span>, the corresponding checkpoint becomes a <code>stable checkpoint</code>. <code>Low-water mark</code> is equal to the index <span class="math inline">\(i\)</span> of the latest <code>stable checkpoint</code>.</p>
-<h3 id="a.-how-to-reduce-storage-and-communication-overhead">A. How to reduce storage and communication overhead?</h3>
-<p><code>PBFT</code> allows a replica to discard all the messages with indexes lower than <code>low-water mark</code> (storage discarding), thus reducing the storage overhead. This mechanism is named "garbage collection" in the <code>PBFT</code> <a target="_blank" rel="noopener" href="https://pmg.csail.mit.edu/papers/osdi99.pdf">paper</a>. Besides, <code>PBFT</code> allows a replica to only broadcast messages with indices higher than <code>low-water mark</code>, thus reducing the communication overhead.</p>
+        <p>It seems that many readers ignore the checkpoint mechainsm described in the PBFT <a target="_blank" rel="noopener" href="https://pmg.csail.mit.edu/papers/osdi99.pdf">paper</a>. In this blog, I will share my thoughts about the checkpoint mechainsm.<br><span id="more"></span><br>Let us start with a problem.</p>
+<h2 id="I-A-Problem-an-increasing-size-of-messages"><a href="#I-A-Problem-an-increasing-size-of-messages" class="headerlink" title="I. A Problem: an increasing size of messages"></a>I. A Problem: an increasing size of messages</h2><p>As we talked about in <a target="_blank" rel="noopener" href="http://seafooler.github.io/2021/09/18/unification-2pc/">the last blog</a>, when view is switched, each replica (including the leader) has to judge if an index $i$ has been <code>committed</code> in the old view. In some blockchain-structure consensus (e.g., <code>Tendermint</code> and <code>HotStuff</code>), the index being considered as <code>committed</code> is also named as <code>locked</code>.<br>To make such judgements, some consensus algorithms simply rely on its local status (<code>local judgement</code> for short), while others rely on collected opinions (<code>interactive judgement</code> for short).</p>
+<p>To carry out the <code>local judgements</code>, a replica has to maintain the messages collected for each index $i$. To carry out the <code>interactive judgements</code>, a replica has to not only maintain the messages collected for each index $i$, but also broadcast them when the view is changed. <code>PBFT</code> takes the routine of <code>interactive judgements</code>.</p>
+<p>As time goes by, $i$ keeps increasing. Messages being maintained (i.e., “storage overhead”) and later broadcast (i.e., “communication overhead”) in <code>PBFT</code> will be more and more. </p>
+<p>Therefore, a problem in designing <code>PBFT</code> would be “<strong>how to reduce the storage overhead in a replica and the communication overhead in the process of view change?</strong>“</p>
+<h2 id="II-How-does-PBFT-deal-with-this-problem"><a href="#II-How-does-PBFT-deal-with-this-problem" class="headerlink" title="II. How does PBFT deal with this problem"></a>II. How does <code>PBFT</code> deal with this problem</h2><p>To deal with it, <code>PBFT</code> introduces three notions of <code>checkpoint</code>, <code>stable checkpoint</code>, and <code>low-water mark</code>.<br>A replica will produce a checkpoint every time when $k$ (e.g., 100) more requests are executed. Once a replica generates a checkpoint for an index $i$, it will broadcast a <code>CKP</code> message in the format {<code>CKP</code>, $i$}. If a replica collects 2/3+ <code>CKP</code> messages for the same index $i$, the corresponding checkpoint becomes a <code>stable checkpoint</code>. <code>Low-water mark</code> is equal to the index $i$ of the latest <code>stable checkpoint</code>.</p>
+<h3 id="A-How-to-reduce-storage-and-communication-overhead"><a href="#A-How-to-reduce-storage-and-communication-overhead" class="headerlink" title="A. How to reduce storage and communication overhead?"></a>A. How to reduce storage and communication overhead?</h3><p><code>PBFT</code> allows a replica to discard all the messages with indexes lower than <code>low-water mark</code> (storage discarding), thus reducing the storage overhead. This mechanism is named “garbage collection” in the <code>PBFT</code> <a target="_blank" rel="noopener" href="https://pmg.csail.mit.edu/papers/osdi99.pdf">paper</a>.<br>Besides, <code>PBFT</code> allows a replica to only broadcast messages with indices higher than <code>low-water mark</code>, thus reducing the communication overhead.</p>
 <p>Further, during the process of view change, each replica will broadcast its latest <code>stable checkpoint</code> to the leader. And the leader will package and broadcast all these <code>stable checkpoint</code> in a message of <code>new view</code>. If a replica finds a <code>stable checkpoint</code> in the <code>new view</code> message with a higher index than its own, it will try to synchronize the state data from the replica possessing the <code>stable checkpoint</code>. The corresponding contents can be found in Section <code>4.4 View Changes</code> in the <code>PBFT</code> <a target="_blank" rel="noopener" href="https://pmg.csail.mit.edu/papers/osdi99.pdf">paper</a>.</p>
-<h3 id="b.-will-the-above-mechanism-compromise-safety-or-liveness">B. Will the above mechanism compromise <code>safety</code> or <code>liveness</code>?</h3>
-<h4 id="as-for-safety">1.As for <code>safety</code></h4>
-<p>Almost all the existing leader-based consensus algorithms adopt the time-out mechanism. If a replica cannot receive a specific number of specific messages in time, it will trigger a time-out and strive to change the leader/view. <strong>With the time-out mechanism, for a replica's actions, the situation where some correct replicas are silent equals the situation where the messages sent by these correct replicas are very slow</strong>. A correct consensus can guarantee <code>safety</code> under the latter situation, which will also guarantee <code>safety</code> under the former situation.</p>
-<p>Therefore, we can draw a conclusion: <strong>a correct consensus can always guarantee <code>safety</code> even if some correct replicas are silent</strong>.</p>
-<p>Consider that a replica <span class="math inline">\(rep\)</span> discards the storage for an index <span class="math inline">\(i\)</span> once it has executed/committed <span class="math inline">\(i\)</span>. Then, <span class="math inline">\(rep\)</span> will be silent to messages for <span class="math inline">\(i\)</span> from other replicas. With the above conclusion, this will not compromise the <code>safety</code> property.</p>
+<h3 id="B-Will-the-above-mechanism-compromise-safety-or-liveness"><a href="#B-Will-the-above-mechanism-compromise-safety-or-liveness" class="headerlink" title="B. Will the above mechanism compromise safety or liveness?"></a>B. Will the above mechanism compromise <code>safety</code> or <code>liveness</code>?</h3><h4 id="1-As-for-safety"><a href="#1-As-for-safety" class="headerlink" title="1.As for safety"></a>1.As for <code>safety</code></h4><p>Almost all the existing leader-based consensus algorithms adopt the time-out mechanism. If a replica cannot receive a specific number of specific messages in time, it will trigger a time-out and strive to change the leader/view. <strong>With the time-out mechanism, for a replica’s actions, the situation where some correct replicas are silent equals the situation where the messages sent by these correct replicas are very slow</strong>. A correct consensus can guarantee <code>safety</code> under the latter situation, which will also guarantee <code>safety</code> under the former situation. </p>
+<p>Therefore, we can draw a conclusion: <strong>a correct consensus can always guarantee <code>safety</code> even if some correct replicas are silent</strong>. </p>
+<p>Consider that a replica $rep$ discards the storage for an index $i$ once it has executed/committed $i$. Then, $rep$ will be silent to messages for $i$ from other replicas. With the above conclusion, this will not compromise the <code>safety</code> property.</p>
 <p>Therefore, the <code>stable checkpoint</code> and storage discarding machanisms by <code>PBFT</code> will not compromise <code>safety</code>.</p>
-<h4 id="as-for-liveness">2.As for <code>liveness</code></h4>
-<p>However, it seems that the storage discarding mechanism by <code>PBFT</code> will possibly compromise <code>liveness</code>. The reason is that if a replica (<span class="math inline">\(rep\)</span>) discards the storage for an index <span class="math inline">\(i\)</span>, <span class="math inline">\(rep\)</span> cannot respond to the messages for <span class="math inline">\(i\)</span> from other replicas. Other replicas have not committed <span class="math inline">\(i\)</span> and need the messages from <span class="math inline">\(rep\)</span> to finish the commitment.</p>
+<h4 id="2-As-for-liveness"><a href="#2-As-for-liveness" class="headerlink" title="2.As for liveness"></a>2.As for <code>liveness</code></h4><p>However, it seems that the storage discarding mechanism by <code>PBFT</code> will possibly compromise <code>liveness</code>. The reason is that if a replica ($rep$) discards the storage for an index $i$, $rep$ cannot respond to the messages for $i$ from other replicas. Other replicas have not committed $i$ and need the messages from $rep$ to finish the commitment.</p>
 <p>We can further take an specific example to demonstrate the <code>liveness</code> problem as follows:</p>
 <ul>
-<li>If a commitment for <span class="math inline">\(i\)</span> with <span class="math inline">\(r\)</span> is finished exactly by <span class="math inline">\(f+1\)</span> correct replicas and <span class="math inline">\(f\)</span> Byzantine replicas, with the remaining <span class="math inline">\(f\)</span> correct replicas being unaware of <span class="math inline">\(r\)</span>;</li>
-<li>After <span class="math inline">\(r\)</span> is committed and executed by <span class="math inline">\(f+1\)</span> correct replicas, they will discard storage for <span class="math inline">\(i\)</span>. When they become the leaders later, they do not know <span class="math inline">\(r\)</span> and cannot propose <span class="math inline">\(r\)</span> at <span class="math inline">\(i\)</span>;</li>
-<li>Byzantine replicas will decline to propose <span class="math inline">\(r\)</span> at <span class="math inline">\(i\)</span>;</li>
-<li>The other <span class="math inline">\(f\)</span> correct replicas being unaware of <span class="math inline">\(r\)</span> cannot propose <span class="math inline">\(r\)</span> at <span class="math inline">\(i\)</span> too;</li>
-<li>In this regard, the other <span class="math inline">\(f\)</span> correct replicas will never commit <span class="math inline">\(i\)</span> with <span class="math inline">\(r\)</span>, thus violating <code>liveness</code>.</li>
+<li>If a commitment for $i$ with $r$ is finished exactly by $f+1$ correct replicas and $f$ Byzantine replicas, with the remaining $f$ correct replicas being unaware of $r$;</li>
+<li>After $r$ is committed and executed by $f+1$ correct replicas, they will discard storage for $i$. When they become the leaders later, they do not know $r$ and cannot propose $r$ at $i$;</li>
+<li>Byzantine replicas will decline to propose $r$ at $i$;</li>
+<li>The other $f$ correct replicas being unaware of $r$ cannot propose $r$ at $i$ too;</li>
+<li>In this regard, the other $f$ correct replicas will never commit $i$ with $r$, thus violating <code>liveness</code>.</li>
 </ul>
 <p>A simple idea to settle the above problem is to synchronize the state from other replicas. However, a new question is that: <strong>how to guarantee the state in a remote replica is correct?</strong></p>
-<p>This is what the <code>stable checkpoint</code> mechanism in <code>PBFT</code> aims to do. A <code>stable checkpoint</code> must be attached with a proof consisted of {<code>CKP</code>, <span class="math inline">\(i\)</span>} from 2/3+ replicas. The proof can guarantee the correctness of a state.</p>
-<p>However, in my opinion, <strong>it seems that {<code>CKP</code>, <span class="math inline">\(i\)</span>} from 1/3+ rather than 2/3+ replicas are enough to generate a proof for a <code>stable checkpoint</code></strong>.</p>
-<h2 id="references">References</h2>
-<ol type="1">
-<li>Castro, M., &amp; Liskov, B. "Practical byzantine fault tolerance." In Proceedings of the 3rd USENIX Symposium on Operating Systems Design and Implementation (OSDI'99), pp. 173-186.</li>
-<li>Buchman, E. "Tendermint: Byzantine fault tolerance in the age of blockchains." Doctoral dissertation, 2016.</li>
-<li>Yin, M., Malkhi, D., Reiter, M. K., Gueta, G. G., &amp; Abraham, I. "HotStuff: BFT consensus with linearity and responsiveness." In Proceedings of the 2019 ACM Symposium on Principles of Distributed Computing (PODC'19), pp. 347-356.</li>
+<p>This is what the <code>stable checkpoint</code> mechanism in <code>PBFT</code> aims to do. A <code>stable checkpoint</code> must be attached with a proof consisted of {<code>CKP</code>, $i$} from 2/3+ replicas. The proof can guarantee the correctness of a state. </p>
+<p>However, in my opinion, <strong>it seems that {<code>CKP</code>, $i$} from 1/3+ rather than 2/3+ replicas are enough to generate a proof for a <code>stable checkpoint</code></strong>.</p>
+<h2 id="References"><a href="#References" class="headerlink" title="References"></a>References</h2><ol>
+<li>Castro, M., &amp; Liskov, B. “Practical byzantine fault tolerance.” In Proceedings of the 3rd USENIX Symposium on Operating Systems Design and Implementation (OSDI’99), pp. 173-186.</li>
+<li>Buchman, E. “Tendermint: Byzantine fault tolerance in the age of blockchains.” Doctoral dissertation, 2016.</li>
+<li>Yin, M., Malkhi, D., Reiter, M. K., Gueta, G. G., &amp; Abraham, I. “HotStuff: BFT consensus with linearity and responsiveness.” In Proceedings of the 2019 ACM Symposium on Principles of Distributed Computing (PODC’19), pp. 347-356.</li>
 </ol>
 
     </div>
@@ -328,7 +320,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#i.-a-problem-an-increasing-size-of-messages"><span class="nav-number">1.</span> <span class="nav-text">I. A Problem: an increasing size of messages</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ii.-how-does-pbft-deal-with-this-problem"><span class="nav-number">2.</span> <span class="nav-text">II. How does PBFT deal with this problem</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#a.-how-to-reduce-storage-and-communication-overhead"><span class="nav-number">2.1.</span> <span class="nav-text">A. How to reduce storage and communication overhead?</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#b.-will-the-above-mechanism-compromise-safety-or-liveness"><span class="nav-number">2.2.</span> <span class="nav-text">B. Will the above mechanism compromise safety or liveness?</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#as-for-safety"><span class="nav-number">2.2.1.</span> <span class="nav-text">1.As for safety</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#as-for-liveness"><span class="nav-number">2.2.2.</span> <span class="nav-text">2.As for liveness</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#references"><span class="nav-number">3.</span> <span class="nav-text">References</span></a></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#I-A-Problem-an-increasing-size-of-messages"><span class="nav-number">1.</span> <span class="nav-text">I. A Problem: an increasing size of messages</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#II-How-does-PBFT-deal-with-this-problem"><span class="nav-number">2.</span> <span class="nav-text">II. How does PBFT deal with this problem</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#A-How-to-reduce-storage-and-communication-overhead"><span class="nav-number">2.1.</span> <span class="nav-text">A. How to reduce storage and communication overhead?</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#B-Will-the-above-mechanism-compromise-safety-or-liveness"><span class="nav-number">2.2.</span> <span class="nav-text">B. Will the above mechanism compromise safety or liveness?</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-As-for-safety"><span class="nav-number">2.2.1.</span> <span class="nav-text">1.As for safety</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-As-for-liveness"><span class="nav-number">2.2.2.</span> <span class="nav-text">2.As for liveness</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#References"><span class="nav-number">3.</span> <span class="nav-text">References</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
