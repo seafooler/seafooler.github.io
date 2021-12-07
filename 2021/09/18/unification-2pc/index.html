@@ -23,7 +23,7 @@
 
   <meta name="description" content="In the last two blogs, we derived the design of two-phase BFT consensuses. We picked two different routines, namely PBFT and Tendermint. In this blog, we try to unify two-phase consensus by a judgemen">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Unifying PBFT and Tendermint By Judgement Model">
+<meta property="og:title" content="Unifying Two-phase Consensus By A Judgement Model">
 <meta property="og:url" content="http://example.com/2021/09/18/unification-2pc/index.html">
 <meta property="og:site_name" content="Seafooler&#39;s Blog">
 <meta property="og:description" content="In the last two blogs, we derived the design of two-phase BFT consensuses. We picked two different routines, namely PBFT and Tendermint. In this blog, we try to unify two-phase consensus by a judgemen">
@@ -31,7 +31,7 @@
 <meta property="og:image" content="http://example.com/images/2pcto3pc-local-status.png">
 <meta property="og:image" content="http://example.com/images/2pcto3pc-collecting-opinions.png">
 <meta property="article:published_time" content="2021-09-17T16:00:00.000Z">
-<meta property="article:modified_time" content="2021-12-06T04:03:55.551Z">
+<meta property="article:modified_time" content="2021-12-07T04:08:42.645Z">
 <meta property="article:author" content="Seafooler">
 <meta property="article:tag" content="Consensus">
 <meta property="article:tag" content="BFT">
@@ -52,7 +52,7 @@
   };
 </script>
 
-  <title>Unifying PBFT and Tendermint By Judgement Model | Seafooler's Blog</title>
+  <title>Unifying Two-phase Consensus By A Judgement Model | Seafooler's Blog</title>
   
 
 
@@ -170,7 +170,7 @@
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
-          Unifying PBFT and Tendermint By Judgement Model
+          Unifying Two-phase Consensus By A Judgement Model
         </h1>
 
         <div class="post-meta">
@@ -187,7 +187,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2021-12-06 12:03:55" itemprop="dateModified" datetime="2021-12-06T12:03:55+08:00">2021-12-06</time>
+                <time title="Modified: 2021-12-07 12:08:42" itemprop="dateModified" datetime="2021-12-07T12:08:42+08:00">2021-12-07</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -210,7 +210,7 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <p>In the last two blogs, we derived the design of two-phase BFT consensuses. We picked two different routines, namely <a target="_blank" rel="noopener" href="https://seafooler.github.io/2021/09/12/design-bft-pbft/">PBFT</a> and <a target="_blank" rel="noopener" href="https://seafooler.github.io/2021/09/15/design-bft-tendermint/">Tendermint</a>. In this blog, we try to unify two-phase consensus by a judgement model. <span id="more"></span> Based on the unification model, we will clarify how PBFT/Tendermint implements the model in the upcoming blogs.</p>
+        <p>In the last two blogs, we derived the design of two-phase BFT consensuses. We picked two different routines, namely <a target="_blank" rel="noopener" href="https://seafooler.github.io/2021/09/12/design-bft-pbft/">PBFT</a> and <a target="_blank" rel="noopener" href="https://seafooler.github.io/2021/09/15/design-bft-tendermint/">Tendermint</a>. In this blog, we try to unify two-phase consensus by a judgement model. <span id="more"></span></p>
 <h2 id="i.-three-ingredients">I. Three Ingredients</h2>
 <p>Almost all the two-phase consensus consists of three ingredients:</p>
 <ul>
@@ -225,7 +225,7 @@
 <p>However, the single-phase vote cannot assure <code>safety</code> across views. To achieve across-view <code>safety</code>, an extra phase of vote is needed. The reason why an extra phase of vote can do it will be presented in the next sections.</p>
 <p>Note that <strong>the newly-added phase of vote is considered as <code>1PV</code></strong> in Section I, while the preexisting phase of vote is considered as <code>2PV</code> in Section I. The reason is that <code>2PV</code> specifies the time to commit a request, which matches the specification of the preexisting phase of vote.</p>
 <h2 id="iii.-how-to-achieve-safety-without-compromising-liveness">III. How to Achieve <code>Safety</code> Without Compromising <code>Liveness</code>?</h2>
-<p>As already talked about in <a target="_blank" rel="noopener" href="https://seafooler.github.io/2021/09/12/design-bft-pbft/">the PBFT blog</a>, the most challenge task to achieve across-view <code>safety</code> is to <strong>judge if an index <span class="math inline">\(i\)</span> has been committed with a request <span class="math inline">\(r\)</span> in the old view</strong>. Besides, designing the judgement method cannot compromise <code>liveness</code>. Based on the judgement, a replica decides if it should vote for a new request or not:</p>
+<p>As already talked about in <a target="_blank" rel="noopener" href="https://seafooler.github.io/2021/09/12/design-bft-pbft/">the PBFT blog</a>, the most challenge task to achieve across-view <code>safety</code> is to <strong>judge if an index <span class="math inline">\(i\)</span> has been committed with a request <span class="math inline">\(r\)</span> in the old view</strong>. Besides, designing the judgement method cannot compromise <code>liveness</code>. Exactly, the judgement result corresponds to the <code>lock</code> primitive in many consensus, such as <code>Tendermint</code> and <code>HotStuff</code>. Based on the judgement, a replica decides if it should vote for a new request or not:</p>
 <ul>
 <li>If a replica judges the index <span class="math inline">\(i\)</span> has been <code>committed</code> with <span class="math inline">\(r\)</span>, it will decline to vote for any other <span class="math inline">\(r&#39;\)</span> at <span class="math inline">\(i\)</span> (<span class="math inline">\(r&#39;\neq r\)</span>);</li>
 <li>Otherwise, it will vote for any <span class="math inline">\(r&#39;\)</span>.</li>
@@ -261,8 +261,8 @@
 <h3 id="a.-formats-of-opinion-expression">A. Formats of opinion expression</h3>
 <p>The expression of opinions can be of two formats naturally:</p>
 <ul>
-<li><code>Polka</code>/<code>empty</code> (<code>PE</code> in short): a replica broadcasts <code>polka</code> for <span class="math inline">\(i\)</span> with <span class="math inline">\(r\)</span> ({<code>polka</code>, <span class="math inline">\(i\)</span>, <span class="math inline">\(r\)</span>}) if there is one, otherwise <code>empty</code> ({<code>empty</code>, <span class="math inline">\(i\)</span>});</li>
-<li><code>True</code>/<code>false</code> (<code>TF</code> in short): a replica broadcasts <code>true</code> for <span class="math inline">\(i\)</span> with <span class="math inline">\(r\)</span> ({<code>true</code>, <span class="math inline">\(i\)</span>, <span class="math inline">\(r\)</span>}) if there is a <code>polka</code>, othwewise <code>false</code> ({<code>false</code>, <span class="math inline">\(i\)</span>});</li>
+<li><code>Polka</code>/<code>empty</code> (<code>PE</code> for short): a replica broadcasts <code>polka</code> for <span class="math inline">\(i\)</span> with <span class="math inline">\(r\)</span> ({<code>polka</code>, <span class="math inline">\(i\)</span>, <span class="math inline">\(r\)</span>}) if there is one, otherwise <code>empty</code> ({<code>empty</code>, <span class="math inline">\(i\)</span>});</li>
+<li><code>True</code>/<code>false</code> (<code>TF</code> for short): a replica broadcasts <code>true</code> for <span class="math inline">\(i\)</span> with <span class="math inline">\(r\)</span> ({<code>true</code>, <span class="math inline">\(i\)</span>, <span class="math inline">\(r\)</span>}) if there is a <code>polka</code>, othwewise <code>false</code> ({<code>false</code>, <span class="math inline">\(i\)</span>});</li>
 </ul>
 <p>Note that with <code>PE</code> format, if a replica or multiple replicas collect multiple <code>polkas</code> for an index <span class="math inline">\(i\)</span>, these <code>polkas</code> definitely correspond to the same request <code>r</code>. By contrast, however, with <code>TF</code> format, if a replica or multiple replicas collect multiple <code>true</code> for an index <span class="math inline">\(i\)</span>, these <code>true</code> opinions may correspond to different requests.</p>
 <h3 id="b.-pe-format">B. <code>PE</code> format</h3>
@@ -281,7 +281,7 @@ C^i(r)=1 \Longrightarrow \forall \space rep_j \space \exists \space polka_r \in 
 <li><strong>Partly-correct</strong>: Note that <code>FC</code> results (mistaking an uncommitted request as <code>committed</code>) are acceptable, which will not violate the <code>safety</code> property.</li>
 <li><strong>Partly-consistent</strong>: Inconsistent results are acceptable too. When the replica with <code>committed</code> result becomes the leader, it will <strong>repropose</strong> <span class="math inline">\(r\)</span>, which will get votes from all the replicas and finally be committed.</li>
 </ul>
-<p>Besides, the judgement rule assures will not lead the system to halt, which guarantees the <code>liveness</code>.</p>
+<p>Besides, the judgement rule will not lead the system to halt, which guarantees the <code>liveness</code>.</p>
 <h4 id="an-optimization-to-pe-consistent-judgement-results">An optimization to <code>PE</code>: consistent judgement results</h4>
 <p>Although the <code>PE</code> format and the assistant judgement rule above are enough to make a correct judgement, it may be inefficient. Particularly, when inconsistent results are gotten by different replicas, the leaders may be switched many times until the replica with <code>committed</code> result becomes the leader.</p>
 <p>On the contrary, if all the replicas can get (totally) consistent judgement results, either totally <code>FC</code> or totally correct, the new request proposed by a new leader can be committed soon.</p>
@@ -316,7 +316,7 @@ C^i(r)=1 \Longrightarrow \forall \space rep_j \space \exists \space true_r \in O
 <p>However, collection of 2/3+ <code>true</code> for the same request <span class="math inline">\(r\)</span> can be <strong>non-deterministic</strong>, even if <span class="math inline">\(r\)</span> has been <code>committed</code> before. In other words, a committed request may be mistaken as <code>uncommitted</code> in the new view, which violates <code>safety</code>. In fact, this problem can be named as <code>false uncommitted</code> (<code>FU</code>), which mistakes a committed request as <code>uncommitted</code>. <code>FU</code> is unacceptable.</p>
 <h4 id="a-remedy-to-rule-2-rule-3-add-a-new-phase">3. A remedy to rule 2 (Rule 3): Add a new phase</h4>
 <p>Exactly, we do not need all the correct replicas to judge the committed request (<span class="math inline">\(r\)</span>) as <code>committed</code>. As long as there are 1/3+ correct replicas do it, there cannot be enough votes for an contradictory request <span class="math inline">\(r&#39;\)</span>, thus guaranteeing <code>safety</code>.</p>
-<p>To achieve this, a new phase is added to the normal case, which transforms the two-phase consensus (<code>2PC</code> in short) to a three-phase one (<code>3PC</code> in short), as follows:</p>
+<p>To achieve this, a new phase is added to the normal case, which transforms the two-phase consensus (<code>2PC</code> for short) to a three-phase one (<code>3PC</code> for short), as follows:</p>
 <ul>
 <li>1st-phase vote (<code>1PV</code>)</li>
 <li>2nd-phase vote (<code>2PV</code>)</li>
@@ -351,7 +351,10 @@ C^i(r)=1 \Longrightarrow \forall \space rep_j \space \exists \space true_r \in O
 <li>If a replica receives 2/3+ <code>false</code> for <span class="math inline">\(i\)</span>, it will judge <span class="math inline">\(i\)</span> as <code>uncommitted</code> before.</li>
 <li>Otherwise, it will judge <span class="math inline">\(i\)</span> as <code>committed</code> before.</li>
 </ol>
-<p>Besides, since a replica may receive multiple <code>true</code> opinions for inconsistent requests, some of which are sent by Byzantine replicas, we further stipulate that: 3. The replica receiving <code>true</code> opinions for inconsistent requests will judge <span class="math inline">\(i\)</span> as <code>undecided</code>. A replica with <code>undecided</code> judgement result will decline to vote for any requests later.</p>
+<p>Besides, since a replica may receive multiple <code>true</code> opinions for inconsistent requests, some of which are sent by Byzantine replicas, we further stipulate that:</p>
+<ol start="3" type="1">
+<li>The replica receiving <code>true</code> opinions for inconsistent requests will judge <span class="math inline">\(i\)</span> as <code>undecided</code>. A replica with <code>undecided</code> judgement result will decline to vote for any requests later.</li>
+</ol>
 <p>On the other hand, we can get the deduction as follows: <span class="math display">\[
 C^i(r)=1 \Longrightarrow \forall \space rep_j \space |\{o | o \in O_j^i \&amp; o == false\}|&lt;2/3
 \]</span> This deduction plus rule 4 can guarantee <code>safety</code>. The reason is that if <span class="math inline">\(r\)</span> was committed at <span class="math inline">\(i\)</span> before, none of replicas can collect 2/3+ <code>false</code> opinions for <span class="math inline">\(i\)</span>. All the correct replicas will judge <span class="math inline">\(i\)</span> as <code>committed</code> for <span class="math inline">\(r\)</span> or <code>undecided</code>. Therefore, all these correct replicas will not for a contradictory <span class="math inline">\(r&#39;\)</span>, which guarantee <code>safety</code>.</p>
@@ -397,7 +400,10 @@ C^i(r)=1 \Longrightarrow \forall \space rep_j \space |\{o | o \in O_j^i \&amp; o
     <a href="/2021/09/15/design-bft-tendermint/" rel="prev" title="Consensus From One-phase To Two-phase, A Routine Of Tendermint">
       <i class="fa fa-chevron-left"></i> Consensus From One-phase To Two-phase, A Routine Of Tendermint
     </a></div>
-      <div class="post-nav-item"></div>
+      <div class="post-nav-item">
+    <a href="/2021/09/23/think-checkpoint-pbft/" rel="next" title="Thoughts about Checkpoint Mechanism in PBFT">
+      Thoughts about Checkpoint Mechanism in PBFT <i class="fa fa-chevron-right"></i>
+    </a></div>
     </div>
       </footer>
     
@@ -470,7 +476,7 @@ C^i(r)=1 \Longrightarrow \forall \space rep_j \space |\{o | o \in O_j^i \&amp; o
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">3</span>
+          <span class="site-state-item-count">4</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
