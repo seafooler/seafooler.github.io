@@ -29,7 +29,7 @@
 <meta property="og:description" content="The birth of blockchain brings a new option when designing a consensus algorithm, that the requests can be packaged as blocks and blocks can be linked with the hash values. Almost all the newly born c">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2021-09-29T16:00:00.000Z">
-<meta property="article:modified_time" content="2021-12-07T09:37:07.521Z">
+<meta property="article:modified_time" content="2021-12-07T09:41:22.011Z">
 <meta property="article:author" content="Seafooler">
 <meta property="article:tag" content="Consensus">
 <meta property="article:tag" content="BFT">
@@ -199,7 +199,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2021-12-07 17:37:07" itemprop="dateModified" datetime="2021-12-07T17:37:07+08:00">2021-12-07</time>
+                <time title="Modified: 2021-12-07 17:41:22" itemprop="dateModified" datetime="2021-12-07T17:41:22+08:00">2021-12-07</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -244,10 +244,10 @@
 <p>Then, the hash value contained in the opinion will be compared with <span class="math inline">\(rep_j\)</span>'s local hash value at the same index. If two values are equal, <span class="math inline">\(rep_j\)</span> can consider that <span class="math inline">\(rep_k\)</span> expresses the opinions for all the preceding indexes.</p>
 <p>If everything goes well, <strong>one comparison of hash values is enough</strong>, which reduces the computation overhead.</p>
 <h4 id="reduction-of-storage-overhead">3. Reduction of storage overhead</h4>
-<p>If a block also contains the digest of currect executing status, the committed/executed requests and corresponding can be discarded, thus reducing the storage overhead. The status digest contained in a block resembles a <code>checkpoint</code> in <code>PBFT</code>, and the status digest contained in a committed block resembles a <code>stable checkpoint</code> in <code>PBFT</code>.</p>
+<p>If a block also contains the digest of currect executing status, the committed/executed requests and corresponding can be discarded, thus reducing the storage overhead. The status digest contained in a block resembles a <code>checkpoint</code> in <code>PBFT</code>, and the status digest contained in a <strong>committed</strong> block resembles a <code>stable checkpoint</code> in <code>PBFT</code>.</p>
 <p>However, it seems that almost all the consensus algorithms adopting blockchain structures consider the "storage overhead" as unimportant. Thus, there is no a mechanism of storage reduction or garbage collection in these algorithms.</p>
 <h2 id="iii.-blockchain-structures-can-eliminate-the-checkpoint-mechanism">III. Blockchain Structures Can Eliminate the Checkpoint Mechanism</h2>
-<p>Although getting few attentions by the readers, checkpoint mechanism plays an important role in <code>PBFT</code>. As talked about in <a target="_blank" rel="noopener" href="https://seafooler.github.io/2021/09/23/think-checkpoint-pbft/">this blog</a>, checkpoint mechanism reduces the storage, communication, and computation overhead.</p>
+<p>Although getting few attentions by the readers, checkpoint mechanism plays an important role in <code>PBFT</code>. As talked about in <a target="_blank" rel="noopener" href="https://seafooler.github.io/2021/09/23/think-checkpoint-pbft/">this blog</a>, checkpoint mechanism is used to reduce the storage, communication, and computation overhead.</p>
 <p>As a contrast, the blockchain structures can also reduce these overhead, even largerly. Therefore, with the blockchain structures, checkpoint mechanism can be eliminated.</p>
 <p>In fact, if the digest of currect executing status is contained in a block, we can think that each committed block also generates a <code>stable checkpoint</code>. In this regard, the <code>stable checkpoint</code> can be considered as an additional product of the normal consensus, whose overhead is negligible.</p>
 <h2 id="references">References</h2>
