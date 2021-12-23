@@ -29,7 +29,7 @@
 <meta property="og:description" content="As a sequel of the last blog, this blog picks the routine of Tendermint to derive a two-phase BFT consensus.">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2021-09-14T16:00:00.000Z">
-<meta property="article:modified_time" content="2021-12-07T11:06:12.808Z">
+<meta property="article:modified_time" content="2021-12-23T07:12:41.882Z">
 <meta property="article:author" content="Seafooler">
 <meta property="article:tag" content="Consensus">
 <meta property="article:tag" content="BFT">
@@ -199,7 +199,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2021-12-07 19:06:12" itemprop="dateModified" datetime="2021-12-07T19:06:12+08:00">2021-12-07</time>
+                <time title="Modified: 2021-12-23 15:12:41" itemprop="dateModified" datetime="2021-12-23T15:12:41+08:00">2021-12-23</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -277,7 +277,7 @@
 <p>Nobody knows and nothing can guarantee it in <code>Tendermint</code>. Let us take an example to explain it.</p>
 <p>Assume a replica locks on <span class="math inline">\(i\)</span> with <span class="math inline">\(r\)</span> but does not commit it, there can be two cases. - Case 1 (<span class="math inline">\(f+1\)</span> or more correct replicas lock on <span class="math inline">\(r\)</span>): <span class="math inline">\(r\)</span> will be finally committed. - Case 2 (<span class="math inline">\(f\)</span> or less correct replicas lock on <span class="math inline">\(r\)</span>): there are two subcases - Case 2.1: a new leader proposes <span class="math inline">\(r&#39;\)</span>, and each correct replica without locking on <span class="math inline">\(r\)</span> and Byzantine replicas can prevote for <span class="math inline">\(r&#39;\)</span>. <span class="math inline">\(r&#39;\)</span> can be locked and further committed later. - Case 2.2: a new leader proposes <span class="math inline">\(r\)</span>, and each correct replica can prevote for <span class="math inline">\(r\)</span>. <span class="math inline">\(r\)</span> can be locked by more replicas and committed later.</p>
 <p>After long enough, one of Case 1, Case 2.1, and Case 2.2 will definitely take place, thus achieving <strong>liveness</strong>. However, nobody knows the exact time. <strong>That's the reason why <code>Tendermint</code> is not responsive</strong>.</p>
-<h2 id="references">References</h2>
+<h2 id="reference">Reference</h2>
 <ol type="1">
 <li>Buchman, E. "Tendermint: Byzantine fault tolerance in the age of blockchains." Doctoral dissertation, 2016.</li>
 <li>Dwork, C., Lynch, N., &amp; Stockmeyer, L. "Consensus in the presence of partial synchrony." Journal of the ACM (JACM), 1988, 35(2), pp. 288-323.</li>
@@ -372,7 +372,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#i.-one-phase-view-switch-protocol"><span class="nav-number">1.</span> <span class="nav-text">I. One-phase + view-switch protocol</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#a.-judgement-rule-2-based-on-its-local-status"><span class="nav-number">1.1.</span> <span class="nav-text">A. Judgement rule 2: based on its local status</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ii.-two-phase-view-switch-protocol"><span class="nav-number">2.</span> <span class="nav-text">II. Two-phase + view-switch protocol</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#a.-how-does-tendermint-achieve-liveness"><span class="nav-number">2.1.</span> <span class="nav-text">A. How does Tendermint achieve liveness?</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#b.-will-unlock-on-polka-compromise-safety"><span class="nav-number">2.2.</span> <span class="nav-text">B. Will unlock-on-polka compromise safety?</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#c.-when-will-a-lock-on-an-uncommitted-request-be-released-or-be-committed-finally"><span class="nav-number">2.3.</span> <span class="nav-text">C. When will a lock on an uncommitted request be released or be committed finally?</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#references"><span class="nav-number">3.</span> <span class="nav-text">References</span></a></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#i.-one-phase-view-switch-protocol"><span class="nav-number">1.</span> <span class="nav-text">I. One-phase + view-switch protocol</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#a.-judgement-rule-2-based-on-its-local-status"><span class="nav-number">1.1.</span> <span class="nav-text">A. Judgement rule 2: based on its local status</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ii.-two-phase-view-switch-protocol"><span class="nav-number">2.</span> <span class="nav-text">II. Two-phase + view-switch protocol</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#a.-how-does-tendermint-achieve-liveness"><span class="nav-number">2.1.</span> <span class="nav-text">A. How does Tendermint achieve liveness?</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#b.-will-unlock-on-polka-compromise-safety"><span class="nav-number">2.2.</span> <span class="nav-text">B. Will unlock-on-polka compromise safety?</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#c.-when-will-a-lock-on-an-uncommitted-request-be-released-or-be-committed-finally"><span class="nav-number">2.3.</span> <span class="nav-text">C. When will a lock on an uncommitted request be released or be committed finally?</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#reference"><span class="nav-number">3.</span> <span class="nav-text">Reference</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -386,7 +386,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">7</span>
+          <span class="site-state-item-count">8</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
