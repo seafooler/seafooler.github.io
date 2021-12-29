@@ -21,23 +21,22 @@
     var CONFIG = {"hostname":"example.com","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":{"disqus":{"text":"Load Disqus","order":-1}}},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
   </script>
 
-  <meta name="description" content="While I was reading the HoneybadgerBFT paper, a question came to me is that &quot;Reliable Broadcast (RBC) seems to implement the functions of a consensus algorithm already, why an extra phase of Asynchron">
+  <meta name="description" content="As the representaives of streamlined BFT consensus algorithms, Tendermint[1], Pala[2], Streamlet[3], and HotStuff[4] reseamble each other to a great extent. However, taking a close look at these algor">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Why ABA Is Needed in HoneybadgerBFT?">
-<meta property="og:url" content="http://example.com/2021/10/06/think-honeybadger/index.html">
+<meta property="og:title" content="Comparison between Tendermint, Pala, Streamlet, and HotStuff">
+<meta property="og:url" content="http://example.com/2021/11/02/comp-tendermint-pala-streamlet-hotstuff/index.html">
 <meta property="og:site_name" content="Seafooler&#39;s Blog">
-<meta property="og:description" content="While I was reading the HoneybadgerBFT paper, a question came to me is that &quot;Reliable Broadcast (RBC) seems to implement the functions of a consensus algorithm already, why an extra phase of Asynchron">
+<meta property="og:description" content="As the representaives of streamlined BFT consensus algorithms, Tendermint[1], Pala[2], Streamlet[3], and HotStuff[4] reseamble each other to a great extent. However, taking a close look at these algor">
 <meta property="og:locale" content="en_US">
-<meta property="article:published_time" content="2021-10-05T16:00:00.000Z">
-<meta property="article:modified_time" content="2021-12-23T07:13:03.100Z">
+<meta property="article:published_time" content="2021-11-01T16:00:00.000Z">
+<meta property="article:modified_time" content="2021-12-29T14:47:57.988Z">
 <meta property="article:author" content="Seafooler">
 <meta property="article:tag" content="Consensus">
+<meta property="article:tag" content="BFT">
 <meta property="article:tag" content="Blockchain">
-<meta property="article:tag" content="Asynchronous">
-<meta property="article:tag" content="HoneybadgerBFT">
 <meta name="twitter:card" content="summary">
 
-<link rel="canonical" href="http://example.com/2021/10/06/think-honeybadger/">
+<link rel="canonical" href="http://example.com/2021/11/02/comp-tendermint-pala-streamlet-hotstuff/">
 
 
 <script id="page-configurations">
@@ -50,7 +49,7 @@
   };
 </script>
 
-  <title>Why ABA Is Needed in HoneybadgerBFT? | Seafooler's Blog</title>
+  <title>Comparison between Tendermint, Pala, Streamlet, and HotStuff | Seafooler's Blog</title>
   
 
 
@@ -170,7 +169,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://example.com/2021/10/06/think-honeybadger/">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2021/11/02/comp-tendermint-pala-streamlet-hotstuff/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
@@ -183,7 +182,7 @@
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
-          Why ABA Is Needed in HoneybadgerBFT?
+          Comparison between Tendermint, Pala, Streamlet, and HotStuff
         </h1>
 
         <div class="post-meta">
@@ -193,14 +192,14 @@
               </span>
               <span class="post-meta-item-text">Posted on</span>
 
-              <time title="Created: 2021-10-06 00:00:00" itemprop="dateCreated datePublished" datetime="2021-10-06T00:00:00+08:00">2021-10-06</time>
+              <time title="Created: 2021-11-02 00:00:00" itemprop="dateCreated datePublished" datetime="2021-11-02T00:00:00+08:00">2021-11-02</time>
             </span>
               <span class="post-meta-item">
                 <span class="post-meta-item-icon">
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2021-12-23 15:13:03" itemprop="dateModified" datetime="2021-12-23T15:13:03+08:00">2021-12-23</time>
+                <time title="Modified: 2021-12-29 22:47:57" itemprop="dateModified" datetime="2021-12-29T22:47:57+08:00">2021-12-29</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -223,27 +222,90 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <p>While I was reading the <code>HoneybadgerBFT</code> <a target="_blank" rel="noopener" href="https://dl.acm.org/doi/abs/10.1145/2976749.2978399">paper</a>, a question came to me is that "<strong>Reliable Broadcast (<code>RBC</code>) seems to implement the functions of a consensus algorithm already, why an extra phase of Asynchronous Binary Agreement (<code>ABA</code>) is needed</strong>"?</p>
-<p>In this blog, we will try to answer this question. <span id="more"></span></p>
-<h2 id="i.-an-overlooked-fact-of-consensus-round-by-round-flow">I. An Overlooked Fact of Consensus: Round-by-Round Flow</h2>
-<p>A fact for almost all the consensus algorithms is that <strong>a practical consensus should be run round by round</strong>.</p>
-<p>The reason is that requests will be continuously sent from the external clients to the consensus cluster. At a time, the cluster must select a subset from the currectly received requests and then just process the selected subset. This one-time process is exactly what Reliable Broadcast (<code>RBC</code>) does.</p>
-<p>Only if the previous round of <code>RBC</code> (<span class="math inline">\(RBC_r\)</span>) is ended, can the requests in the next <code>RBC</code> (<span class="math inline">\(RBC_{r+1}\)</span>) be checked. In particular, if <span class="math inline">\(RBC_r\)</span> is considered to be discarded, legitimacy of requests in <span class="math inline">\(RBC_{r+1}\)</span> can be checked based on the status of round <span class="math inline">\(r-1\)</span>; Otherwise, legitimacy of requests in <span class="math inline">\(RBC_{r+1}\)</span> must be checked based on the status of round <span class="math inline">\(r\)</span>.</p>
-<p>Therefore, <code>RBC</code> must be processed round by round.</p>
-<h2 id="ii.-drawbacks-of-rbc-inefficiency-or-even-halting">II. Drawbacks of RBC: Inefficiency or Even Halting</h2>
-<p><code>RBC</code> can guarantee that for a correct replica, if it delivers a piece of data, it knows all the other correct replicas will definitely deliver the same data finally. However, if the replica has not delivered a piece of data, it does not know if others will deliver the data and if it should wait for it. The waiting time could be very long or even it will never deliver the data.</p>
-<p>In other words, a round of <code>RBC</code> can be extremely inefficient or even never end. In the latter case, the system is just halted.</p>
-<p>As stated in Section I, <code>RBC</code> of round <span class="math inline">\(r+1\)</span> can only be processed after <code>RBC</code> of round <span class="math inline">\(r\)</span> is ended. Therefore, the inefficiency or halting of a <code>RBC</code> round will lead to the inefficiency or halting of the whole system.</p>
-<h2 id="iii.-functions-of-aba">III. Functions of ABA</h2>
-<p>In short, <code>ABA</code> is used to deal with drawbacks of <code>RBC</code>. Particularly, it can stop an inefficient RBC timely and rescue the system from a possible halting status.</p>
-<p>To be more specific, the input for <code>ABA</code> by a replica is based on the status if it has delivered the corresponding data from the RBC instance. If more than 2f+1 replicas inputting 1, it means the delivery speed is high. In this case, <code>ABA</code> can exactly return 1, indicating that each replica should wait for the data.</p>
-<p>On the other hand, if a replica does not deliver the data from a <code>RBC</code> instance <strong>for a long time</strong>, it will input 0 for <code>ABA</code>. If more than 2f+1 replicas inputting 0, it means the delivery speed is quite slow. In this case, <code>ABA</code> can exactly return 0, indicating that each replica should stop waiting or discard the already received data.</p>
-<h3 id="a.-how-to-define-a-long-time">A. How to define <code>a long time</code>?</h3>
-<p>As stated before, the choice to input 0 or 1 for <code>ABA</code> is made based on the definition of <code>long time</code>.</p>
-<p>In HoneybadgerBFT, the protocol stipulates that if a replica has input 1 for at least 2f+1 <code>ABA</code> instances, it considers that it has waited for a long time and thus inputs 0 for the remaining <code>ABA</code> instances. This is quite reasonable.</p>
+        <p>As the representaives of streamlined BFT consensus algorithms, <code>Tendermint</code>[1], <code>Pala</code>[2], <code>Streamlet</code>[3], and <code>HotStuff</code>[4] reseamble each other to a great extent. However, taking a close look at these algorithms, we can find they picks different routines in many aspects, such as inclusion of QC in blocks, echo mechanism, and so on.</p>
+<p>In this blog, we make a detailed comparison between these representative algorihms.</p>
+<span id="more"></span>
+<h2 id="comparison">Comparison</h2>
+<p>Our comparison results are shown in the following table. For the sake of consistency, we denote <code>QC</code> as the <span class="math inline">\(2f+1\)</span> signatures for a block and <code>epoch</code> as the round/epoch charged by a proposer.</p>
+<table>
+<colgroup>
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Aspect</th>
+<th><strong>Tendermint</strong></th>
+<th><strong>Pala</strong></th>
+<th><strong>Streamlet</strong></th>
+<th><strong>HotStuff</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Pipeline</td>
+<td>No</td>
+<td>Yes</td>
+<td>Yes</td>
+<td>Yes</td>
+</tr>
+<tr class="even">
+<td>Lock*</td>
+<td>Yes</td>
+<td>Implicitly yes</td>
+<td>No</td>
+<td>Yes</td>
+</tr>
+<tr class="odd">
+<td>Proposal</td>
+<td>Repropose the block locked by it</td>
+<td>Propose a new block extending from the locked (largest-epoch notarized) block</td>
+<td>Propose a new block extending from the highest notarized block</td>
+<td>Propose a new block extending from the highest notarized (prepareQC) block</td>
+</tr>
+<tr class="even">
+<td>Vote(safety)</td>
+<td>Vote for the block it has locked before</td>
+<td>Vote for the block extending from its locked (largest-epoch notarized) block</td>
+<td>Vote for the block extending from its highest notarized block</td>
+<td>Vote for the block extending from its locked (lockedQC) block</td>
+</tr>
+<tr class="odd">
+<td>Vote(liveness)/unlock</td>
+<td>Unlock once seeing a larger-epoch QC</td>
+<td>Unlock once seeing a larger-epoch QC</td>
+<td>Vote for a block extending from a larger-or-equal-height QC</td>
+<td>Vote for a block extending from a larger-epoch lockedQC</td>
+</tr>
+<tr class="even">
+<td>QC in the block+</td>
+<td>Yes</td>
+<td>No</td>
+<td>No</td>
+<td>Yes</td>
+</tr>
+<tr class="odd">
+<td>Echo#</td>
+<td>No</td>
+<td>Yes</td>
+<td>Yes</td>
+<td>No</td>
+</tr>
+</tbody>
+</table>
+<p>* Although the lock mechanism is not clarified by <code>Pala</code> explicitly, it is implicitly defined by the following specification: a replica only votes for the block extending from a larger-or-equal-epoch QC. Usually, it maintains its locally largest-epoch QC. Once seeing a new larger-or-equal-epoch QC, it will replace its maintained largest-epoch QC with the new one. The largest-epoch QC maintained by a replica will be only one at any time, which is considered to be locked on. As for <code>Streamlet</code>, it can vote for any block extending from a larger-or-equal-height QC. From another prospective, we can also consider <strong>Streamlet</strong> to lock on all the highest QCs, which may be multiple.</p>
+<p>+, # We may find that the consensus with QC in the block does not need the echo mechanism. The reason is that a QC in the new block functions as echoing replicas' votes. If neither QC in the block nor the echo mechanism is adopted, the algorithm will lose the <code>liveness</code> property, which is detailed analyzed by Dr. Malkhi's <a target="_blank" rel="noopener" href="https://dahliamalkhi.github.io/posts/2020/12/what-they-didnt-teach-you-in-streamlet/">blog</a>.</p>
 <h2 id="reference">Reference</h2>
 <ol type="1">
-<li>Miller, A., Xia, Y., Croman, K., Shi, E., &amp; Song, D. "The honey badger of BFT protocols." In Proceedings of the 2016 ACM SIGSAC Conference on Computer and Communications Security (CCS'16), pp. 31-42.</li>
+<li>Buchman, E. "Tendermint: Byzantine fault tolerance in the age of blockchains." Doctoral dissertation, 2016.</li>
+<li>Chan, T. H., Pass, R., &amp; Shi, E. "Pala: A simple partially synchronous blockchain." Cryptology ePrint Archive, 2018.</li>
+<li>Chan, B. Y., &amp; Shi, E. "Streamlet: Textbook streamlined blockchains." In Proceedings of the 2nd ACM Conference on Advances in Financial Technologies (AFT'20), pp. 1-11.</li>
+<li>Yin, M., Malkhi, D., Reiter, M. K., Gueta, G. G., &amp; Abraham, I. "HotStuff: BFT consensus with linearity and responsiveness." In Proceedings of the 2019 ACM Symposium on Principles of Distributed Computing (PODC'19), pp. 347-356.</li>
+<li>"What They Did not Teach you in Streamlet." https://dahliamalkhi.github.io/posts/2020/12/what-they-didnt-teach-you-in-streamlet/</li>
+<li>"Lecture 14: Blockchain protocols with finality: Streamlet and HotStuf." https://courses.grainger.illinois.edu/ece598pv/sp2021/lectureslides2021/ECE_598_PV_course_notes14.pdf</li>
 </ol>
 
     </div>
@@ -255,9 +317,8 @@
       <footer class="post-footer">
           <div class="post-tags">
               <a href="/tags/Consensus/" rel="tag"># Consensus</a>
+              <a href="/tags/BFT/" rel="tag"># BFT</a>
               <a href="/tags/Blockchain/" rel="tag"># Blockchain</a>
-              <a href="/tags/Asynchronous/" rel="tag"># Asynchronous</a>
-              <a href="/tags/HoneybadgerBFT/" rel="tag"># HoneybadgerBFT</a>
           </div>
 
         
@@ -271,13 +332,10 @@
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/2021/09/30/blockchain-ds-function/" rel="prev" title="What Benefits Can Blockchain Structure Bring To Consensus?">
-      <i class="fa fa-chevron-left"></i> What Benefits Can Blockchain Structure Bring To Consensus?
+    <a href="/2021/10/26/comp-pala-streamlet/" rel="prev" title="A Comparison between Pala and Streamlet">
+      <i class="fa fa-chevron-left"></i> A Comparison between Pala and Streamlet
     </a></div>
-      <div class="post-nav-item">
-    <a href="/2021/10/15/unification-parallel-block/" rel="next" title="A Unified Model of Parallel-Block Blockchains">
-      A Unified Model of Parallel-Block Blockchains <i class="fa fa-chevron-right"></i>
-    </a></div>
+      <div class="post-nav-item"></div>
     </div>
       </footer>
     
@@ -336,7 +394,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#i.-an-overlooked-fact-of-consensus-round-by-round-flow"><span class="nav-number">1.</span> <span class="nav-text">I. An Overlooked Fact of Consensus: Round-by-Round Flow</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ii.-drawbacks-of-rbc-inefficiency-or-even-halting"><span class="nav-number">2.</span> <span class="nav-text">II. Drawbacks of RBC: Inefficiency or Even Halting</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#iii.-functions-of-aba"><span class="nav-number">3.</span> <span class="nav-text">III. Functions of ABA</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#a.-how-to-define-a-long-time"><span class="nav-number">3.1.</span> <span class="nav-text">A. How to define a long time?</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#reference"><span class="nav-number">4.</span> <span class="nav-text">Reference</span></a></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#comparison"><span class="nav-number">1.</span> <span class="nav-text">Comparison</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#reference"><span class="nav-number">2.</span> <span class="nav-text">Reference</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
