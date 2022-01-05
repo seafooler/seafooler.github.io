@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-kelp.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-kelp.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-kelp.png">
+  <link rel="manifest" href="/images/manifest.json">
+  <meta name="msapplication-config" content="/images/browserconfig.xml">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":{"disqus":{"text":"Load Disqus","order":-1}}},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="从这一篇博客开始，我们将介绍btcd节点之间P2P连接建立的过程。考虑到内容太长，分为上下两篇博客来讲解。这两篇博客之后，我们将继续介绍节点之间数据的同步过程。 源码解析是基于btcd仓库c26ffa870fd817666a857af1bf6498fabba1ffe3的commit id 版本。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="btcd源码解析——节点P2P连接建立的过程 (1)">
+<meta property="og:url" content="http://example.com/2019/07/21/btcd-source-code-analysis-3/index.html">
+<meta property="og:site_name" content="Seafooler&#39;s Blog">
+<meta property="og:description" content="从这一篇博客开始，我们将介绍btcd节点之间P2P连接建立的过程。考虑到内容太长，分为上下两篇博客来讲解。这两篇博客之后，我们将继续介绍节点之间数据的同步过程。 源码解析是基于btcd仓库c26ffa870fd817666a857af1bf6498fabba1ffe3的commit id 版本。">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2019-07-20T16:00:00.000Z">
+<meta property="article:modified_time" content="2022-01-05T06:59:22.025Z">
+<meta property="article:author" content="Seafooler">
+<meta property="article:tag" content="Bitcoin">
+<meta property="article:tag" content="Blockchain - Golang - Code analysis">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://example.com/2019/07/21/btcd-source-code-analysis-3/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+
+  <title>btcd源码解析——节点P2P连接建立的过程 (1) | Seafooler's Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Seafooler's Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>About</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2019/07/21/btcd-source-code-analysis-3/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Seafooler">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Seafooler's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          btcd源码解析——节点P2P连接建立的过程 (1)
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2019-07-21 00:00:00" itemprop="dateCreated datePublished" datetime="2019-07-21T00:00:00+08:00">2019-07-21</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2022-01-05 14:59:22" itemprop="dateModified" datetime="2022-01-05T14:59:22+08:00">2022-01-05</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Code-analysis/" itemprop="url" rel="index"><span itemprop="name">Code-analysis</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>从这一篇博客开始，我们将介绍<code>btcd</code>节点之间<code>P2P</code>连接建立的过程。考虑到内容太长，分为上下两篇博客来讲解。这两篇博客之后，我们将继续介绍节点之间数据的同步过程。 源码解析是基于<a target="_blank" rel="noopener" href="https://github.com/btcsuite/btcd">btcd</a>仓库<code>c26ffa870fd817666a857af1bf6498fabba1ffe3</code>的<code>commit id</code> 版本。 <span id="more"></span></p>
+<h2 id="i.-从节点的启动说起">I. 从节点的“启动”说起</h2>
+<p><code>btcd</code>节点的启动主要由<code>btcd.go</code>文件中的<code>btcdMain</code>函数完成，其中<code>P2P</code>的连接过程又是由 <code>server.Start()</code>代码完成，如下所示： <figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// btcdMain [btcd.go]</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">btcdMain</span><span class="params">(serverChan <span class="keyword">chan</span>&lt;- *server)</span> <span class="title">error</span></span> &#123;                    <span class="comment">// L43</span></span><br><span class="line">    ...</span><br><span class="line">    server, err := newServer(...)                                   <span class="comment">// L149</span></span><br><span class="line">    ...</span><br><span class="line">    server.Start()                                                  <span class="comment">// L162</span></span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure> <code>Start</code>函数中和<code>P2P</code>连接相关的部分在<code>go s.peerHandler()</code>完成，如下代码所示： <figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// btcdMain [btcd.go] -&gt; Start [server.go]</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(s *server)</span> <span class="title">Start</span><span class="params">()</span></span> &#123;                                      <span class="comment">// L2291</span></span><br><span class="line">    ...</span><br><span class="line">    <span class="keyword">go</span> s.peerHandler()                                          <span class="comment">// L2305</span></span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure> 在比特币<code>P2P</code>连接的语境中，一个节点就是一个<code>peer</code>. <code>peerHandler</code>函数包含三个最关键的启动工作：</p>
+<ul>
+<li>启动<code>addrManager</code>，进行<code>peer</code>地址的管理</li>
+<li>启动 <code>syncManager</code>，进行<code>peer</code>之间数据的同步</li>
+<li>启动 <code>connManager</code>，进行<code>peer</code>之间连接的管理</li>
+</ul>
+<p>代码如下所示： <figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// btcdMain [btcd.go] -&gt; Start [server.go] -&gt; peerHandler</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(s *server)</span> <span class="title">peerHandler</span><span class="params">()</span></span> &#123;                             <span class="comment">// L2062</span></span><br><span class="line">    ...</span><br><span class="line">    s.addrManager.Start()                                    <span class="comment">// L2068</span></span><br><span class="line">    s.syncManager.Start()                                    <span class="comment">// L2069</span></span><br><span class="line">    ...</span><br><span class="line">    <span class="keyword">go</span> s.connManager.Start()                                 <span class="comment">// L2093</span></span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure> 其中跟<code>P2P</code>连接相关的主要是<code>addrManager</code>和<code>connManager</code>的启动。具体而言：</p>
+<ul>
+<li><code>addrManager</code>负责对其他<code>peer</code>地址的管理，主要是一些本地的工作，不涉及直接的网络连接或传输；</li>
+<li><code>connManager</code>则主要负责与其他<code>peer</code>建立<code>P2P</code>连接，建立连接是需要对方<code>peer</code>的地址，这便依赖于<code>addrManager</code>中管理的地址。</li>
+</ul>
+<h2 id="ii.-p2p连接中peer地址的管理">II. P2P连接中peer地址的管理</h2>
+<h3 id="a.-addrmanager数据结构相关">A. AddrManager数据结构相关</h3>
+<p><code>P2P</code>连接中<code>peer</code>地址的管理主要由<code>addrManager</code>完成，<code>addrManager</code>变量中包含了各种用于地址管理的信息，其数据结构如下所示： <figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// AddrManager [addrmanager.go]</span></span><br><span class="line"><span class="keyword">type</span> AddrManager <span class="keyword">struct</span> &#123;                                           <span class="comment">// L32</span></span><br><span class="line">    ...</span><br><span class="line">    peersFile      <span class="keyword">string</span>                                           <span class="comment">// L34</span></span><br><span class="line">    ...</span><br><span class="line">    addrIndex    <span class="keyword">map</span>[<span class="keyword">string</span>]*KnownAddress                           <span class="comment">// L38</span></span><br><span class="line">    addrNew     [newBucketCount]<span class="keyword">map</span>[<span class="keyword">string</span>]*KnownAddress</span><br><span class="line">    addrTried    [newBucketCount]<span class="keyword">map</span>[<span class="keyword">string</span>]*KnownAddress</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure> 其中最重要的四个字段是<code>peersFile</code>, <code>addrIndex</code>, <code>addrNew</code>, 和<code>addrTried</code>:</p>
+<ul>
+<li><code>peersFile</code> 对应于一个文件名，该文件主要保存序列化后的<code>addrManager</code>，用于节点重启时能快速建立连接。该文件路径名默认为<code>$data-dir/data/mainnet/peers.json</code></li>
+<li><code>addrIndex</code> 缓存所有<code>KnownAddress</code>的<code>map</code></li>
+<li><code>addrNew</code> 缓存所有新地址的<code>map slice</code></li>
+<li><code>addrTried</code> 缓存所有已经尝试连接过的地址的<code>list slice</code></li>
+</ul>
+<p>准确来说，<code>peersFile</code>中保存的并不是直接序列化后的<code>addrManager</code>，因为<code>addrManager</code>中的一些信息是运行时信息，并不需要保存下来。因此源码中构造了专门用于序列化<code>addrManager</code>的数据结构，如下所示： <figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// serializedAddrManager [addrmanager.go]</span></span><br><span class="line"><span class="keyword">type</span> serializedAddrManager <span class="keyword">struct</span> &#123;                                               <span class="comment">// L64</span></span><br><span class="line">    Version      <span class="keyword">int</span></span><br><span class="line">    Key           [<span class="number">32</span>]<span class="keyword">byte</span></span><br><span class="line">    Addresses    []*serializedKnownAddress</span><br><span class="line">    NewBuckets   [newBucketCount][]<span class="keyword">string</span> <span class="comment">// string is NetAddressKey</span></span><br><span class="line">    TriedBuckets [triedBucketCount][]<span class="keyword">string</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h3 id="b.-从peersfile中反序列化填充addrmanager变量">B. 从peersFile中反序列化填充AddrManager变量</h3>
+<p><code>addrManager</code>的<code>Start</code>函数中的<code>loadPeers</code>函数用来从<code>peersFile</code>中反序列化出<code>peers</code>的信息，并填充到<code>addrManager</code>中. <figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Start [addrmanager.go]</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(a *AddrManager)</span> <span class="title">Start</span><span class="params">()</span></span> &#123;                                          <span class="comment">// L567</span></span><br><span class="line">    ...</span><br><span class="line">    a.loadPeers()</span><br><span class="line">    ...</span><br><span class="line">    <span class="keyword">go</span> a.addressHandler()                                               <span class="comment">// L580</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure> <code>loadPeers</code>函数中主要做事的是<code>deserializePeers</code>函数，如下所示： <figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Start [addrmanager.go] -&gt; loadPeers</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(a *AddrManager)</span> <span class="title">loadPeers</span><span class="params">()</span></span> &#123;                                            <span class="comment">// L423</span></span><br><span class="line">    ...</span><br><span class="line">    err := a.deserializePeers(a.peersFile)</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure> <code>deserializePeers</code>函数中的工作主要包括两个部分：</p>
+<ol type="1">
+<li>将<code>peersFile</code>文件中的数据反序列化成<code>serializedAddrManager</code>变量 (<code>sam</code>)</li>
+<li>将<code>sam</code>中的<code>Addresses</code>，<code>NewBuckets</code>和<code>TriedBuckets</code>字段处理赋值给<code>AddrManager</code>变量 (<code>a</code>) 的<code>addrIndex</code>, <code>addrNew</code>和<code>addrTried</code>字段</li>
+</ol>
+<p><code>deserializePeers</code>函数代码如下所示, 其中:</p>
+<ol type="1">
+<li>L444 - L456行代码将<code>peersFile</code>文件中的数据反序列化成<code>sam</code>变量,</li>
+<li>L471 - L502行代码将<code>sam</code>中的<code>Addresses</code>字段处理赋值给的<code>addrIndex</code>,</li>
+<li>L504 - L518将<code>sam</code>中的<code>NewBuckets</code>字段处理赋值给的<code>addrNew</code>,</li>
+<li>L519 - L531将<code>sam</code>中的<code>TriedBuckets</code>字段处理赋值给的<code>addrTried</code></li>
+</ol>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Start [addrmanager.go] -&gt; loadPeers -&gt; deserializePeers</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(a *AddrManager)</span> <span class="title">deserializePeers</span><span class="params">(filePath <span class="keyword">string</span>)</span> <span class="title">error</span></span> &#123;         <span class="comment">// L442</span></span><br><span class="line">    ...</span><br><span class="line">    r, err := os.Open(filePath)                                                    <span class="comment">// L444</span></span><br><span class="line">    ...</span><br><span class="line">    <span class="keyword">var</span> sam serializedAddrManager</span><br><span class="line">    dec := json.NewDecoder(r)</span><br><span class="line">    err = dec.Decode(&amp;sam)                                                      <span class="comment">// L456</span></span><br><span class="line">    ...</span><br><span class="line">    <span class="keyword">for</span> _, v := <span class="keyword">range</span> sam.Addresses &#123;                                           <span class="comment">// L471</span></span><br><span class="line">        ka := <span class="built_in">new</span>(KnownAddress)</span><br><span class="line">        ...</span><br><span class="line">        ka.na, err = a.DeserializeNetAddress(v.Addr, v.Services)</span><br><span class="line">        ...</span><br><span class="line">        ka.srcAddr, err = a.DeserializeNetAddress(v.Src, v.SrcServices)</span><br><span class="line">        ...</span><br><span class="line">        a.addrIndex[NetAddressKey(ka.na)] = ka</span><br><span class="line">    &#125;                                                                                   <span class="comment">// L502</span></span><br><span class="line">    ...</span><br><span class="line">    <span class="keyword">for</span> i := <span class="keyword">range</span> sam.NewBuckets &#123;                                     <span class="comment">// L504</span></span><br><span class="line">        <span class="keyword">for</span> _, val := <span class="keyword">range</span> sam.NewBuckets[i] &#123;</span><br><span class="line">            ka, ok := a.addrIndex[val]</span><br><span class="line">            ...</span><br><span class="line">            a.addrNew[i][val] = ka</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;                                                                                   <span class="comment">// L518</span></span><br><span class="line">    <span class="keyword">for</span> i := <span class="keyword">range</span> sam.TriedBuckets &#123;                                   <span class="comment">// L519</span></span><br><span class="line">        <span class="keyword">for</span> _, val := <span class="keyword">range</span> sam.TriedBuckets[i] &#123;</span><br><span class="line">            ka, ok := a.addrIndex[val]</span><br><span class="line">            ...</span><br><span class="line">            a.addrTried[i].PushBack(ka)</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;                                                                                   <span class="comment">// L531</span></span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="c.-将addrmanager变量序列化存储到peersfile中">C. 将AddrManager变量序列化存储到peersFile中</h3>
+<p>II.B小节中<code>Start()</code>函数的<strong>L580</strong>行启动了一个<code>addressHandler</code>函数的协程，该函数每隔10分钟调用一次<code>savePeers</code>函数，将<code>peers</code>信息 (<code>sam</code>变量) 序列化并保存到<code>peersFile</code>文件中。<code>addressHandler</code>函数和<code>savePeers</code>函数的代码分别如下所示： <figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Start [addrmanager.go] -&gt; addressHandler </span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(a *AddrManager)</span> <span class="title">addressHandler</span><span class="params">()</span></span> &#123;                                 <span class="comment">// L567</span></span><br><span class="line">    ...</span><br><span class="line">    <span class="keyword">for</span> &#123;</span><br><span class="line">        <span class="keyword">select</span> &#123;</span><br><span class="line">        <span class="keyword">case</span> &lt;- dumpAddressTicker.C:</span><br><span class="line">            a.savePeers()</span><br><span class="line">        ...</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Start [addrmanager.go] -&gt; addressHandler -&gt; savePeers</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(a *AddrManager)</span> <span class="title">savePeers</span><span class="params">()</span></span> &#123;                                 <span class="comment">// L361</span></span><br><span class="line">    ...</span><br><span class="line">    w, err := os.Create(a.peersFile)                                <span class="comment">// L408</span></span><br><span class="line">    ...</span><br><span class="line">    enc := json.NewEncoder(w)                                       <span class="comment">// L413</span></span><br><span class="line">    ...</span><br><span class="line">    enc.Encode(&amp;sam)                                                <span class="comment">// L415</span></span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="iii.-与其他peer建立p2p连接">III. 与其他peer建立P2P连接</h2>
+<p>第I节的<code>peerHandler</code>函数中的<strong>L2093</strong>启动了一个新协程，该协程运行<code>s.connManager.Start()</code>代码启动了<code>ConnManager</code>管理器，代码如下所示： <figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Start [connmanager.go]</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(cm *ConnManager)</span> <span class="title">Start</span><span class="params">()</span></span> &#123;</span><br><span class="line">    ...</span><br><span class="line">    <span class="keyword">go</span> cm.connHandler()                                                             <span class="comment">// L518</span></span><br><span class="line">    ...</span><br><span class="line">    <span class="keyword">if</span> cm.cfg.OnAccept != <span class="literal">nil</span> &#123;</span><br><span class="line">        <span class="keyword">for</span> _, listener := <span class="keyword">range</span> cm.cfg.Listeners &#123;</span><br><span class="line">            cm.wg.Add(<span class="number">1</span>)</span><br><span class="line">            <span class="keyword">go</span> cm.listenerHandler(listener)                                        <span class="comment">// L525</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">for</span> i := atomic.LoadUnit64(&amp;cm.connReqCount); i &lt; <span class="keyword">uint64</span>(cm.cfg.TargetOutbound); i++ &#123;   </span><br><span class="line">        <span class="keyword">go</span> cm.NewConnReq()                                                       <span class="comment">// L530</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure> <code>Start</code>函数中最重要的代码包括三部分：</p>
+<ol type="1">
+<li><strong>L530</strong>行主动发起与其他<code>peer</code>节点的连接</li>
+<li><strong>L518</strong>行对所有的主动连接进行管理</li>
+<li><strong>L525</strong>行被动接受其他<code>peer</code>节点的连接</li>
+</ol>
+<p>需要进一步说明的是，1主要是完成主动连接的建立过程，2主要完成主动连接建立之后的管理。1每建立一次连接后，都需要由2完成后续的管理工作，如登记到<code>conns</code>变量中。</p>
+<h3 id="a.-主动发起连接">A. 主动发起连接</h3>
+<p>节点主动发起连接的行为由<code>NewConnReq</code>函数完成，代码如下所示： <figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Start [connmanager.go] -&gt; NewConnReq [server.go]</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(cm *ConnManager)</span> <span class="title">NewConnReq</span><span class="params">()</span></span> &#123;</span><br><span class="line">    ...</span><br><span class="line">    done := <span class="built_in">make</span>(<span class="keyword">chan</span> <span class="keyword">struct</span>&#123;&#125;)                                                         <span class="comment">// L376</span></span><br><span class="line">    <span class="keyword">select</span> &#123;</span><br><span class="line">    <span class="keyword">case</span> cm.requests &lt;- registerPending&#123;c, done&#125;:</span><br><span class="line">    <span class="keyword">case</span> &lt;-cm.quit:       </span><br><span class="line">        <span class="keyword">return</span></span><br><span class="line">    &#125;</span><br><span class="line">    ...</span><br><span class="line">    <span class="keyword">select</span> &#123;</span><br><span class="line">    <span class="keyword">case</span> &lt;-done:</span><br><span class="line">    <span class="keyword">case</span> &lt;-cm.quit:       </span><br><span class="line">    <span class="keyword">return</span></span><br><span class="line">    &#125;                                                                                           <span class="comment">// L398</span></span><br><span class="line">    </span><br><span class="line">    addr, err := cm.cfg.GetNewAddress()                                             <span class="comment">// L400</span></span><br><span class="line">    ...</span><br><span class="line">    c.Addr = addr</span><br><span class="line">    </span><br><span class="line">    cm.Connect(c)                                                                           <span class="comment">// L402</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure> 其中需要解释的代码包括三个部分：</p>
+<ol type="1">
+<li>L376-L398: 将当前连接请求登记到<code>pending</code>变量中，方便对该连接进行后续管理。登记过程是通过<code>requests</code>管道完成的，管道的另一端连接<code>connHandler</code>函数，后续在讲解<code>connHandler</code>函数的再做详细介绍；</li>
+<li>L400: 获取将要连接的peer地址，将在III.A.1节讲述</li>
+<li>L402: 完成实际的连接过程，将在III.A.2节讲述</li>
+</ol>
+<h4 id="获取将要连接的peer地址">1. 获取将要连接的peer地址</h4>
+<p>由上可知，获取将要连接的<code>peer</code>地址是由<code>GetNewAddress</code>函数实现的，该函数是<code>connmanager.go</code>文件中<code>config</code>数据结构的字段. 在初始化<code>cmg</code>r变量时，该字段被赋值为<code>newAddressFunc</code>，代码如下所示： <figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// newServer [server.go]</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">newServer</span><span class="params">(...)</span> <span class="params">(*server, error)</span></span> &#123;</span><br><span class="line">    ...</span><br><span class="line">    cmgr, err := connmgr.New(&amp;connmgr.Config&#123;                                         <span class="comment">// L2818</span></span><br><span class="line">        ...     </span><br><span class="line">        GetNewAddress:  newAddressFunc,</span><br><span class="line">    &#125;)</span><br><span class="line">    ...</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure> 进一步查看<code>newAddressFunc</code>函数的定义，其也定义在<code>newServer</code>函数中，代码如下所示： <figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// newServer [server.go]</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">newServer</span><span class="params">(...)</span> <span class="params">(*server, error)</span></span> &#123;</span><br><span class="line">    ...</span><br><span class="line"><span class="keyword">var</span> newAddressFunc <span class="function"><span class="keyword">func</span><span class="params">()</span> <span class="params">(net.Addr, error)</span>                                             // <span class="title">L2773</span></span></span><br><span class="line">    <span class="keyword">if</span> !cfg.SimNet &amp;&amp; <span class="built_in">len</span>(cfg.ConnectPeers) == <span class="number">0</span> &#123;       </span><br><span class="line">        newAddressFunc = <span class="function"><span class="keyword">func</span><span class="params">()</span> <span class="params">(net.Addr, error)</span></span> &#123;              </span><br><span class="line">            <span class="keyword">for</span> tries := <span class="number">0</span>; tries &lt; <span class="number">100</span>; tries++ &#123;</span><br><span class="line">                addr := s.addrManager.GetAddress()                                      <span class="comment">// L2777</span></span><br><span class="line">                ...</span><br><span class="line">                addrString := addrmgr.NetAddressKey(addr.NetAddress())</span><br><span class="line">                <span class="keyword">return</span> addrStringToNetAddr(addrString)</span><br><span class="line">            &#125;</span><br><span class="line">            ...</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure> 其中最重要的代码在<strong>L2777</strong>行，利用<code>addrManager</code>的<code>GetAddress</code>函数获取可用的连接地址。<code>GetAddress</code>函数主要在<code>addrTried</code>和<code>addrNew</code>两个列表中随机地挑选可用的地址，这就与第II节的内容联系起来了。</p>
+<h4 id="完成实际的连接过程">2. 完成实际的连接过程</h4>
+<p>实际的连接过程是由<code>cm.Connect(c)</code>完成的，其代码如下所示： <figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Start [connmanager.go] -&gt; NewConnReq [server.go] -&gt; Connect [connmanager.go]</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(cm *ConnManager)</span> <span class="title">Connect</span><span class="params">(c *ConnReq)</span></span> &#123;</span><br><span class="line">    ...</span><br><span class="line">    conn, err := cm.cfg.Dial(c.Addr)                                                    <span class="comment">// L444</span></span><br><span class="line">    <span class="keyword">if</span> err != <span class="literal">nil</span> &#123;       </span><br><span class="line">        <span class="keyword">select</span> &#123;       </span><br><span class="line">        <span class="keyword">case</span> cm.requests &lt;- handleFailed&#123;c, err&#125;:                                   <span class="comment">// L447</span></span><br><span class="line">        <span class="keyword">case</span> &lt;-cm.quit:      </span><br><span class="line">        &#125;       </span><br><span class="line">        <span class="keyword">return</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">select</span> &#123;</span><br><span class="line">    <span class="keyword">case</span> cm.requests &lt;- handleConnected&#123;c, conn&#125;:                               <span class="comment">// L454</span></span><br><span class="line">    <span class="keyword">case</span> &lt;-cm.quit:</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure> <strong>L444</strong>行通过调用<code>Dial</code>函数进行连接，该函数主要对<code>golang</code>中<code>net</code>包的<code>Dial</code>方法进行了一些包装。 <strong>L447</strong>和<strong>L454</strong>行分别用来处理连接失败和成功的情况，具体处理过程也是通过向<code>requests</code>通道传递数据来完成。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Bitcoin/" rel="tag"># Bitcoin</a>
+              <a href="/tags/Blockchain-Golang-Code-analysis/" rel="tag"># Blockchain - Golang - Code analysis</a>
+          </div>
+
+        
+  <div class="post-widgets">
+    <div class="wp_rating">
+      <div id="wpac-rating"></div>
+    </div>
+  </div>
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2019/03/18/bitcoin-protocol-addr-format/" rel="prev" title="关于比特币地址的一些问题和解答">
+      <i class="fa fa-chevron-left"></i> 关于比特币地址的一些问题和解答
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2019/07/22/btcd-source-code-analysis-4/" rel="next" title="btcd源码解析——节点P2P连接建立的过程 (2)">
+      btcd源码解析——节点P2P连接建立的过程 (2) <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#i.-%E4%BB%8E%E8%8A%82%E7%82%B9%E7%9A%84%E5%90%AF%E5%8A%A8%E8%AF%B4%E8%B5%B7"><span class="nav-number">1.</span> <span class="nav-text">I. 从节点的“启动”说起</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ii.-p2p%E8%BF%9E%E6%8E%A5%E4%B8%ADpeer%E5%9C%B0%E5%9D%80%E7%9A%84%E7%AE%A1%E7%90%86"><span class="nav-number">2.</span> <span class="nav-text">II. P2P连接中peer地址的管理</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#a.-addrmanager%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E7%9B%B8%E5%85%B3"><span class="nav-number">2.1.</span> <span class="nav-text">A. AddrManager数据结构相关</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#b.-%E4%BB%8Epeersfile%E4%B8%AD%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E5%A1%AB%E5%85%85addrmanager%E5%8F%98%E9%87%8F"><span class="nav-number">2.2.</span> <span class="nav-text">B. 从peersFile中反序列化填充AddrManager变量</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#c.-%E5%B0%86addrmanager%E5%8F%98%E9%87%8F%E5%BA%8F%E5%88%97%E5%8C%96%E5%AD%98%E5%82%A8%E5%88%B0peersfile%E4%B8%AD"><span class="nav-number">2.3.</span> <span class="nav-text">C. 将AddrManager变量序列化存储到peersFile中</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#iii.-%E4%B8%8E%E5%85%B6%E4%BB%96peer%E5%BB%BA%E7%AB%8Bp2p%E8%BF%9E%E6%8E%A5"><span class="nav-number">3.</span> <span class="nav-text">III. 与其他peer建立P2P连接</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#a.-%E4%B8%BB%E5%8A%A8%E5%8F%91%E8%B5%B7%E8%BF%9E%E6%8E%A5"><span class="nav-number">3.1.</span> <span class="nav-text">A. 主动发起连接</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%8E%B7%E5%8F%96%E5%B0%86%E8%A6%81%E8%BF%9E%E6%8E%A5%E7%9A%84peer%E5%9C%B0%E5%9D%80"><span class="nav-number">3.1.1.</span> <span class="nav-text">1. 获取将要连接的peer地址</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%AE%8C%E6%88%90%E5%AE%9E%E9%99%85%E7%9A%84%E8%BF%9E%E6%8E%A5%E8%BF%87%E7%A8%8B"><span class="nav-number">3.1.2.</span> <span class="nav-text">2. 完成实际的连接过程</span></a></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Seafooler</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">33</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">16</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="mailto:seafooler@gmail.com" title="E-Mail → mailto:seafooler@gmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Seafooler</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+  <script>
+  if (CONFIG.page.isPost) {
+    wpac_init = window.wpac_init || [];
+    wpac_init.push({
+      widget: 'Rating',
+      id    : ,
+      el    : 'wpac-rating',
+      color : 'fc6423'
+    });
+    (function() {
+      if ('WIDGETPACK_LOADED' in window) return;
+      WIDGETPACK_LOADED = true;
+      var mc = document.createElement('script');
+      mc.type = 'text/javascript';
+      mc.async = true;
+      mc.src = '//embed.widgetpack.com/widget.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(mc, s.nextSibling);
+    })();
+  }
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+
+</body>
+</html>

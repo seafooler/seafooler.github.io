@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-kelp.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-kelp.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-kelp.png">
+  <link rel="manifest" href="/images/manifest.json">
+  <meta name="msapplication-config" content="/images/browserconfig.xml">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":{"disqus":{"text":"Load Disqus","order":-1}}},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="在开始本篇博客之前，我们首先回顾一下前两篇博客的内容 第一篇博客介绍了比特币签名相关的基础知识，第二篇博客博客介绍了签名的基本原理。本篇博客将从btcd的源码层面分析签名的具体流程。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="btcd源码解析——签名机制(3)——源码分析">
+<meta property="og:url" content="http://example.com/2020/03/07/btcd-source-code-analysis-13/index.html">
+<meta property="og:site_name" content="Seafooler&#39;s Blog">
+<meta property="og:description" content="在开始本篇博客之前，我们首先回顾一下前两篇博客的内容 第一篇博客介绍了比特币签名相关的基础知识，第二篇博客博客介绍了签名的基本原理。本篇博客将从btcd的源码层面分析签名的具体流程。">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/20200305161101509.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3UwMTQ2MzMyODM=,size_16,color_FFFFFF,t_70">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/20200305161604111.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3UwMTQ2MzMyODM=,size_16,color_FFFFFF,t_70">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/20200305162004925.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3UwMTQ2MzMyODM=,size_16,color_FFFFFF,t_70">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/20200305161702297.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3UwMTQ2MzMyODM=,size_16,color_FFFFFF,t_70">
+<meta property="article:published_time" content="2020-03-06T16:00:00.000Z">
+<meta property="article:modified_time" content="2022-01-05T08:56:43.240Z">
+<meta property="article:author" content="Seafooler">
+<meta property="article:tag" content="Bitcoin">
+<meta property="article:tag" content="Blockchain - Golang - Code analysis">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://img-blog.csdnimg.cn/20200305161101509.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3UwMTQ2MzMyODM=,size_16,color_FFFFFF,t_70">
+
+<link rel="canonical" href="http://example.com/2020/03/07/btcd-source-code-analysis-13/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+
+  <title>btcd源码解析——签名机制(3)——源码分析 | Seafooler's Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Seafooler's Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>About</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2020/03/07/btcd-source-code-analysis-13/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Seafooler">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Seafooler's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          btcd源码解析——签名机制(3)——源码分析
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2020-03-07 00:00:00" itemprop="dateCreated datePublished" datetime="2020-03-07T00:00:00+08:00">2020-03-07</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2022-01-05 16:56:43" itemprop="dateModified" datetime="2022-01-05T16:56:43+08:00">2022-01-05</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Code-analysis/" itemprop="url" rel="index"><span itemprop="name">Code-analysis</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>在开始本篇博客之前，我们首先回顾一下前两篇博客的内容 <a target="_blank" rel="noopener" href="https://blog.csdn.net/u014633283/article/details/104676657">第一篇博客</a>介绍了比特币签名相关的基础知识，<a target="_blank" rel="noopener" href="https://blog.csdn.net/u014633283/article/details/104677139">第二篇博客</a>博客介绍了签名的基本原理。本篇博客将从<code>btcd</code>的源码层面分析签名的具体流程。 <span id="more"></span></p>
+<h2 id="iv.-签名流程源码层">IV. 签名流程——源码层</h2>
+<p>源码分析所针对的<code>btcd</code>版本为: ed77733ec07dfc8a513741138419b8d9d3de9d2d 签名流程中<code>message</code>的构建主要是由<code>calcSignatureHash</code>函数实现的，其主体代码如下所示： <figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// calcSignatureHash [script.go]</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">calcSignatureHash</span><span class="params">(script []parsedOpcode, hashType SigHashType, tx *wire.MsgTx, </span></span></span><br><span class="line"><span class="params"><span class="function">	idx <span class="keyword">int</span>)</span> []<span class="title">byte</span></span> &#123;</span><br><span class="line">    ...</span><br><span class="line">    <span class="keyword">if</span> hashType&amp;sigHashMask == SigHashSingle &amp;&amp; idx &gt;= <span class="built_in">len</span>(tx.TxOut) &#123;         <span class="comment">// L620</span></span><br><span class="line">        <span class="keyword">var</span> hash chainhash.Hash      </span><br><span class="line">        hash[<span class="number">0</span>] = <span class="number">0x01</span>      </span><br><span class="line">        <span class="keyword">return</span> hash[:]</span><br><span class="line">    &#125;</span><br><span class="line">    ...</span><br><span class="line">    script = removeOpcode(script, OP_CODESEPARATOR)                            <span class="comment">// L627</span></span><br><span class="line">    ...</span><br><span class="line">    txCopy := shallowCopyTx(tx)                                                <span class="comment">// L631</span></span><br><span class="line">    <span class="keyword">for</span> i := <span class="keyword">range</span> txCopy.TxIn &#123;                                               <span class="comment">// L632</span></span><br><span class="line">        <span class="keyword">if</span> i == idx &#123;                                                          <span class="comment">// L633</span></span><br><span class="line">            ...         </span><br><span class="line">            sigScript, _ := unparseScript(script)                              <span class="comment">// L636</span></span><br><span class="line">            txCopy.TxIn[idx].SignatureScript = sigScript                       <span class="comment">// L637</span></span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;            </span><br><span class="line">            txCopy.TxIn[i].SignatureScript = <span class="literal">nil</span>                               <span class="comment">// L639</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">switch</span> hashType &amp; sigHashMask &#123;                                            <span class="comment">// L643</span></span><br><span class="line">    <span class="keyword">case</span> SigHashNone:      </span><br><span class="line">        txCopy.TxOut = txCopy.TxOut[<span class="number">0</span>:<span class="number">0</span>] <span class="comment">// Empty slice.                       // L645   </span></span><br><span class="line">        <span class="keyword">for</span> i := <span class="keyword">range</span> txCopy.TxIn &#123;                                           <span class="comment">// L646</span></span><br><span class="line">            <span class="keyword">if</span> i != idx &#123;                  </span><br><span class="line">                txCopy.TxIn[i].Sequence = <span class="number">0</span>            </span><br><span class="line">            &#125;      </span><br><span class="line">        &#125;                                                                      <span class="comment">// L650</span></span><br><span class="line">        </span><br><span class="line">    <span class="keyword">case</span> SigHashSingle:     </span><br><span class="line">        <span class="comment">// Resize output array to up to and including requested index.      </span></span><br><span class="line">        txCopy.TxOut = txCopy.TxOut[:idx+<span class="number">1</span>]                                    <span class="comment">// L654</span></span><br><span class="line">        </span><br><span class="line">        <span class="comment">// All but current output get zeroed out.      </span></span><br><span class="line">        <span class="keyword">for</span> i := <span class="number">0</span>; i &lt; idx; i++ &#123;                                             <span class="comment">// L658</span></span><br><span class="line">            txCopy.TxOut[i].Value = <span class="number">-1</span>            </span><br><span class="line">            txCopy.TxOut[i].PkScript = <span class="literal">nil</span>                                     <span class="comment">// L659</span></span><br><span class="line">        &#125;     </span><br><span class="line">        </span><br><span class="line">        <span class="comment">// Sequence on all other inputs is 0, too.      </span></span><br><span class="line">        <span class="keyword">for</span> i := <span class="keyword">range</span> txCopy.TxIn &#123;                                           <span class="comment">// L663</span></span><br><span class="line">            <span class="keyword">if</span> i != idx &#123;                  </span><br><span class="line">                txCopy.TxIn[i].Sequence = <span class="number">0</span>            </span><br><span class="line">            &#125;      </span><br><span class="line">        &#125;                                                      			    <span class="comment">// L667</span></span><br><span class="line">        </span><br><span class="line">    <span class="keyword">default</span>:                                                   				<span class="comment">// L669</span></span><br><span class="line">        <span class="comment">// Consensus treats undefined hashtypes like normal SigHashAll      </span></span><br><span class="line">        <span class="comment">// for purposes of hash generation.      </span></span><br><span class="line">        <span class="keyword">fallthrough</span></span><br><span class="line">    <span class="keyword">case</span> SigHashOld:      </span><br><span class="line">        <span class="keyword">fallthrough</span></span><br><span class="line">    <span class="keyword">case</span> SigHashAll:      </span><br><span class="line">        <span class="comment">// Nothing special here.                              				    // L677</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> hashType&amp;SigHashAnyOneCanPay != <span class="number">0</span> &#123;                        				<span class="comment">// L678</span></span><br><span class="line">        txCopy.TxIn = txCopy.TxIn[idx : idx+<span class="number">1</span>]</span><br><span class="line">    &#125;                                                                           <span class="comment">// L680</span></span><br><span class="line">    ...</span><br><span class="line">    wbuf := bytes.NewBuffer(<span class="built_in">make</span>([]<span class="keyword">byte</span>, <span class="number">0</span>, txCopy.SerializeSizeStripped()+<span class="number">4</span>))  <span class="comment">// L685</span></span><br><span class="line">    txCopy.SerializeNoWitness(wbuf)</span><br><span class="line">    binary.Write(wbuf, binary.LittleEndian, hashType)</span><br><span class="line">    <span class="keyword">return</span> chainhash.DoubleHashB(wbuf.Bytes())                         		    <span class="comment">// L688</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure> 以下分小节对<code>calcSignatureHash</code>中的关键部分进行分析。</p>
+<h3 id="a.-特殊情况的处理">A. 特殊情况的处理</h3>
+<p>L620行首先对特殊情况进行处理，即：采用了<code>SigHashSingle</code>类型 (不管是有修饰类还是无修饰类)，但<code>input</code>的索引值(<code>index</code>)大于<code>TxNew</code>中的<code>output</code>数目。为什么说这种情况是一种特殊情况呢？ 回顾<a target="_blank" rel="noopener" href="https://blog.csdn.net/u014633283/article/details/104677139">上篇博客</a> III.A.3节的内容。在<code>SigHashSingle</code>的签名类型下，<code>message</code>需要包含对应当前<code>input</code>索引值的<code>output</code>。因此，当<code>input</code>的索引值大于<code>TxNew</code>中的<code>output</code>数目的时候，便出现了特殊情况。 在这种特殊情况下，简单地返回<code>0x010000...0000</code> (共一个<code>01</code>，31个<code>00</code>)的字节切片。</p>
+<h3 id="b.-删除op_codeseparator操作码">B. 删除<code>OP_CODESEPARATOR</code>操作码</h3>
+<p>L627行通过调用<code>removeOpcode</code>函数，将<code>script</code>中的<code>OP_CODESEPARATOR</code>操作码全部删除。 这对应于<a target="_blank" rel="noopener" href="https://blog.csdn.net/u014633283/article/details/104677139">上篇博客</a>图2中的黄色框部分。</p>
+<h3 id="c.-input部分的通用处理">C. <code>input</code>部分的通用处理</h3>
+<p>L631行至L641行，对<code>input</code>部分进行了通用的处理。对应于<a target="_blank" rel="noopener" href="https://blog.csdn.net/u014633283/article/details/104677139">上篇博客</a>中III.A小节的内容：</p>
+<blockquote>
+<ol type="1">
+<li>在后面的内容中，我们都是以第一个<code>input</code> (<code>vin[0]</code>)为例进行介绍，其他<code>input</code>也是同理。</li>
+<li>签名部分填充在<code>vin[0]</code>的的<code>scriptSigLen</code>和<code>scriptSig</code>中，也即图中红色框中。</li>
+<li>对于<code>vin[0]</code>而言，签名之前<code>scriptSigLen</code>和<code>scriptSig</code>中是没有内容的。其借助于<code>vout[0]</code>中的<code>scriptPubkey</code>进行填充。具体而言，将<code>vout[0]</code>中的<code>scriptPubkey</code>去除<code>OP_CODESEP</code>操作码后，将其内容和长度分别填充到<code>scriptSig</code>和<code>scriptSigLen</code>中。如图2中黄色框所示。</li>
+<li>对于其他<code>input</code>(如<code>vin[1]</code>)而言，<code>scriptSigLen</code>和<code>scriptSig</code>分别填充为0值和空值，如图2中暗绿色框所示。</li>
+</ol>
+</blockquote>
+<p>为方便读者阅读，我们将相应的图片再次展示如下： <img src="https://img-blog.csdnimg.cn/20200305161101509.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3UwMTQ2MzMyODM=,size_16,color_FFFFFF,t_70" alt="图2" /> 需要注意的是， L631行首先将交易(<code>tx</code>)拷贝了一份，因为交易是以传址的方式传入当前函数的，当前函数并不该修改原交易。 当前函数包含一些对交易内容修改的操作，但这些操作只是为了生成<code>message</code>，应该在交易的拷贝(<code>txCopy</code>)上进行。</p>
+<h3 id="d.-针对无修饰类具体类型的处理">D. 针对无修饰类具体类型的处理</h3>
+<p>L643行到L676行分别针对具体的签名类型进行处理。 #### 1. <code>SIGHASH_NONE</code>类型 L644行至L650行，对<code>SIGHASH_NONE</code>类型的签名进行处理。 回顾<a target="_blank" rel="noopener" href="https://blog.csdn.net/u014633283/article/details/104677139">上篇博客</a>的III.A.2小节（如下图所示），所有的<code>output</code>都被置为空 (L645)，除当前<code>input</code>之外的所有<code>input</code>的<code>nSequence</code>被置为0 (L648). <img src="https://img-blog.csdnimg.cn/20200305161604111.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3UwMTQ2MzMyODM=,size_16,color_FFFFFF,t_70" alt="图3" /></p>
+<h4 id="sighash_single类型">2. <code>SIGHASH_SINGLE</code>类型</h4>
+<p>L652行至L667行，对<code>SIGHASH_SINGLE</code>类型的签名进行处理。 回顾<a target="_blank" rel="noopener" href="https://blog.csdn.net/u014633283/article/details/104677139">上篇博客</a>的III.A.3小节（如下图所示）。 为了只保留对应当前<code>input</code>的<code>output</code>，<code>calcSignatureHash</code>函数分两步进行处理：</p>
+<ol type="1">
+<li>首先对当前切片进行截取，只保留索引小于等于当前<code>input</code>的元素 （L654行）</li>
+<li>对索引小于当前<code>input</code>的元素，<code>Value</code>置为-1，<code>PkScript</code>置空。</li>
+</ol>
+<p>也就是说，我们在<a target="_blank" rel="noopener" href="https://blog.csdn.net/u014633283/article/details/104677139">上篇博客</a>的III.A.3小节中描述得并不准确。对于索引小于当前<code>input</code>的元素，并没有直接删除，而是对其进行了置-1置空的处理 对于<code>当前input</code>之外的<code>input</code>，将其<code>nSequnce</code>置为0.</p>
+<figure>
+<img src="https://img-blog.csdnimg.cn/20200305162004925.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3UwMTQ2MzMyODM=,size_16,color_FFFFFF,t_70" alt="图4" /><figcaption aria-hidden="true">图4</figcaption>
+</figure>
+<h4 id="sighash_all类型">3. <code>SIGHASH_ALL</code>类型</h4>
+<p>L669行至L676行，对<code>SIGHASH_ALL</code>类型的签名进行处理。 从代码中可以看出，<code>SIGHASH_OLD</code>类型以及默认处理都采取了和<code>SIGHASH_ALL</code>一样的处理方式。 正如<a target="_blank" rel="noopener" href="https://blog.csdn.net/u014633283/article/details/104677139">上篇博客</a>的III.A.1小节中所述，<code>SIGHASH_ALL</code>类型签名的处理方式即是IV.C节中的<code>input</code>通用处理方式。因而，不需要再做额外的处理。</p>
+<h3 id="e.-针对有修饰类具体类型的处理">E. 针对有修饰类具体类型的处理</h3>
+<p>有修饰类和无修饰类最大的不同在于<code>input</code>的处理上。 如<a target="_blank" rel="noopener" href="https://blog.csdn.net/u014633283/article/details/104677139">上篇博客</a>的III.B小节所述，有修饰类即在无修饰类的基础上，将其他<code>input</code>去除。示意图片如下所示，代码如L678至L680所示。 <img src="https://img-blog.csdnimg.cn/20200305161702297.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3UwMTQ2MzMyODM=,size_16,color_FFFFFF,t_70" alt="图5" /></p>
+<h3 id="f.-生成message">F. 生成<code>message</code></h3>
+<p>基于前面步骤得到的交易副本 (<code>txCopy</code>)，通过序列化、双哈希等方式，即可生成所需的<code>messsage</code>. 该部分实现如代码L685至L699行所示。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Bitcoin/" rel="tag"># Bitcoin</a>
+              <a href="/tags/Blockchain-Golang-Code-analysis/" rel="tag"># Blockchain - Golang - Code analysis</a>
+          </div>
+
+        
+  <div class="post-widgets">
+    <div class="wp_rating">
+      <div id="wpac-rating"></div>
+    </div>
+  </div>
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/03/06/btcd-source-code-analysis-12/" rel="prev" title="btcd源码解析——签名机制(2)——签名流程">
+      <i class="fa fa-chevron-left"></i> btcd源码解析——签名机制(2)——签名流程
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2020/03/08/btcd-source-code-analysis-14/" rel="next" title="btcd源码解析——交易创建(3)——构造解锁脚本">
+      btcd源码解析——交易创建(3)——构造解锁脚本 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#iv.-%E7%AD%BE%E5%90%8D%E6%B5%81%E7%A8%8B%E6%BA%90%E7%A0%81%E5%B1%82"><span class="nav-number">1.</span> <span class="nav-text">IV. 签名流程——源码层</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#a.-%E7%89%B9%E6%AE%8A%E6%83%85%E5%86%B5%E7%9A%84%E5%A4%84%E7%90%86"><span class="nav-number">1.1.</span> <span class="nav-text">A. 特殊情况的处理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#b.-%E5%88%A0%E9%99%A4op_codeseparator%E6%93%8D%E4%BD%9C%E7%A0%81"><span class="nav-number">1.2.</span> <span class="nav-text">B. 删除OP_CODESEPARATOR操作码</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#c.-input%E9%83%A8%E5%88%86%E7%9A%84%E9%80%9A%E7%94%A8%E5%A4%84%E7%90%86"><span class="nav-number">1.3.</span> <span class="nav-text">C. input部分的通用处理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#d.-%E9%92%88%E5%AF%B9%E6%97%A0%E4%BF%AE%E9%A5%B0%E7%B1%BB%E5%85%B7%E4%BD%93%E7%B1%BB%E5%9E%8B%E7%9A%84%E5%A4%84%E7%90%86"><span class="nav-number">1.4.</span> <span class="nav-text">D. 针对无修饰类具体类型的处理</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#sighash_single%E7%B1%BB%E5%9E%8B"><span class="nav-number">1.4.1.</span> <span class="nav-text">2. SIGHASH_SINGLE类型</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#sighash_all%E7%B1%BB%E5%9E%8B"><span class="nav-number">1.4.2.</span> <span class="nav-text">3. SIGHASH_ALL类型</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#e.-%E9%92%88%E5%AF%B9%E6%9C%89%E4%BF%AE%E9%A5%B0%E7%B1%BB%E5%85%B7%E4%BD%93%E7%B1%BB%E5%9E%8B%E7%9A%84%E5%A4%84%E7%90%86"><span class="nav-number">1.5.</span> <span class="nav-text">E. 针对有修饰类具体类型的处理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#f.-%E7%94%9F%E6%88%90message"><span class="nav-number">1.6.</span> <span class="nav-text">F. 生成message</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Seafooler</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">33</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">16</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="mailto:seafooler@gmail.com" title="E-Mail → mailto:seafooler@gmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Seafooler</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+  <script>
+  if (CONFIG.page.isPost) {
+    wpac_init = window.wpac_init || [];
+    wpac_init.push({
+      widget: 'Rating',
+      id    : ,
+      el    : 'wpac-rating',
+      color : 'fc6423'
+    });
+    (function() {
+      if ('WIDGETPACK_LOADED' in window) return;
+      WIDGETPACK_LOADED = true;
+      var mc = document.createElement('script');
+      mc.type = 'text/javascript';
+      mc.async = true;
+      mc.src = '//embed.widgetpack.com/widget.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(mc, s.nextSibling);
+    })();
+  }
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+
+</body>
+</html>

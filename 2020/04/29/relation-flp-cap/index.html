@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-kelp.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-kelp.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-kelp.png">
+  <link rel="manifest" href="/images/manifest.json">
+  <meta name="msapplication-config" content="/images/browserconfig.xml">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":{"disqus":{"text":"Load Disqus","order":-1}}},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="承接上一篇博客:也谈分布式系统中的网络模型和故障模型，本篇博客仍然想探讨一些分布式系统的理论知识。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="谈谈FLP和CAP的关系">
+<meta property="og:url" content="http://example.com/2020/04/29/relation-flp-cap/index.html">
+<meta property="og:site_name" content="Seafooler&#39;s Blog">
+<meta property="og:description" content="承接上一篇博客:也谈分布式系统中的网络模型和故障模型，本篇博客仍然想探讨一些分布式系统的理论知识。">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://example.com/images/relation-flp-cap.png">
+<meta property="article:published_time" content="2020-04-28T16:00:00.000Z">
+<meta property="article:modified_time" content="2022-01-05T09:48:47.908Z">
+<meta property="article:author" content="Seafooler">
+<meta property="article:tag" content="distributed-system">
+<meta property="article:tag" content="theory">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/images/relation-flp-cap.png">
+
+<link rel="canonical" href="http://example.com/2020/04/29/relation-flp-cap/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+
+  <title>谈谈FLP和CAP的关系 | Seafooler's Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Seafooler's Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>About</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2020/04/29/relation-flp-cap/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Seafooler">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Seafooler's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          谈谈FLP和CAP的关系
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2020-04-29 00:00:00" itemprop="dateCreated datePublished" datetime="2020-04-29T00:00:00+08:00">2020-04-29</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2022-01-05 17:48:47" itemprop="dateModified" datetime="2022-01-05T17:48:47+08:00">2022-01-05</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/distributed-theory/" itemprop="url" rel="index"><span itemprop="name">distributed-theory</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>承接上一篇博客:<a target="_blank" rel="noopener" href="https://blog.csdn.net/u014633283/article/details/105720070">也谈分布式系统中的网络模型和故障模型</a>，本篇博客仍然想探讨一些分布式系统的理论知识。<br><span id="more"></span></p>
+<h2 id="I-写在前面"><a href="#I-写在前面" class="headerlink" title="I. 写在前面"></a>I. 写在前面</h2><p>大家应该都听说过分布式系统理论中的<strong>FLP不可能性</strong>和<strong>CAP不可能三角</strong>，那么<code>FLP</code>和<code>CAP</code>之间是什么关系呢？<strong>等价</strong>还是<strong>包含</strong>？<br>本篇博客，就想来谈谈<code>FLP</code>和<code>CAP</code>之间的关系。</p>
+<h2 id="II-理论回顾"><a href="#II-理论回顾" class="headerlink" title="II. 理论回顾"></a>II. 理论回顾</h2><p>本节先分别回顾一下<code>FLP</code>和<code>CAP</code>这两个理论。</p>
+<h3 id="A-FLP不可能性"><a href="#A-FLP不可能性" class="headerlink" title="A. FLP不可能性"></a>A. FLP不可能性</h3><p><a target="_blank" rel="noopener" href="https://dl.acm.org/doi/10.1145/3149.214121">Impossibility of Distributed Consensus with One Faulty Process</a>这篇论文对<code>FLP</code>不可能性的描述如下：</p>
+<blockquote>
+<p>No completely asynchronous consensus protocol can tolerate even a single unannounced process death.</p>
+</blockquote>
+<p>翻译成大白话就是说：在一个异步的网络环境中，即使只有一个进程出现故障，也无法实现任何安全的共识算法。<br>在这篇论文中，作者也进行了一些假设：</p>
+<ul>
+<li>节点故障只限定于<code>crash failure</code>，不考虑<code>Byzantine failure</code> (“do not consider Byzantine failures”)</li>
+<li>消息通道是可靠的，消息只可能被延迟，但不会丢失也不会出现错误，且只会被传递一次 (“the message system is reliable—it delivers all messages correctly and exactly once”)</li>
+</ul>
+<p>总的来说，这些假设是比较强的假设。因为在如此强的假设下都无法实现安全的共识算法，那么在一些较弱的假设下就更无法实现。因此，<code>FLP</code>不可能性的适用性更广。<br>但论文中也指出，如果我们将假设进一步加强：<strong>假设网络模型是同步的，那么是可能实现安全的共识算法的</strong>。</p>
+<blockquote>
+<p>By way of contrast, solutions are known for the synchronous case, the “Byzantine Generals” problem.</p>
+</blockquote>
+<p>也就是说，很多拜占庭条件下的共识算法都是在同步网络的假设下进行设计的。之所以同步网络下能实现共识算法，是因为同步网络使得“<strong>检测故障节点</strong>”成为了可能。</p>
+<p>回顾我们在上一篇博客:<a target="_blank" rel="noopener" href="https://blog.csdn.net/u014633283/article/details/105720070">也谈分布式系统中的网络模型和故障模型</a>中讨论的各种故障模型，<code>FLP</code>不可能性属于最里面的第二层，如下如所示：<br><!-- ![故障模型](https://img-blog.csdnimg.cn/20200429154035171.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3UwMTQ2MzMyODM=,size_16,color_FFFFFF,t_70#pic_center) --><br><img src="/images/relation-flp-cap.png" height=380 /></p>
+<h3 id="B-CAP不可能三角"><a href="#B-CAP不可能三角" class="headerlink" title="B. CAP不可能三角"></a>B. CAP不可能三角</h3><p>根据<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/CAP_theorem">维基百科</a>上的定义, <code>CAP</code>不可能三角是指：</p>
+<blockquote>
+<p>It is impossible for a distributed data store to simultaneously provide more than two out of the following three guarantees: <strong>consistency</strong>, <strong>availability</strong>, and <strong>partition tolerance</strong>.</p>
+</blockquote>
+<p>翻译成大白话是说：在分布式数据存储模型中，一致性、可用性和分区容错性，只能三者取其二。<br><code>CAP</code>相关的假设如下：</p>
+<ul>
+<li>故障模型为<code>Omission failure</code>，如上图最里面的第三层，即消息的传递无限晚，但有可能恢复（典型表现为网络分区）</li>
+<li>网络可能出现故障，消息可能会丢失（因为需要考虑分区容错性）</li>
+</ul>
+<p>这里有必要对<code>Omission failure</code>故障模型进行解释。实际上，我们已经在上一篇博客:<a target="_blank" rel="noopener" href="https://blog.csdn.net/u014633283/article/details/105720070">也谈分布式系统中的网络模型和故障模型</a>中的III.A小节解释了网络分区故障和<code>Omission failure</code>的关系，即：网络分区故障实际上是<code>Omission failure</code>的一个特例。这里，我们再进行一番解释，以使读者能更好地理解。</p>
+<ul>
+<li>网络分区故障描述了这样一类故障：网络连接出现了中断，一个网络被分割成了若干个子网络。但是这种分割（网络中断）是暂时的，后期可能会恢复。否则，如果网络一旦断开就永久断开，那么子网络之间就没有任何联系。在每个子网络中分别部署服务就好了，也就不存在一致性和可用性的问题了。</li>
+<li><code>Omission failure</code>描述了这样一类故障：对于某个特定消息而言，节点A可能永远无法接收到节点B的消息；但对于其他消息，节点A是可能收到消息的。前者表明可能出现了网络故障，后者表明该故障是可自动恢复的。</li>
+</ul>
+<p>由此可见，网络分区其实是<code>Omission failure</code>的一种特例。</p>
+<h2 id="III-FLP和CAP的关系"><a href="#III-FLP和CAP的关系" class="headerlink" title="III. FLP和CAP的关系"></a>III. FLP和CAP的关系</h2><p>先说结论：“<strong>FLP不可能性</strong>”和“<strong>CAP不可能三角</strong>”是两个不等价的理论。<br>以下借鉴博客<a target="_blank" rel="noopener" href="https://ug93tad.github.io/flpcap/">History of the Impossibles - CAP and FLP</a>中的内容，介绍<code>FLP</code>和<code>CAP</code>的不同。</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>Properties</th>
+<th>FLP</th>
+<th>CAP</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Problem scope</td>
+<td>Distributed consensus</td>
+<td>Replicated storage</td>
+</tr>
+<tr>
+<td>Failure model</td>
+<td>Crash failure</td>
+<td>Omission failure</td>
+</tr>
+<tr>
+<td>Formalization</td>
+<td>Rigorous</td>
+<td>Gilbert &amp; Lynch approximation</td>
+</tr>
+<tr>
+<td>Solutions</td>
+<td>Synchronous network model</td>
+<td>Crash failure</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h3 id="A-Problem-scope"><a href="#A-Problem-scope" class="headerlink" title="A. Problem scope"></a>A. Problem scope</h3><p><code>FLP</code>讨论的分布式共识（<code>distributed consensus</code>）的问题。分布式共识可实现的功能包括：</p>
+<ol>
+<li>leader election</li>
+<li>replicated state machine</li>
+<li>distributed commit</li>
+</ol>
+<p>而CAP关注的是复制存储（<code>replicated storage</code>）的问题，<code>replicated storage</code>可以看作是<code>replicated state machine</code>的一个特例。<br>可以看出，复制存储是分布式共识的子问题。也即，<code>FLP</code>关注的问题更加通用，<code>CAP</code>问题是<code>FLP</code>问题的子集。</p>
+<p>此外，</p>
+<ul>
+<li><code>CAP</code>中的复制存储问题只讨论了这样一类问题：同一份数据在不同节点上进行存储（主从复制即是这样一类问题）；</li>
+<li>而<code>FLP</code>中的分布式共识问题除了<code>CAP</code>中的问题外，还讨论了这样一类问题：多个任务（数据）被调度到不同节点上并行执行（存储），不同节点上的任务和状态可能是不同的（<code>2PC</code>协议即包含了这样一类问题）。</li>
+</ul>
+<p>由此也可见，<code>FLP</code>中讨论的问题更加复杂。一些方案可能无法解决<code>FLP</code>中的问题，但可能能够解决<code>CAP</code>中的问题，如III.B节中的在<code>Crash failure</code>模型假设下的方案。</p>
+<h3 id="B-Failure-model"><a href="#B-Failure-model" class="headerlink" title="B. Failure model"></a>B. Failure model</h3><p>正如前面已经讨论过的，<code>FLP</code>中故障模型的假设更强，因而其得出的“不可能性”结论也适用于<code>CAP</code>场景（<code>Crash failure</code>）中；但<code>CAP</code>得出的“不可能三角”结论就不一定适用于<code>FLP</code>场景中 (<code>Omission failure</code>)。<br>结合我们在III.A节中的比较，容易得到以下结论：</p>
+<ul>
+<li>在<code>Omission failure</code>故障模型中，既不可能达成分布式共识，也无法实现同时满足<code>CAP</code>的分布式存储</li>
+<li>在<code>Crash failure</code>故障模型中，虽然无法达成分布式共识，也可能实现同时满足<code>CAP</code>的分布式存储。Quora中的一个<a target="_blank" rel="noopener" href="https://qr.ae/pNrqv5">回答</a>即给出了这样一种方案设计。</li>
+</ul>
+<h3 id="C-Formalization"><a href="#C-Formalization" class="headerlink" title="C. Formalization"></a>C. Formalization</h3><p>“<strong>FLP不可能性</strong>”是进行了严格的理论验证的，但“<strong>CAP不可能三角</strong>”的证明却没那么严格。具体来说，<code>CAP</code>不可能三角的提出者（Brewer）和后来的证明者（Gilbert和Lynch），他们对于<code>CAP</code>理论的阐述是不太一致的。也即，证明者所证明的对象，实际上不是提出者一开始提出来的对象。</p>
+<h3 id="D-Solutions"><a href="#D-Solutions" class="headerlink" title="D. Solutions"></a>D. Solutions</h3><p>由于“FLP不可能性”和“CAP不可能三角”分别从理论上论证了，两个问题都是无法完美解决的。</p>
+<p>一个很自然的想法是，能够通过增强一下假设，使得该问题得以解决。</p>
+<ul>
+<li>通过将网络模型增强为同步网络，分布式共识就得以实现。正如II.A节所说，很多解决拜占庭问题的共识算法就是这么做的</li>
+<li>通过将故障模型加强为<code>crash failure</code>，复制存储也就得以实现，正如III.B节所说。</li>
+</ul>
+<h2 id="参考链接"><a href="#参考链接" class="headerlink" title="参考链接"></a>参考链接</h2><ol>
+<li><a target="_blank" rel="noopener" href="https://ug93tad.github.io/flpcap/">History of the Impossibles - CAP and FLP</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.quora.com/Distributed-Systems-Are-the-FLP-impossibility-result-and-Brewers-CAP-theorem-basically-equivalent">Distributed Systems: Are the FLP impossibility result and Brewer’s CAP theorem basically equivalent?</a></li>
+<li><a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Network_partition">Network partition</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.zhihu.com/question/23841301">有人了解过FLP impossibility吗？</a></li>
+<li>Michael J. Fischer, Nancy A. Lynch, and Michael S. Paterson. Impossibility of distributed consensus with one faulty process. J. ACM 32, 2 (April 1985)</li>
+<li>Gilbert and Lynch. Brewer’s conjecture and the feasibility of consistent, available, fault-tolerant web services.</li>
+</ol>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/distributed-system/" rel="tag"># distributed-system</a>
+              <a href="/tags/theory/" rel="tag"># theory</a>
+          </div>
+
+        
+  <div class="post-widgets">
+    <div class="wp_rating">
+      <div id="wpac-rating"></div>
+    </div>
+  </div>
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/04/23/distributed-system-models/" rel="prev" title="也谈分布式系统中的网络模型和故障模型">
+      <i class="fa fa-chevron-left"></i> 也谈分布式系统中的网络模型和故障模型
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2020/05/05/serialization-function/" rel="next" title="谈谈序列化的作用">
+      谈谈序列化的作用 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#I-%E5%86%99%E5%9C%A8%E5%89%8D%E9%9D%A2"><span class="nav-number">1.</span> <span class="nav-text">I. 写在前面</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#II-%E7%90%86%E8%AE%BA%E5%9B%9E%E9%A1%BE"><span class="nav-number">2.</span> <span class="nav-text">II. 理论回顾</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#A-FLP%E4%B8%8D%E5%8F%AF%E8%83%BD%E6%80%A7"><span class="nav-number">2.1.</span> <span class="nav-text">A. FLP不可能性</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#B-CAP%E4%B8%8D%E5%8F%AF%E8%83%BD%E4%B8%89%E8%A7%92"><span class="nav-number">2.2.</span> <span class="nav-text">B. CAP不可能三角</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#III-FLP%E5%92%8CCAP%E7%9A%84%E5%85%B3%E7%B3%BB"><span class="nav-number">3.</span> <span class="nav-text">III. FLP和CAP的关系</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#A-Problem-scope"><span class="nav-number">3.1.</span> <span class="nav-text">A. Problem scope</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#B-Failure-model"><span class="nav-number">3.2.</span> <span class="nav-text">B. Failure model</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#C-Formalization"><span class="nav-number">3.3.</span> <span class="nav-text">C. Formalization</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#D-Solutions"><span class="nav-number">3.4.</span> <span class="nav-text">D. Solutions</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E9%93%BE%E6%8E%A5"><span class="nav-number">4.</span> <span class="nav-text">参考链接</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Seafooler</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">33</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">16</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="mailto:seafooler@gmail.com" title="E-Mail → mailto:seafooler@gmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Seafooler</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+  <script>
+  if (CONFIG.page.isPost) {
+    wpac_init = window.wpac_init || [];
+    wpac_init.push({
+      widget: 'Rating',
+      id    : ,
+      el    : 'wpac-rating',
+      color : 'fc6423'
+    });
+    (function() {
+      if ('WIDGETPACK_LOADED' in window) return;
+      WIDGETPACK_LOADED = true;
+      var mc = document.createElement('script');
+      mc.type = 'text/javascript';
+      mc.async = true;
+      mc.src = '//embed.widgetpack.com/widget.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(mc, s.nextSibling);
+    })();
+  }
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+
+</body>
+</html>

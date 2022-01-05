@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-kelp.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-kelp.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-kelp.png">
+  <link rel="manifest" href="/images/manifest.json">
+  <meta name="msapplication-config" content="/images/browserconfig.xml">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":{"disqus":{"text":"Load Disqus","order":-1}}},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="分布式系统中的网络模型和故障模型是个老生常谈的问题了。然而这两个模型的界限和联系似乎并不清晰，本篇博客打算谈谈笔者对这两个模型的理解。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="也谈分布式系统中的网络模型和故障模型">
+<meta property="og:url" content="http://example.com/2020/04/23/distributed-system-models/index.html">
+<meta property="og:site_name" content="Seafooler&#39;s Blog">
+<meta property="og:description" content="分布式系统中的网络模型和故障模型是个老生常谈的问题了。然而这两个模型的界限和联系似乎并不清晰，本篇博客打算谈谈笔者对这两个模型的理解。">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://example.com/images/distributed-system-models/failure-model1.png">
+<meta property="og:image" content="http://example.com/images/distributed-system-models/failure-model2.png">
+<meta property="og:image" content="http://example.com/images/distributed-system-models/failure-model3.png">
+<meta property="article:published_time" content="2020-04-22T16:00:00.000Z">
+<meta property="article:modified_time" content="2022-01-05T10:03:37.536Z">
+<meta property="article:author" content="Seafooler">
+<meta property="article:tag" content="distributed-system">
+<meta property="article:tag" content="theory">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/images/distributed-system-models/failure-model1.png">
+
+<link rel="canonical" href="http://example.com/2020/04/23/distributed-system-models/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+
+  <title>也谈分布式系统中的网络模型和故障模型 | Seafooler's Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Seafooler's Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>About</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2020/04/23/distributed-system-models/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Seafooler">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Seafooler's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          也谈分布式系统中的网络模型和故障模型
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2020-04-23 00:00:00" itemprop="dateCreated datePublished" datetime="2020-04-23T00:00:00+08:00">2020-04-23</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2022-01-05 18:03:37" itemprop="dateModified" datetime="2022-01-05T18:03:37+08:00">2022-01-05</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/distributed-theory/" itemprop="url" rel="index"><span itemprop="name">distributed-theory</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>分布式系统中的网络模型和故障模型是个老生常谈的问题了。然而这两个模型的界限和联系似乎并不清晰，本篇博客打算谈谈笔者对这两个模型的理解。<br><span id="more"></span></p>
+<h2 id="I-写在前面"><a href="#I-写在前面" class="headerlink" title="I. 写在前面"></a>I. 写在前面</h2><p>分布式系统中的网络模型和故障模型是个老生常谈的问题了:</p>
+<ul>
+<li>关于网络模型，相信大家都知道分为：同步网络和异步网络。</li>
+<li>对于故障模型，大家可能会有点懵。因为无论是在各种教材上还是在各种博客中关于该模型的划分都很杂、很乱，甚至相互之间有些矛盾。举例来说，大家可能看到过下面这两张图。这两张图分别对故障模型进行了划分，但划分结果却迥然不同。<!-- ![在这里插入图片描述](https://img-blog.csdnimg.cn/20200423230520744.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3UwMTQ2MzMyODM=,size_16,color_FFFFFF,t_70) -->
+<img src="/images/distributed-system-models/failure-model1.png" height=312 /><!-- ![在这里插入图片描述](https://img-blog.csdnimg.cn/20200423230520723.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3UwMTQ2MzMyODM=,size_16,color_FFFFFF,t_70) -->
+<img src="/images/distributed-system-models/failure-model2.png" height=256 /></li>
+</ul>
+<p>此外，大家有没有思考过这个问题：</p>
+<ul>
+<li>网络模型和故障模型的关系是什么？大家似乎在讨论故障模型的时候，直接就忽略网络模型了</li>
+</ul>
+<p>在本篇博客中，我们也想谈谈这两个模型。对于故障模型，我们努力将现有的各种划分结果进行统一，使得我们的划分结果更加系统科学。此外，我们也尝试从新的角度理解网络模型，并回答网络模型和故障模型的关系。</p>
+<h2 id="II-再理解网络模型"><a href="#II-再理解网络模型" class="headerlink" title="II. 再理解网络模型"></a>II. 再理解网络模型</h2><p>网络模型分为：同步网络和异步网络，两者的不严谨定义分别如下所示：</p>
+<ul>
+<li>同步网络：网络中消息传递的延迟有上限，节点的处理延迟延迟有上限</li>
+<li>异步网络：网络中消息传递的延迟没有上限，节点的处理延迟无上限</li>
+</ul>
+<p>这里需要指出的是，尽管“网络模型”这个词字面上只包含了“网络”，但其实际上对<strong>节点处理延迟</strong>也进行了规定。<br>此外，在我们看来，同步网络和异步网络的最大区别在于<strong>故障的可检测性</strong>。具体来说，在同步网络中，其他节点或网络的故障可以通过 <strong>超时（ping/timeout)</strong> 进行检测；而在异步网络中，这些故障是无法进行检测的。<br>由于我们只能通过<strong>超时（ping/timeout)</strong>在同步网络中进行故障检测，可检测的故障也只有<code>节点崩溃</code>或<code>网络链路断开</code>这种错误（就故障而言，<code>节点崩溃</code>和<code>网络链路断开</code>是等价的，这在3.1节种将进行讨论）。<br>记住这个结论，该结论将在第IV节中用到。</p>
+<h3 id="A-一个疑问"><a href="#A-一个疑问" class="headerlink" title="A. 一个疑问"></a>A. 一个疑问</h3><p>看久了故障模型和网络模型，我曾经有的一个疑问是：</p>
+<blockquote>
+<p>同步网络中是否保证了网络链路不会发生断开？</p>
+</blockquote>
+<p>答案是<strong>不保证</strong>。同步网络中也会出现链路断开，因此才需要使用<strong>超时(ping/timeout)</strong>进行检测。当然，异步网络中更不会保证链路不断开。</p>
+<h2 id="III-故障模型的划分"><a href="#III-故障模型的划分" class="headerlink" title="III. 故障模型的划分"></a>III. 故障模型的划分</h2><p>综合比较多个划分结果，我们将故障模型重新划分如下图所示，相应的解释如下表。<br><!-- ![在这里插入图片描述](https://img-blog.csdnimg.cn/20200423230426288.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3UwMTQ2MzMyODM=,size_16,color_FFFFFF,t_70#pic_center) --><br><img src="/images/distributed-system-models/failure-model3.png" height=380 /></p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>故障划分</th>
+<th>解释</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Byzantine failure</td>
+<td>节点可以任意篡改发送给其他节点的数据</td>
+</tr>
+<tr>
+<td>Authentication detectable byzantine failure (ADB)</td>
+<td>Byzantine failure的特例；节点可以篡改数据，但不能伪造其他节点的数据</td>
+</tr>
+<tr>
+<td>Response failure</td>
+<td>ADB的特例，节点可以返回错误数据，但只能返回受限的错误数据</td>
+</tr>
+<tr>
+<td>Performance failure</td>
+<td>又名timing failure, 节点未在特定时间段内收到数据，即时间太早或太晚</td>
+</tr>
+<tr>
+<td>Omission failure</td>
+<td>Performance failure的特例；节点收到数据的时间无限晚，即收不到数据</td>
+</tr>
+<tr>
+<td>Crash failure</td>
+<td>Omission failure的特例；在omission failure的基础上，增加了节点停止响应的假设，也即持续性地omission failure</td>
+</tr>
+<tr>
+<td>Fail-stop failure</td>
+<td>Crash failure的特例；在Crash failure的基础上增加了错误可检测的假设</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>从图中我们可以看出，越在外层的错误模型（如<code>Byzantine failure</code>）所作的假设越少，越在内层的错误模型（如<code>Crash failure</code>）所作的假设越多。也即，一个在内层模型中可行的共识方案未必可以在外层模型中可行。</p>
+<p>以下，我们分别讨论故障模型的一个疑问和两个分类。</p>
+<h3 id="A-一个疑问-1"><a href="#A-一个疑问-1" class="headerlink" title="A. 一个疑问"></a>A. 一个疑问</h3><p>一直以来，我对故障模型存在一个疑问：</p>
+<blockquote>
+<p>故障模型是针对节点还是针对网络而言的？也即：故障模型中的故障讨论的是节点故障还是网络故障</p>
+</blockquote>
+<p>我思考的结论是两者（节点故障和网络故障）<strong>都包括</strong>。<br>我个人对此的理解是：从分布式系统中节点的角度来看，<strong>节点故障和网络故障是无法区分的</strong>，甚至一定程度上是<strong>等价</strong>的。举例来说：“网络延迟”和“节点处理速率慢”等价；“网络链路断开”和“节点宕机”等价；“网络链路中路由器篡改数据”和“节点恶意篡改数据”等价。因此，故障模型中的故障是将节点和网络包含在一起进行讨论的。</p>
+<p>这里顺便对<code>Omission failure</code>故障模型的含义进行深入讨论。<br>将<code>Omission failure</code>和<code>Performance failure</code>以及<code>Crash failure</code>进行对比，<code>Omission failure</code>故障模型的含义包括两个层面：</p>
+<ul>
+<li>针对某个特定消息来说，节点A可能永远无法收到来自节点B回复（即：存在消息丢失）</li>
+<li>但对于该消息之后的消息，节点A可能重新收到来自节点B回复（即：恢复对后续消息的响应）</li>
+</ul>
+<p>由于我们已经说明了节点故障和网络故障的等价性。</p>
+<ul>
+<li>当故障是节点故障时，<code>Omission failure</code>描述了以下场景：节点B在短暂宕机后，又恢复了运转；与此同时，网络一直在正常连接。</li>
+<li>当故障是网络故障时，<code>Omission failure</code>描述了以下场景：网络在短暂断开后，可能又恢复了连接；但与此同时，节点B一直在正常运转。这种场景实际上是我们熟悉的<strong>网络分区</strong>现象。</li>
+</ul>
+<p>也就是说：<strong>网络分区故障实际上是<code>Omission failure</code>的一个特例</strong>。</p>
+<h3 id="B-按照故障发生的领域分类（Domain-of-failure-occurrence）"><a href="#B-按照故障发生的领域分类（Domain-of-failure-occurrence）" class="headerlink" title="B. 按照故障发生的领域分类（Domain of failure occurrence）"></a>B. 按照故障发生的领域分类（Domain of failure occurrence）</h3><h4 id="1-值故障-Value-failure"><a href="#1-值故障-Value-failure" class="headerlink" title="1. 值故障 (Value failure)"></a>1. 值故障 (Value failure)</h4><p>值故障的含义是节点接收到的数据值发生了故障:</p>
+<ul>
+<li>Byzantine failure</li>
+<li>Authentication detectable byzantine failure (ADB)</li>
+<li>Response failure</li>
+</ul>
+<h4 id="2-时间故障-（Time-failure）"><a href="#2-时间故障-（Time-failure）" class="headerlink" title="2. 时间故障 （Time failure）"></a>2. 时间故障 （Time failure）</h4><p>时间故障的含义是节点接收到数据的事件发生的故障。<br>这里的<code>time failure</code>和上表中的<code>Performance failure</code>那一行中的<code>timing failure</code>不同。这里将最里层的4个故障统称为<code>time failure</code></p>
+<ul>
+<li>Performance failure</li>
+<li>Omission failure</li>
+<li>Crash failure</li>
+<li>Fail-stop failure</li>
+</ul>
+<h3 id="C-按照用户对数据的感知分类（Perception-by-the-system-users）"><a href="#C-按照用户对数据的感知分类（Perception-by-the-system-users）" class="headerlink" title="C. 按照用户对数据的感知分类（Perception by the system users）"></a>C. 按照用户对数据的感知分类（Perception by the system users）</h3><h4 id="1-非一致性故障-Inconsistent-failure"><a href="#1-非一致性故障-Inconsistent-failure" class="headerlink" title="1. 非一致性故障 (Inconsistent failure)"></a>1. 非一致性故障 (Inconsistent failure)</h4><p>非一致性故障是指其他节点从同一节点中接收到的数据是不一致的:</p>
+<ul>
+<li>Byzantine or arbitary failures</li>
+<li>Authentication detectable byzantine failure (ADB)</li>
+</ul>
+<h4 id="2-一致性故障-Consistent-failure"><a href="#2-一致性故障-Consistent-failure" class="headerlink" title="2. 一致性故障 (Consistent failure)"></a>2. 一致性故障 (Consistent failure)</h4><p>一致性故障是指其他节点从同一节点中接收到的数据是一致的，在此基础上出现的其他故障:</p>
+<ul>
+<li>Response failure</li>
+<li>Performance failure</li>
+<li>Omission failure</li>
+<li>Crash failure</li>
+<li>Fail-stop failure</li>
+</ul>
+<h2 id="IV-网络模型和故障模型的关系"><a href="#IV-网络模型和故障模型的关系" class="headerlink" title="IV. 网络模型和故障模型的关系"></a>IV. 网络模型和故障模型的关系</h2><h3 id="A-再讨论Fail-stop-failure模型"><a href="#A-再讨论Fail-stop-failure模型" class="headerlink" title="A. 再讨论Fail-stop failure模型"></a>A. 再讨论Fail-stop failure模型</h3><p>在开始网络模型和故障模型的关系之前，我们先讨论一下<code>Fail-stop failure</code>这个特殊的故障模型。<br>前面我们介绍了<code>Fail-stop failure</code>这个模型，其是在<code>Crash failure</code>模型的基础上增加了<strong>故障可检测</strong>的假设。回顾我们在第II节中的理解：同步网络和异步网络最大的区别在于故障的可检测性。<br><strong>因此，Fail-stop failure模型本质上是在Crash failure模型的基础上增加了“同步网络”的假设。</strong><br>那么为什么在其他几类模型中不增加“同步网络”的假设，使其演变为另一种模型呢？</p>
+<h3 id="B-是否可以对其他模型增加“同步网络”的假设？"><a href="#B-是否可以对其他模型增加“同步网络”的假设？" class="headerlink" title="B. 是否可以对其他模型增加“同步网络”的假设？"></a>B. 是否可以对其他模型增加“同步网络”的假设？</h3><p>回顾我们在第II节中的结论，同步网络中可检测的故障只有节点崩溃或网络链路断开这种故障。而这种故障正对应于<code>Crash failure</code>。<br>也就是说，在除<code>Crash failure</code>和<code>Fail-stop failure</code>之外的其他5类故障模型中，<strong>同步网络和异步网络的假设并不会对模型产生影响</strong>。<br>因此，无需对其他模型怎加“同步网络”的假设。</p>
+<h3 id="C-网络模型和故障模型的正交性"><a href="#C-网络模型和故障模型的正交性" class="headerlink" title="C. 网络模型和故障模型的正交性"></a>C. 网络模型和故障模型的正交性</h3><p>一定程度上来看，网络模型和故障模型是正交的。但，是否将不同的网络模型和故障模型进行叠加，需要考虑其叠加后的意义。<br>正如IV.B节中所说，在除<code>Crash failure</code>之外的其他5类故障模型，<strong>叠加网络模型不会分化出新的模型</strong>。因而，我们在众多的教材和博客中，都不会看到它们相叠加的讨论。</p>
+<h2 id="参考链接"><a href="#参考链接" class="headerlink" title="参考链接"></a>参考链接</h2><ol>
+<li><a target="_blank" rel="noopener" href="http://u.cs.biu.ac.il/~ariel/download/ds590/pdfs/chp08.pdf">Fault tolerance, Chap08</a></li>
+<li><a target="_blank" rel="noopener" href="http://alvaro-videla.com/2013/12/failure-modes-in-distributed-systems.html">Failure modes in distributed systems</a></li>
+<li><a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Failure_semantics">Failure semantic - Wikipedia</a></li>
+<li><a target="_blank" rel="noopener" href="https://stackoverflow.com/questions/12229099/understanding-omission-failure-in-distributed-systems">Understanding omission failure in distributed systems</a></li>
+<li><a target="_blank" rel="noopener" href="https://medium.com/baseds/modes-of-failure-part-1-6687504bfed6">Modes of failure</a></li>
+<li><a target="_blank" rel="noopener" href="https://ti.tuwien.ac.at/cps/teaching/courses/dependable_systems-ss08/dcs_slides/dcs-2007-p5.pdf">Failure modes and models</a></li>
+<li><a target="_blank" rel="noopener" href="http://www.erlang-factory.com/static/upload/media/143446825905802whatwetalkaboutwhenwetalkaboutdistributedsystems.pdf">What we talk about when we talk about distributed systems</a></li>
+<li><a target="_blank" rel="noopener" href="https://pdfs.semanticscholar.org/9043/1b0c500b81b961ae802b804c9d81e79f609d.pdf?_ga=2.48034407.1190115247.1587619949-1380635376.1583371362">Crash Recovery with Partial Amnesia Failure Model Issues</a></li>
+<li><a target="_blank" rel="noopener" href="https://danielw.cn/network-failure-models">分布式系统中的网络模型和故障模型</a></li>
+<li><a target="_blank" rel="noopener" href="https://danielw.cn/history-of-distributed-systems-2">分布式系统一致性的发展历史 (二)</a></li>
+<li><a target="_blank" rel="noopener" href="http://homepage.divms.uiowa.edu/~ghosh/16612.week10.pdf">Faults and fault-tolerance</a></li>
+</ol>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/distributed-system/" rel="tag"># distributed-system</a>
+              <a href="/tags/theory/" rel="tag"># theory</a>
+          </div>
+
+        
+  <div class="post-widgets">
+    <div class="wp_rating">
+      <div id="wpac-rating"></div>
+    </div>
+  </div>
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/03/10/bitcoin-protocol-txid/" rel="prev" title="并不唯一的交易ID">
+      <i class="fa fa-chevron-left"></i> 并不唯一的交易ID
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2020/04/29/relation-flp-cap/" rel="next" title="谈谈FLP和CAP的关系">
+      谈谈FLP和CAP的关系 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#I-%E5%86%99%E5%9C%A8%E5%89%8D%E9%9D%A2"><span class="nav-number">1.</span> <span class="nav-text">I. 写在前面</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#II-%E5%86%8D%E7%90%86%E8%A7%A3%E7%BD%91%E7%BB%9C%E6%A8%A1%E5%9E%8B"><span class="nav-number">2.</span> <span class="nav-text">II. 再理解网络模型</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#A-%E4%B8%80%E4%B8%AA%E7%96%91%E9%97%AE"><span class="nav-number">2.1.</span> <span class="nav-text">A. 一个疑问</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#III-%E6%95%85%E9%9A%9C%E6%A8%A1%E5%9E%8B%E7%9A%84%E5%88%92%E5%88%86"><span class="nav-number">3.</span> <span class="nav-text">III. 故障模型的划分</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#A-%E4%B8%80%E4%B8%AA%E7%96%91%E9%97%AE-1"><span class="nav-number">3.1.</span> <span class="nav-text">A. 一个疑问</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#B-%E6%8C%89%E7%85%A7%E6%95%85%E9%9A%9C%E5%8F%91%E7%94%9F%E7%9A%84%E9%A2%86%E5%9F%9F%E5%88%86%E7%B1%BB%EF%BC%88Domain-of-failure-occurrence%EF%BC%89"><span class="nav-number">3.2.</span> <span class="nav-text">B. 按照故障发生的领域分类（Domain of failure occurrence）</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-%E5%80%BC%E6%95%85%E9%9A%9C-Value-failure"><span class="nav-number">3.2.1.</span> <span class="nav-text">1. 值故障 (Value failure)</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-%E6%97%B6%E9%97%B4%E6%95%85%E9%9A%9C-%EF%BC%88Time-failure%EF%BC%89"><span class="nav-number">3.2.2.</span> <span class="nav-text">2. 时间故障 （Time failure）</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#C-%E6%8C%89%E7%85%A7%E7%94%A8%E6%88%B7%E5%AF%B9%E6%95%B0%E6%8D%AE%E7%9A%84%E6%84%9F%E7%9F%A5%E5%88%86%E7%B1%BB%EF%BC%88Perception-by-the-system-users%EF%BC%89"><span class="nav-number">3.3.</span> <span class="nav-text">C. 按照用户对数据的感知分类（Perception by the system users）</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-%E9%9D%9E%E4%B8%80%E8%87%B4%E6%80%A7%E6%95%85%E9%9A%9C-Inconsistent-failure"><span class="nav-number">3.3.1.</span> <span class="nav-text">1. 非一致性故障 (Inconsistent failure)</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-%E4%B8%80%E8%87%B4%E6%80%A7%E6%95%85%E9%9A%9C-Consistent-failure"><span class="nav-number">3.3.2.</span> <span class="nav-text">2. 一致性故障 (Consistent failure)</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#IV-%E7%BD%91%E7%BB%9C%E6%A8%A1%E5%9E%8B%E5%92%8C%E6%95%85%E9%9A%9C%E6%A8%A1%E5%9E%8B%E7%9A%84%E5%85%B3%E7%B3%BB"><span class="nav-number">4.</span> <span class="nav-text">IV. 网络模型和故障模型的关系</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#A-%E5%86%8D%E8%AE%A8%E8%AE%BAFail-stop-failure%E6%A8%A1%E5%9E%8B"><span class="nav-number">4.1.</span> <span class="nav-text">A. 再讨论Fail-stop failure模型</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#B-%E6%98%AF%E5%90%A6%E5%8F%AF%E4%BB%A5%E5%AF%B9%E5%85%B6%E4%BB%96%E6%A8%A1%E5%9E%8B%E5%A2%9E%E5%8A%A0%E2%80%9C%E5%90%8C%E6%AD%A5%E7%BD%91%E7%BB%9C%E2%80%9D%E7%9A%84%E5%81%87%E8%AE%BE%EF%BC%9F"><span class="nav-number">4.2.</span> <span class="nav-text">B. 是否可以对其他模型增加“同步网络”的假设？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#C-%E7%BD%91%E7%BB%9C%E6%A8%A1%E5%9E%8B%E5%92%8C%E6%95%85%E9%9A%9C%E6%A8%A1%E5%9E%8B%E7%9A%84%E6%AD%A3%E4%BA%A4%E6%80%A7"><span class="nav-number">4.3.</span> <span class="nav-text">C. 网络模型和故障模型的正交性</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E9%93%BE%E6%8E%A5"><span class="nav-number">5.</span> <span class="nav-text">参考链接</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Seafooler</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">33</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">16</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="mailto:seafooler@gmail.com" title="E-Mail → mailto:seafooler@gmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Seafooler</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+  <script>
+  if (CONFIG.page.isPost) {
+    wpac_init = window.wpac_init || [];
+    wpac_init.push({
+      widget: 'Rating',
+      id    : ,
+      el    : 'wpac-rating',
+      color : 'fc6423'
+    });
+    (function() {
+      if ('WIDGETPACK_LOADED' in window) return;
+      WIDGETPACK_LOADED = true;
+      var mc = document.createElement('script');
+      mc.type = 'text/javascript';
+      mc.async = true;
+      mc.src = '//embed.widgetpack.com/widget.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(mc, s.nextSibling);
+    })();
+  }
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+
+</body>
+</html>

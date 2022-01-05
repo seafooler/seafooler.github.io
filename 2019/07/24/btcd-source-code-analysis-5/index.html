@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-kelp.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-kelp.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-kelp.png">
+  <link rel="manifest" href="/images/manifest.json">
+  <meta name="msapplication-config" content="/images/browserconfig.xml">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":{"disqus":{"text":"Load Disqus","order":-1}}},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="从这一篇博客开始，我们将介绍btcd节点之间的数据同步。考虑到内容太长，分为三篇博客来讲解:  第一篇 (本篇) 介绍节点是如何发起数据请求的 第二篇介绍headersFirstMode模式下的数据同步 第三篇介绍非headersFirstMode模式下的数据同步  源码解析是基于btcd仓库c26ffa870fd817666a857af1bf6498fabba1ffe3的commit id 版本">
+<meta property="og:type" content="article">
+<meta property="og:title" content="btcd源码解析——peer节点之间的区块数据同步 (1)">
+<meta property="og:url" content="http://example.com/2019/07/24/btcd-source-code-analysis-5/index.html">
+<meta property="og:site_name" content="Seafooler&#39;s Blog">
+<meta property="og:description" content="从这一篇博客开始，我们将介绍btcd节点之间的数据同步。考虑到内容太长，分为三篇博客来讲解:  第一篇 (本篇) 介绍节点是如何发起数据请求的 第二篇介绍headersFirstMode模式下的数据同步 第三篇介绍非headersFirstMode模式下的数据同步  源码解析是基于btcd仓库c26ffa870fd817666a857af1bf6498fabba1ffe3的commit id 版本">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2019-07-23T16:00:00.000Z">
+<meta property="article:modified_time" content="2022-01-05T07:11:13.830Z">
+<meta property="article:author" content="Seafooler">
+<meta property="article:tag" content="Bitcoin">
+<meta property="article:tag" content="Blockchain - Golang - Code analysis">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://example.com/2019/07/24/btcd-source-code-analysis-5/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+
+  <title>btcd源码解析——peer节点之间的区块数据同步 (1) | Seafooler's Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Seafooler's Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>About</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2019/07/24/btcd-source-code-analysis-5/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Seafooler">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Seafooler's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          btcd源码解析——peer节点之间的区块数据同步 (1)
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2019-07-24 00:00:00" itemprop="dateCreated datePublished" datetime="2019-07-24T00:00:00+08:00">2019-07-24</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2022-01-05 15:11:13" itemprop="dateModified" datetime="2022-01-05T15:11:13+08:00">2022-01-05</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Code-analysis/" itemprop="url" rel="index"><span itemprop="name">Code-analysis</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>从这一篇博客开始，我们将介绍<code>btcd</code>节点之间的数据同步。考虑到内容太长，分为三篇博客来讲解:</p>
+<ul>
+<li>第一篇 (本篇) 介绍节点是如何发起数据请求的</li>
+<li>第二篇介绍<code>headersFirstMode</code>模式下的数据同步</li>
+<li>第三篇介绍<code>非headersFirstMode</code>模式下的数据同步</li>
+</ul>
+<p>源码解析是基于<a target="_blank" rel="noopener" href="https://github.com/btcsuite/btcd">btcd</a>仓库<code>c26ffa870fd817666a857af1bf6498fabba1ffe3</code>的<code>commit id</code> 版本。</p>
+<p>我们假设<code>peer B</code>是先启动的节点，<code>peer A</code>后启动。<code>peer A</code>在启动后需要从<code>peer B</code>同步数据，那么<code>peer A</code>应该首先向<code>peer B</code>发送数据请求。<br><span id="more"></span></p>
+<h2 id="I-从peer-A发起数据请求开始"><a href="#I-从peer-A发起数据请求开始" class="headerlink" title="I. 从peer A发起数据请求开始"></a>I. 从peer A发起数据请求开始</h2><p>我们先来看一个问题： <strong>peer A是如何发起数据请求的</strong>？<br>回顾我们在博客<a target="_blank" rel="noopener" href="https://blog.csdn.net/u014633283/article/details/96714788">btcd源码解析——节点P2P连接建立的过程 (2)</a>中提到的<code>OnVersion</code>函数，我们将其代码再次贴在下面：<br><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// OnVersion [server.go]</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(sp *serverPeer)</span> <span class="title">OnVersion</span><span class="params">(_ *peer.Peer, msg *wire.MsgVersion)</span></span> </span><br><span class="line">*wire.MsgReject &#123;</span><br><span class="line">    ... </span><br><span class="line">    sp.server.syncManager.NewPeer(sp.Peer)                          <span class="comment">// L494</span></span><br><span class="line">    ...</span><br><span class="line">    sp.server.AddPeer(sp)                                           <span class="comment">// L501 </span></span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><br>其中L501行代码我们在<a target="_blank" rel="noopener" href="https://blog.csdn.net/u014633283/article/details/96714788">btcd源码解析——节点P2P连接建立的过程 (2)</a>中介绍了其功能，主要用于将<code>peer</code>变量 (<code>sp</code>) 登记到<code>state</code>状态中。<br>这里我们重点来关注L494行代码，该行代码调用了<code>SyncManager</code>类的<code>NewPeer</code>函数。<code>NewPeer</code>函数代码如下所示：<br><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// OnVersion [server.go] -&gt; NewPeer [manager.go]</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(sm *SyncManager)</span> <span class="title">NewPeer</span><span class="params">(peer *peerpkg.Peer)</span></span> &#123;</span><br><span class="line">    ...</span><br><span class="line">    sm.msgChan &lt;- &amp;newPeerMsg&#123;peer: peer&#125;                           <span class="comment">// L1443</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><br>L1443行代码向管道<code>msgChan</code>中发送数据，通知<code>SyncManager</code>连接到了一个新<code>peer</code>。管道的另外一端连接着<code>blockHandler</code>函数，如下所示：<br><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// OnVersion [server.go] -&gt; NewPeer [manager.go] -&gt; blockHandler</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(sm *SyncManager)</span> <span class="title">blockHandler</span><span class="params">()</span></span> &#123;</span><br><span class="line">    ...</span><br><span class="line">out:</span><br><span class="line">    <span class="keyword">for</span> &#123;</span><br><span class="line">        <span class="keyword">select</span> &#123;</span><br><span class="line">        <span class="keyword">case</span> m := &lt;-sm.msgChan:      </span><br><span class="line">            <span class="keyword">switch</span> msg := m.(<span class="keyword">type</span>) &#123;      </span><br><span class="line">            <span class="keyword">case</span> *newPeerMsg:                                       <span class="comment">// L1281           </span></span><br><span class="line">                sm.handleNewPeerMsg(msg.peer)                       <span class="comment">// L1282</span></span><br><span class="line">            ...</span><br><span class="line">            &#125;</span><br><span class="line">        ...</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><br>L1282行将对新连接的<code>peer</code>进行一些后续处理，代码如下所示：<br><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// OnVersion [server.go] -&gt; NewPeer [manager.go] -&gt; blockHandler -&gt; handleNewPeerMsg</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(sm *SyncManager)</span> <span class="title">handleNewPeerMsg</span><span class="params">(peer *peerpkg.Peer)</span></span> &#123;</span><br><span class="line">    ...</span><br><span class="line">    isSyncCandidate := sm.isSyncCandidate(peer)                     <span class="comment">// L406</span></span><br><span class="line">    sm.peerStates[peer] = &amp;peerSyncState&#123;                           <span class="comment">// L407</span></span><br><span class="line">        syncCandidate:   isSyncCandidate,      </span><br><span class="line">        requestedTxns:   <span class="built_in">make</span>(<span class="keyword">map</span>[chainhash.Hash]<span class="keyword">struct</span>&#123;&#125;),      </span><br><span class="line">        requestedBlocks: <span class="built_in">make</span>(<span class="keyword">map</span>[chainhash.Hash]<span class="keyword">struct</span>&#123;&#125;),</span><br><span class="line">    &#125;                                                               <span class="comment">// L411</span></span><br><span class="line">    </span><br><span class="line">    <span class="comment">// Start syncing by choosing the best candidate if needed.</span></span><br><span class="line">    <span class="keyword">if</span> isSyncCandidate &amp;&amp; sm.syncPeer == <span class="literal">nil</span> &#123;                     <span class="comment">// L414</span></span><br><span class="line">        sm.startSync()                                             <span class="comment">// L415</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><br>L406行检查该<code>peer</code>是否是合格的”同步候选者“，具体如何检查的代码，我们这里省略。<br>L407-L411行将该<code>peer</code>和其相应的”同步状态“加入到一个<code>map</code>变量（<code>peerStates</code>）中。这意味着可能会有多个合格的”同步候选者“，必要时需要从中选出最佳候选者进行数据的同步。<br>L414行判断如果该<code>peer</code>为合格的”同步候选者“，并且当前并没有启动同步工作，就将通过L415行启动同步工作。<code>startSync</code>函数代码如下：<br><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// OnVersion [server.go] -&gt; NewPeer [manager.go] -&gt; blockHandler -&gt; handleNewPeerMsg -&gt; startSync</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(sm *SyncManager)</span> <span class="title">startSync</span><span class="params">()</span></span> &#123;</span><br><span class="line">    ...</span><br><span class="line">    best := sm.chain.BestSnapshot()                                 <span class="comment">// L248</span></span><br><span class="line">    <span class="keyword">var</span> higherPeers, equalPeers []*peerpkg.Peer</span><br><span class="line">    <span class="keyword">for</span> peer, state := <span class="keyword">range</span> sm.peerStates &#123;</span><br><span class="line">        <span class="keyword">if</span> !state.syncCandidate &#123;</span><br><span class="line">            <span class="keyword">continue</span></span><br><span class="line">        &#125;</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">if</span> segwitActive &amp;&amp; !peer.IsWitnessEnabled() &#123;</span><br><span class="line">            log.Debugf(<span class="string">&quot;peer %v not witness enabled, skipping&quot;</span>, peer)</span><br><span class="line">            <span class="keyword">continue</span></span><br><span class="line">        &#125;</span><br><span class="line">        ...</span><br><span class="line">        <span class="keyword">if</span> peer.LastBlock() &lt; best.Height &#123;</span><br><span class="line">            state.syncCandidate = <span class="literal">false</span></span><br><span class="line">            <span class="keyword">continue</span></span><br><span class="line">        &#125;</span><br><span class="line">        </span><br><span class="line">        ...</span><br><span class="line">        <span class="keyword">if</span> peer.LastBlock() == best.Height &#123;</span><br><span class="line">            equalPeers = <span class="built_in">append</span>(equalPeers, peer)</span><br><span class="line">            <span class="keyword">continue</span></span><br><span class="line">        &#125;</span><br><span class="line">        ...</span><br><span class="line">        higherPeers = <span class="built_in">append</span>(higherPeers, peer)</span><br><span class="line">    &#125;                                                               <span class="comment">// L284</span></span><br><span class="line">    ...</span><br><span class="line">    <span class="keyword">var</span> bestPeer *peerpkg.Peer</span><br><span class="line">    <span class="keyword">switch</span> &#123;</span><br><span class="line">    <span class="keyword">case</span> <span class="built_in">len</span>(higherPeers) &gt; <span class="number">0</span>:      </span><br><span class="line">        bestPeer = higherPeers[rand.Intn(<span class="built_in">len</span>(higherPeers))]</span><br><span class="line">        </span><br><span class="line">    <span class="keyword">case</span> <span class="built_in">len</span>(equalPeers) &gt; <span class="number">0</span>:      </span><br><span class="line">        bestPeer = equalPeers[rand.Intn(<span class="built_in">len</span>(equalPeers))]</span><br><span class="line">    &#125;                                                              <span class="comment">// L298</span></span><br><span class="line">    </span><br><span class="line">    <span class="keyword">if</span> bestPeer != <span class="literal">nil</span> &#123;                                           <span class="comment">// L301</span></span><br><span class="line">        ...</span><br><span class="line">        locator, err := sm.chain.LatestBlockLocator()              <span class="comment">// L307</span></span><br><span class="line">        ...</span><br><span class="line">        <span class="keyword">if</span> sm.nextCheckpoint != <span class="literal">nil</span> &amp;&amp;     </span><br><span class="line">            best.Height &lt; sm.nextCheckpoint.Height &amp;&amp;      </span><br><span class="line">            sm.chainParams != &amp;chaincfg.RegressionNetParams &#123;           <span class="comment">// L336</span></span><br><span class="line">            </span><br><span class="line">            bestPeer.PushGetHeadersMsg(locator, sm.nextCheckpoint.Hash) <span class="comment">// L338</span></span><br><span class="line">            sm.headersFirstMode = <span class="literal">true</span>                                  <span class="comment">// L339</span></span><br><span class="line">            ...</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            bestPeer.PushGetBlocksMsg(locator, &amp;zeroHash)               <span class="comment">// L344</span></span><br><span class="line">        &#125;</span><br><span class="line">        sm.syncPeer = bestPeer                                          <span class="comment">// L346</span></span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        ...</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><br>L248-L298行实现了从多个合格的”同步候选者“中选出最佳候选者(<code>bestPeer</code>)的工作。<br>当<code>bestPeer</code>存在时，则基于<code>bestPeer</code>进行数据同步。<br>L307行定义了一个<code>locator</code>的<code>slice</code>变量。简单来说<code>locator</code>代表了一条链的某个特定区块。之所以它是一个<code>slice</code>变量，是因为区块链可能分叉，必须记录一条从该区块到创世区块的路径，该路径即由一个<code>slice</code>来存储（更详细的解释可参考博客<a target="_blank" rel="noopener" href="https://www.jianshu.com/p/a0a54afe11c6">Btcd区块链协议消息解析</a>）。这里<code>LatestBlockLocator</code>函数返回的是当前链最新区块对应的<code>locator</code>。</p>
+<p>考虑两种可能的同步数据的模式：</p>
+<ol>
+<li>当<code>checkpoint</code>存在，且当前已同步区块的高度低于<code>checkpoint</code>的高度，且不是<code>Regression Test网络</code>时 (L336行)，采用<code>headersFirstMode</code>同步模式。在该模式下，将优先获取区块头，然后再获取区块体。通过在L338行通过调用<code>PushGetHeadersMsg</code>函数发送”获取区块头“的请求，并在L339行将<code>headersFirstMode</code>值设置为<code>true</code></li>
+<li>否则，采用正常的区块数据下载模式，通过在L344行调用<code>PushGetBlocksMsg</code>函数发送”获取区块“的请求。</li>
+</ol>
+<p>L346行将选出的最佳候选者（<code>bestPeer</code>）赋值给<code>sm</code>的<code>syncPeer</code>。</p>
+<h2 id="B-总结"><a href="#B-总结" class="headerlink" title="B. 总结"></a>B. 总结</h2><p>至此，我们介绍了一个新的节点 (<code>peer A</code>) 是如何向其他节点发起数据请求的。<br>下一篇博客，我们将介绍<code>headersFirstMode</code>模式下数据同步的细节。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Bitcoin/" rel="tag"># Bitcoin</a>
+              <a href="/tags/Blockchain-Golang-Code-analysis/" rel="tag"># Blockchain - Golang - Code analysis</a>
+          </div>
+
+        
+  <div class="post-widgets">
+    <div class="wp_rating">
+      <div id="wpac-rating"></div>
+    </div>
+  </div>
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2019/07/22/btcd-source-code-analysis-4/" rel="prev" title="btcd源码解析——节点P2P连接建立的过程 (2)">
+      <i class="fa fa-chevron-left"></i> btcd源码解析——节点P2P连接建立的过程 (2)
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2019/07/25/btcd-source-code-analysis-6/" rel="next" title="btcd源码解析——peer节点之间的区块数据同步 (2) —— headersFirstMode模式">
+      btcd源码解析——peer节点之间的区块数据同步 (2) —— headersFirstMode模式 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#I-%E4%BB%8Epeer-A%E5%8F%91%E8%B5%B7%E6%95%B0%E6%8D%AE%E8%AF%B7%E6%B1%82%E5%BC%80%E5%A7%8B"><span class="nav-number">1.</span> <span class="nav-text">I. 从peer A发起数据请求开始</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#B-%E6%80%BB%E7%BB%93"><span class="nav-number">2.</span> <span class="nav-text">B. 总结</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Seafooler</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">33</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">16</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="mailto:seafooler@gmail.com" title="E-Mail → mailto:seafooler@gmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Seafooler</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+  <script>
+  if (CONFIG.page.isPost) {
+    wpac_init = window.wpac_init || [];
+    wpac_init.push({
+      widget: 'Rating',
+      id    : ,
+      el    : 'wpac-rating',
+      color : 'fc6423'
+    });
+    (function() {
+      if ('WIDGETPACK_LOADED' in window) return;
+      WIDGETPACK_LOADED = true;
+      var mc = document.createElement('script');
+      mc.type = 'text/javascript';
+      mc.async = true;
+      mc.src = '//embed.widgetpack.com/widget.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(mc, s.nextSibling);
+    })();
+  }
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+
+</body>
+</html>

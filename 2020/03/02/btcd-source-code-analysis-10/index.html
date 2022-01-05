@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-kelp.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-kelp.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-kelp.png">
+  <link rel="manifest" href="/images/manifest.json">
+  <meta name="msapplication-config" content="/images/browserconfig.xml">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":{"disqus":{"text":"Load Disqus","order":-1}}},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="前一篇博客btcd源码解析——交易创建中的III.B节介绍了创建output的细节，本篇博客主要介绍input的创建细节。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="btcd源码解析——交易创建 (2)——input的创建">
+<meta property="og:url" content="http://example.com/2020/03/02/btcd-source-code-analysis-10/index.html">
+<meta property="og:site_name" content="Seafooler&#39;s Blog">
+<meta property="og:description" content="前一篇博客btcd源码解析——交易创建中的III.B节介绍了创建output的细节，本篇博客主要介绍input的创建细节。">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2020-03-01T16:00:00.000Z">
+<meta property="article:modified_time" content="2022-01-05T08:09:32.864Z">
+<meta property="article:author" content="Seafooler">
+<meta property="article:tag" content="Bitcoin">
+<meta property="article:tag" content="Blockchain - Golang - Code analysis">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://example.com/2020/03/02/btcd-source-code-analysis-10/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+
+  <title>btcd源码解析——交易创建 (2)——input的创建 | Seafooler's Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Seafooler's Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>About</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2020/03/02/btcd-source-code-analysis-10/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Seafooler">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Seafooler's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          btcd源码解析——交易创建 (2)——input的创建
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2020-03-02 00:00:00" itemprop="dateCreated datePublished" datetime="2020-03-02T00:00:00+08:00">2020-03-02</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2022-01-05 16:09:32" itemprop="dateModified" datetime="2022-01-05T16:09:32+08:00">2022-01-05</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Code-analysis/" itemprop="url" rel="index"><span itemprop="name">Code-analysis</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>前一篇博客<a target="_blank" rel="noopener" href="https://blog.csdn.net/u014633283/article/details/104562196">btcd源码解析——交易创建</a>中的III.B节介绍了创建<code>output</code>的细节，本篇博客主要介绍<code>input</code>的创建细节。<br><span id="more"></span></p>
+<h2 id="III-btcwallet中的实现——创建新交易"><a href="#III-btcwallet中的实现——创建新交易" class="headerlink" title="III. btcwallet中的实现——创建新交易"></a>III. btcwallet中的实现——创建新交易</h2><p>…</p>
+<h3 id="C-创建input"><a href="#C-创建input" class="headerlink" title="C. 创建input"></a>C. 创建input</h3><p>由于已经拥有了<code>output</code>，<code>input</code>的创建也就是整个<code>transaction</code>的创建了。因此在本节中，我们会不加区分地使用“创建<code>input</code>”和“创建交易”这两个词。换句话说，在本节中，创建交易的过程主要就是创建<code>input</code>的过程。</p>
+<h4 id="1-“创建交易”的请求"><a href="#1-“创建交易”的请求" class="headerlink" title="1. “创建交易”的请求"></a>1. “创建交易”的请求</h4><p>首先，我们先介绍一下用于“创建交易”的请求。<br>为什么这里会生成一个请求，用来“创建交易”呢？</p>
+<blockquote>
+<p>这是为了保证交易创建的正确性。因为在创建交易时，需要选择合适的<code>UTXO</code>来作为输入。而<code>UTXO</code>只能被使用一次，这就要求创建交易必须是个串行的过程。也就是说：即使需要创建多笔交易，也必须一个一个地进行。<br>为此，<code>btcwallet</code>启动了一个<code>txCreator</code>协程专门用来创建交易，每次只接收一个“创建交易”的请求，完成当前请求后再处理下一个。</p>
+</blockquote>
+<p>相关代码如下所示。在<code>wallet</code>的<code>start</code>函数中启动了<code>txCreator</code>协程，该协程从<code>createTxRequests</code>通道中获得请求，然后交由<code>txToOutputs</code>函数处理。<code>txToOutputs</code>函数是个比较复杂的函数，这里我们先不介绍，留到III.C.3.节介绍。<br><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//  Start [wallet.go]</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(w *Wallet)</span> <span class="title">Start</span><span class="params">()</span></span> &#123;</span><br><span class="line">    ...</span><br><span class="line">    <span class="keyword">go</span> w.txCreator()</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><br><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Start [wallet.go] -&gt; txCreator [wallet.go]</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(w *Wallet)</span> <span class="title">txCreator</span><span class="params">()</span></span> &#123;</span><br><span class="line">    ...</span><br><span class="line">    <span class="keyword">for</span> &#123;</span><br><span class="line">        <span class="keyword">select</span> &#123;</span><br><span class="line">            <span class="keyword">case</span> txr := &lt;-w.createTxRequests:                                             <span class="comment">//  L1165</span></span><br><span class="line">                ...</span><br><span class="line">                tx, err := w.txToOutputs(txr.outputs, txr.account,                        <span class="comment">// L1171</span></span><br><span class="line">                    txr.minconf, txr.feeSatPerKB, txr.dryRun)</span><br><span class="line">                ...</span><br><span class="line">                txr.resp &lt;- createTxResponse&#123;tx, err&#125;                                     <span class="comment">// L1174</span></span><br><span class="line">            ...</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h4 id="2-生成“创建交易”的请求"><a href="#2-生成“创建交易”的请求" class="headerlink" title="2. 生成“创建交易”的请求"></a>2. 生成“创建交易”的请求</h4><p>回到<code>sendPairs</code>函数，再次将函数主体摘录如下：<br><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// sendToAddress [methods.go] -&gt; sendPairs [methods.go]</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">sendPairs</span><span class="params">(w *wallet.Wallet, amounts <span class="keyword">map</span>[<span class="keyword">string</span>]btcutil.Amount, account <span class="keyword">uint32</span>, </span></span></span><br><span class="line"><span class="params"><span class="function">	minconf <span class="keyword">int32</span>, feeSatPerKb btcutil.Amount)</span> <span class="params">(<span class="keyword">string</span>, error)</span></span> &#123;</span><br><span class="line">    outputs, err := makeOutputs(amounts, w.ChainParams())                           <span class="comment">// L1377</span></span><br><span class="line">    ...</span><br><span class="line">    tx, err := w.SendOutputs(outputs, account, minconf, feeSatPerKb)               <span class="comment">// L1381</span></span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><br>其中，L1381行调用<code>SendOutputs</code>函数来创建完整的交易。<code>SendOutputs</code>函数主体如下所示：<br><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// sendToAddress [methods.go] -&gt; sendPairs [methods.go] -&gt; SendOutputs [wallet.go]</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(w *Wallet)</span> <span class="title">SendOutputs</span><span class="params">(outputs []*wire.TxOut, account <span class="keyword">uint32</span>, minconf <span class="keyword">int32</span>, </span></span></span><br><span class="line"><span class="params"><span class="function">	satPerKb btcutil.Amount)</span> <span class="params">(*wire.MsgTx, error)</span></span> &#123;</span><br><span class="line">    ...</span><br><span class="line">    createdTx, err := w.CreateSimpleTx(                                                     <span class="comment">// L3144</span></span><br><span class="line">        account, outputs, minconf, satPerKb, <span class="literal">false</span>,</span><br><span class="line">    )</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><br>L3144行调用<code>CreateSimpleTx</code>函数生成“创建交易”的请求，并返回创建后的交易。<code>CreateSimpleTx</code>函数的主题代码如下所示：<br><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// sendToAddress [methods.go] -&gt; sendPairs [methods.go] -&gt; SendOutputs [wallet.go]</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(w *Wallet)</span> <span class="title">CreateSimpleTx</span><span class="params">(account <span class="keyword">uint32</span>, outputs []*wire.TxOut,      </span></span></span><br><span class="line"><span class="params"><span class="function">    minconf <span class="keyword">int32</span>, satPerKb btcutil.Amount, dryRun <span class="keyword">bool</span>)</span> <span class="params">(*txauthor.AuthoredTx, error)</span></span> &#123;</span><br><span class="line">    </span><br><span class="line">    req := createTxRequest&#123;                                                                   <span class="comment">// L1195</span></span><br><span class="line">        account:      account,      </span><br><span class="line">        outputs:      outputs,      </span><br><span class="line">        minconf:      minconf,      </span><br><span class="line">        feeSatPerKB: satPerKb,      </span><br><span class="line">        dryRun:       dryRun,      </span><br><span class="line">        resp:           <span class="built_in">make</span>(<span class="keyword">chan</span> createTxResponse),</span><br><span class="line">    &#125;</span><br><span class="line">    w.createTxRequests &lt;- req                                                               <span class="comment">// L1203</span></span><br><span class="line">    resp := &lt;-req.resp                                                                      <span class="comment">// L1204</span></span><br><span class="line">    <span class="keyword">return</span> resp.tx, resp.err</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><br>L1195行生成了“创建交易”的请求<code>createTxRequest</code>，该请求通过<code>wallet</code>的<code>channel</code>变量（<code>createTxRequests</code>）发送出去。回顾III.C.1节中<code>txCreator</code>函数的L1165行代码，该行代码尝试从<code>createTxRequests</code>变量中读取数据。<br>此外，<code>createTxRequest</code>请求中包含了一个<code>channel</code>变量（<code>resp</code>），L1204行代码通过从该<code>channel</code>中读取生成的“交易”返回值。回顾III.C.1节中<code>txCreator</code>函数的L1174行代码，该行代码会将生成的“交易”返回值写入该<code>channel</code>中。</p>
+<h4 id="3-txToOutputs函数"><a href="#3-txToOutputs函数" class="headerlink" title="3. txToOutputs函数"></a>3. txToOutputs函数</h4><p>我们在III.C.1.节的<code>txCreator</code>函数中提及到了<code>txToOutputs</code>函数 （即L1171行），该函数是真正“干实事”的，也即：真正生成<code>input</code>并组装成完整的<code>transaction</code>。本节介绍该函数的实现细节。<br><code>txToOutputs</code>函数的主体代码如下：<br><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Start [wallet.go] -&gt; txCreator [wallet.go] -&gt; txToOutputs [createtx.go]</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(w *Wallet)</span> <span class="title">txToOutputs</span><span class="params">(outputs []*wire.TxOut, account <span class="keyword">uint32</span>, </span></span></span><br><span class="line"><span class="params"><span class="function">minconf <span class="keyword">int32</span>, feeSatPerKb btcutil.Amount, dryRun <span class="keyword">bool</span>)</span> <span class="params">(tx *txauthor.AuthoredTx, err error)</span></span> &#123;</span><br><span class="line">    ...</span><br><span class="line">    eligible, err := w.findEligibleOutputs(dbtx, account, minconf, bs)                   <span class="comment">// L131</span></span><br><span class="line">    ...</span><br><span class="line">    inputSource := makeInputSource(eligible)                                            <span class="comment">// L136</span></span><br><span class="line">    changeSource := <span class="function"><span class="keyword">func</span><span class="params">()</span> <span class="params">([]<span class="keyword">byte</span>, error)</span></span> &#123;                                            <span class="comment">// L137</span></span><br><span class="line">        <span class="keyword">var</span> changeAddr btcutil.Address      </span><br><span class="line">        <span class="keyword">var</span> err error      </span><br><span class="line">        <span class="keyword">if</span> account == waddrmgr.ImportedAddrAccount &#123;            </span><br><span class="line">            changeAddr, err = w.newChangeAddress(addrmgrNs, <span class="number">0</span>)      </span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;            </span><br><span class="line">            changeAddr, err = w.newChangeAddress(addrmgrNs, account)      </span><br><span class="line">        &#125;      </span><br><span class="line">        <span class="keyword">return</span> txscript.PayToAddrScript(changeAddr)</span><br><span class="line">    &#125;</span><br><span class="line">    tx, err = txauthor.NewUnsignedTransaction(outputs, feeSatPerKb,                       <span class="comment">// L153</span></span><br><span class="line">        inputSource, changeSource)</span><br><span class="line">    ...</span><br><span class="line">    err = tx.AddAllInputScripts(secretSource&#123;w.Manager, addrmgrNs&#125;)                      <span class="comment">// L174</span></span><br><span class="line">    ...</span><br><span class="line">    <span class="keyword">return</span> tx, <span class="literal">nil</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><br>L131行代码调用<code>findEligibleOutputs</code>函数从数据库中获取所有符合条件的<code>output</code>集合（<code>eligible</code>）。该函数的实现逻辑比较简单，略过。<br>L136行代码调用<code>makeInputSource</code>函数，生成另一个函数<code>inputSource</code>，该函数从<code>eligible</code>集合中挑选出“数额总和满足指定大小”的<code>outputs</code>，后面介绍。<br>L137行定义一个<code>changeSource</code>函数，该函数用于生成“找零”的<code>output</code> (准确来说是该<code>output</code>的<code>lock script</code>)。该函数的实现逻辑也比较简单，略过。<br>L153行基于已有的<code>outputs</code>，<code>inputSource</code>函数，<code>changeSource</code>函数，生成“未签名的”交易。<br>L174对以上生成的交易进行签名。<br>以下对这几个重要的函数进行介绍。</p>
+<h5 id="1-makeInputSource函数"><a href="#1-makeInputSource函数" class="headerlink" title="1) makeInputSource函数"></a>1) makeInputSource函数</h5><p><code>makeInputSource</code>函数主体如下所示。<br><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Start [wallet.go] -&gt; txCreator [wallet.go] -&gt; txToOutputs [createtx.go] -&gt; </span></span><br><span class="line"><span class="comment">// makeInputSource [createtx.go]</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">makeInputSource</span><span class="params">(eligible []wtxmgr.Credit)</span> <span class="title">txauthor</span>.<span class="title">InputSource</span></span> &#123;</span><br><span class="line">    ...</span><br><span class="line">    sort.Sort(sort.Reverse(byAmount(eligible)))                               <span class="comment">// L33</span></span><br><span class="line">    ...</span><br><span class="line">    <span class="keyword">return</span> <span class="function"><span class="keyword">func</span><span class="params">(target btcutil.Amount)</span> <span class="params">(btcutil.Amount, []*wire.TxIn,      </span></span></span><br><span class="line"><span class="params"><span class="function">        []btcutil.Amount, [][]<span class="keyword">byte</span>, error)</span></span> &#123;</span><br><span class="line">        ...</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><br>可见，其生成了一个<code>InputSource</code>类型的函数。<code>InputSource</code>类型也即<code>func(target btcutil.Amount) (btcutil.Amount, []*wire.TxIn, []btcutil.Amount, [][]byte, error)</code>函数类型，该函数类型以一个目标数额(<code>target</code>)为输入参数，输出为“数额总和大于<code>target</code>”的<code>output</code>集合（及统计值）。<br>此外，从L33行代码可知，在选择<code>output</code>时，按照由大到小的顺序进行挨个选择。当数额总和大于等于<code>target</code>时，即停止。</p>
+<h5 id="2-NewUnsignedTransaction函数"><a href="#2-NewUnsignedTransaction函数" class="headerlink" title="2) NewUnsignedTransaction函数"></a>2) NewUnsignedTransaction函数</h5><p><code>NewUnsignedTransaction</code>函数的主体如下所示：<br><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Start [wallet.go] -&gt; txCreator [wallet.go] -&gt; txToOutputs [createtx.go] -&gt; </span></span><br><span class="line"><span class="comment">// NewUnsignedTransaction [author.go]</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">NewUnsignedTransaction</span><span class="params">(outputs []*wire.TxOut, relayFeePerKb btcutil.Amount, </span></span></span><br><span class="line"><span class="params"><span class="function">	fetchInputs InputSource, fetchChange ChangeSource)</span> <span class="params">(*AuthoredTx, error)</span></span> &#123;</span><br><span class="line">    targetAmount := SumOutputValues(outputs)                                                      <span class="comment">// L89</span></span><br><span class="line">    estimatedSize := txsizes.EstimateVirtualSize(<span class="number">0</span>, <span class="number">1</span>, <span class="number">0</span>, outputs, <span class="literal">true</span>)                          <span class="comment">// L90</span></span><br><span class="line">    targetFee := txrules.FeeForSerializeSize(relayFeePerKb, estimatedSize)                        <span class="comment">// L91</span></span><br><span class="line">    </span><br><span class="line">    <span class="keyword">for</span> &#123;                                                                                         <span class="comment">// L93</span></span><br><span class="line">        inputAmount, inputs, inputValues, scripts, err := fetchInputs(targetAmount + targetFee)   <span class="comment">// L94</span></span><br><span class="line">        ...</span><br><span class="line">        maxSignedSize := txsizes.EstimateVirtualSize(p2pkh, p2wpkh,                               <span class="comment">// L118</span></span><br><span class="line">            nested, outputs, <span class="literal">true</span>)</span><br><span class="line">        maxRequiredFee := txrules.FeeForSerializeSize(relayFeePerKb, maxSignedSize)               <span class="comment">// L120</span></span><br><span class="line">        remainingAmount := inputAmount - targetAmount                                             <span class="comment">// L121</span></span><br><span class="line">        <span class="keyword">if</span> remainingAmount &lt; maxRequiredFee &#123;                                                     <span class="comment">// L122</span></span><br><span class="line">            targetFee = maxRequiredFee                                                            <span class="comment">// L123</span></span><br><span class="line">            <span class="keyword">continue</span>                                                                              <span class="comment">// L124</span></span><br><span class="line">        &#125;                                                                          </span><br><span class="line"></span><br><span class="line">        unsignedTransaction := &amp;wire.MsgTx&#123;                                                       <span class="comment">// L127</span></span><br><span class="line">            Version:  wire.TxVersion,      </span><br><span class="line">            TxIn:     inputs,      </span><br><span class="line">            TxOut:    outputs,      </span><br><span class="line">            LockTime: <span class="number">0</span>,</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        ...</span><br><span class="line">        changeScript, err := fetchChange()                                                       <span class="comment">// L137</span></span><br><span class="line">        ...</span><br><span class="line">        change := wire.NewTxOut(<span class="keyword">int64</span>(changeAmount), changeScript)                               <span class="comment">// L145</span></span><br><span class="line">        ...</span><br><span class="line">        unsignedTransaction.TxOut = <span class="built_in">append</span>(outputs[:l:l], change)                                <span class="comment">// L147</span></span><br><span class="line">        ...</span><br><span class="line">        <span class="keyword">return</span> &amp;AuthoredTx&#123;                                                                      <span class="comment">// L151</span></span><br><span class="line">            Tx:              unsignedTransaction,</span><br><span class="line">            ...</span><br><span class="line">        &#125;, <span class="literal">nil</span></span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><br>该函数首先计算出目标数额(L89)，然后估算出一个初步的交易大小(L90)和所需交易费(L91)。<br>在L93行使用一个<code>for</code>循环，每一轮循环都尝试构造一次交易。之所以使用循环，是因为交易费是估算出来的，可能实际交易费会比估算值大，从而需要对交易进行构造。<br>L94行基于目标数额和目标交易费之和进行交易<code>input</code>的选取。<br>L118至L120行基于选取出的input重新估算所需的交易费。需要注意的是，这里在估算时采用了“max”的原则（即估算最大所需交易费<code>maxRequiredFee</code>），这是为了保证交易在发布广播之后不会因为交易费过小而无法被打包入块。<br>L121行至L124行判断当前选取的<code>input</code>是否足够支付更新后的交易费。若不够，则将目标交易费更新为<code>maxRequiredFee</code>(L123行)，并进入下一轮<code>for</code>循环(L124行)。<br>L127行构建出<code>unsignedTransaction</code>.<br>L137行构造找零<code>output</code>的<code>lock script</code>，并在L145行构造完成的找零<code>output</code>. L147行将该找零<code>output</code>加入到<code>unsignedTransaction</code>中。<br>最后在L151行将<code>unsignedTransaction</code>函数包装一下返回。</p>
+<h5 id="3-AddAllInputScripts函数"><a href="#3-AddAllInputScripts函数" class="headerlink" title="3) AddAllInputScripts函数"></a>3) AddAllInputScripts函数</h5><p><code>AddAllInputScripts</code>函数是对<code>AddAllInputScripts</code>函数的封装，<code>AddAllInputScripts</code>的函数主体如下所示：<br><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Start [wallet.go] -&gt; txCreator [wallet.go] -&gt; txToOutputs [createtx.go] -&gt; </span></span><br><span class="line"><span class="comment">// AddAllInputScripts [author.go] -&gt; AddAllInputScripts</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">AddAllInputScripts</span><span class="params">(tx *wire.MsgTx, prevPkScripts [][]<span class="keyword">byte</span>, inputValues []btcutil.Amount, </span></span></span><br><span class="line"><span class="params"><span class="function">secrets SecretsSource)</span> <span class="title">error</span></span> &#123;</span><br><span class="line">    ...</span><br><span class="line">    inputs := tx.TxIn</span><br><span class="line">    ...</span><br><span class="line">    <span class="keyword">for</span> i := <span class="keyword">range</span> inputs &#123;</span><br><span class="line">        pkScript := prevPkScripts[i]</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">switch</span> &#123;</span><br><span class="line">        ...</span><br><span class="line">        <span class="keyword">case</span> txscript.IsPayToScriptHash(pkScript):</span><br><span class="line">            ...</span><br><span class="line">        <span class="keyword">case</span> txscript.IsPayToWitnessPubKeyHash(pkScript):</span><br><span class="line">            ...</span><br><span class="line">        <span class="keyword">default</span>:</span><br><span class="line">            sigScript := inputs[i].SignatureScript</span><br><span class="line">            script, err := txscript.SignTxOutput(chainParams, tx, i,                      <span class="comment">// L234</span></span><br><span class="line">                pkScript, txscript.SigHashAll, secrets, secrets,      </span><br><span class="line">                sigScript)</span><br><span class="line">            ...</span><br><span class="line">            inputs[i].SignatureScript = script</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><br><code>AddAllInputScripts</code>函数的逻辑比较清晰，就是针对每一个<code>input</code>进行解锁脚本(<code>SignatureScript</code>)的构建。<br><code>input</code>对应的锁定脚本可能出现三种情形： <code>IsPayToScriptHash</code>, <code>IsPayToWitnessPubKeyHash</code>和其他情况(<code>default</code>)。前两种情形涉及到<strong>隔离见证</strong>的相关知识，较为复杂。这里我们以“其他情况”为例进行讲解。<br>其他情况下主要是调用了<code>SignTxOutput</code>函数(L234行)，该函数是一个较为复杂的函数，针对不同的地址格式进行不同的签名，留作<a target="_blank" rel="noopener" href="https://editor.csdn.net/md/?articleId=104704549">下篇博客</a>进行介绍。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Bitcoin/" rel="tag"># Bitcoin</a>
+              <a href="/tags/Blockchain-Golang-Code-analysis/" rel="tag"># Blockchain - Golang - Code analysis</a>
+          </div>
+
+        
+  <div class="post-widgets">
+    <div class="wp_rating">
+      <div id="wpac-rating"></div>
+    </div>
+  </div>
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/02/28/btcd-source-code-analysis-9/" rel="prev" title="btcd源码解析——交易创建 (1)">
+      <i class="fa fa-chevron-left"></i> btcd源码解析——交易创建 (1)
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2020/03/05/btcd-source-code-analysis-11/" rel="next" title="btcd源码解析——签名机制(1)——基础知识">
+      btcd源码解析——签名机制(1)——基础知识 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#III-btcwallet%E4%B8%AD%E7%9A%84%E5%AE%9E%E7%8E%B0%E2%80%94%E2%80%94%E5%88%9B%E5%BB%BA%E6%96%B0%E4%BA%A4%E6%98%93"><span class="nav-number">1.</span> <span class="nav-text">III. btcwallet中的实现——创建新交易</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#C-%E5%88%9B%E5%BB%BAinput"><span class="nav-number">1.1.</span> <span class="nav-text">C. 创建input</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-%E2%80%9C%E5%88%9B%E5%BB%BA%E4%BA%A4%E6%98%93%E2%80%9D%E7%9A%84%E8%AF%B7%E6%B1%82"><span class="nav-number">1.1.1.</span> <span class="nav-text">1. “创建交易”的请求</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-%E7%94%9F%E6%88%90%E2%80%9C%E5%88%9B%E5%BB%BA%E4%BA%A4%E6%98%93%E2%80%9D%E7%9A%84%E8%AF%B7%E6%B1%82"><span class="nav-number">1.1.2.</span> <span class="nav-text">2. 生成“创建交易”的请求</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-txToOutputs%E5%87%BD%E6%95%B0"><span class="nav-number">1.1.3.</span> <span class="nav-text">3. txToOutputs函数</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#1-makeInputSource%E5%87%BD%E6%95%B0"><span class="nav-number">1.1.3.1.</span> <span class="nav-text">1) makeInputSource函数</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#2-NewUnsignedTransaction%E5%87%BD%E6%95%B0"><span class="nav-number">1.1.3.2.</span> <span class="nav-text">2) NewUnsignedTransaction函数</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#3-AddAllInputScripts%E5%87%BD%E6%95%B0"><span class="nav-number">1.1.3.3.</span> <span class="nav-text">3) AddAllInputScripts函数</span></a></li></ol></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Seafooler</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">33</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">16</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="mailto:seafooler@gmail.com" title="E-Mail → mailto:seafooler@gmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Seafooler</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+  <script>
+  if (CONFIG.page.isPost) {
+    wpac_init = window.wpac_init || [];
+    wpac_init.push({
+      widget: 'Rating',
+      id    : ,
+      el    : 'wpac-rating',
+      color : 'fc6423'
+    });
+    (function() {
+      if ('WIDGETPACK_LOADED' in window) return;
+      WIDGETPACK_LOADED = true;
+      var mc = document.createElement('script');
+      mc.type = 'text/javascript';
+      mc.async = true;
+      mc.src = '//embed.widgetpack.com/widget.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(mc, s.nextSibling);
+    })();
+  }
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+
+</body>
+</html>

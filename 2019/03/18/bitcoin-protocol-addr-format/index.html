@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-kelp.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-kelp.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-kelp.png">
+  <link rel="manifest" href="/images/manifest.json">
+  <meta name="msapplication-config" content="/images/browserconfig.xml">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":{"disqus":{"text":"Load Disqus","order":-1}}},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="比特币的地址是由一个字符串表示的。比较常见的是以1开头的字符串，也有以2, 3, m, 和 n 开头的字符串。关于这些字符串的区别和联系，笔者一直有很多问题，也在网上搜过很多答案。因此，这篇文章主要是做一个问题和答案的汇总，也包括我自己的一些理解。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="关于比特币地址的一些问题和解答">
+<meta property="og:url" content="http://example.com/2019/03/18/bitcoin-protocol-addr-format/index.html">
+<meta property="og:site_name" content="Seafooler&#39;s Blog">
+<meta property="og:description" content="比特币的地址是由一个字符串表示的。比较常见的是以1开头的字符串，也有以2, 3, m, 和 n 开头的字符串。关于这些字符串的区别和联系，笔者一直有很多问题，也在网上搜过很多答案。因此，这篇文章主要是做一个问题和答案的汇总，也包括我自己的一些理解。">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://example.com/images/bitcoin-addr-format.png">
+<meta property="article:published_time" content="2019-03-17T16:00:00.000Z">
+<meta property="article:modified_time" content="2022-01-05T07:58:29.325Z">
+<meta property="article:author" content="Seafooler">
+<meta property="article:tag" content="Bitcoin">
+<meta property="article:tag" content="Blockchain - Protocol">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/images/bitcoin-addr-format.png">
+
+<link rel="canonical" href="http://example.com/2019/03/18/bitcoin-protocol-addr-format/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+
+  <title>关于比特币地址的一些问题和解答 | Seafooler's Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Seafooler's Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>About</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2019/03/18/bitcoin-protocol-addr-format/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Seafooler">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Seafooler's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          关于比特币地址的一些问题和解答
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2019-03-18 00:00:00" itemprop="dateCreated datePublished" datetime="2019-03-18T00:00:00+08:00">2019-03-18</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2022-01-05 15:58:29" itemprop="dateModified" datetime="2022-01-05T15:58:29+08:00">2022-01-05</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Bitcoin-protocol/" itemprop="url" rel="index"><span itemprop="name">Bitcoin-protocol</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>比特币的地址是由一个字符串表示的。比较常见的是以<code>1</code>开头的字符串，也有以<code>2</code>, <code>3</code>, <code>m</code>, 和 <code>n</code> 开头的字符串。关于这些字符串的区别和联系，笔者一直有很多问题，也在网上搜过很多答案。因此，这篇文章主要是做一个问题和答案的汇总，也包括我自己的一些理解。 <span id="more"></span></p>
+<h2 id="i.-比特币地址以什么字符开头">I. 比特币地址以什么字符开头</h2>
+<p>本文列举一些最常见的地址类型，更详细的地址类型及其前缀字符见<a target="_blank" rel="noopener" href="https://en.bitcoin.it/wiki/List_of_address_prefixes">链接</a> <strong>主网 (Mainet)</strong>：</p>
+<ul>
+<li><code>P2PKH</code>类型的地址以<code>1</code>开头</li>
+<li><code>P2SH</code>类型的地址以<code>3</code>开头</li>
+</ul>
+<p><strong>测试网 (Testnet)</strong>：</p>
+<ul>
+<li><code>P2PKH</code>类型的地址以<code>m</code>或<code>n</code>开头</li>
+<li><code>P2SH</code>类型的地址以<code>2</code>开头</li>
+</ul>
+<h2 id="ii.-比特币地址以什么字符开头">II. 比特币地址以什么字符开头</h2>
+<p>本节主要介绍主网上的<code>P2PKH</code>类型的地址相关变量。 比特币地址相关的变量形式包括：<code>ECDSA private key</code>, <code>ECDSA public key</code>， <code>SHA-256 hash value</code>, <code>RIPEMD-160 hash value</code>, <code>address</code>等，如下表所示。</p>
+<ul>
+<li>下方的变量主要由上方的变量计算得到</li>
+<li>计算主要分为两种：可逆的和不可逆的。一般而言，生成公钥的计算和哈希计算是不可逆的；字符串拼接和编码是可逆的。</li>
+<li>由于可以从<code>9</code>号变量计算出<code>8</code>号变量，从<code>8</code>号变量计算出<code>4</code>号变量，从<code>4</code>号变量计算出<code>3</code>号变量。因此从<code>3</code>号、<code>4</code>号、<code>8</code>号和<code>9</code>号变量之间可以互相推导得到，由其中的<code>1</code>个变量可以推导出其他<code>3</code>个变量。</li>
+<li>在博客<a target="_blank" rel="noopener" href="https://blog.csdn.net/u014633283/article/details/88601341">理解比特币的raw transaction (1) P2PKH类型交易</a>中，我们提到比特币交易中的<code>input</code>包含<code>PubK</code>字段，<code>output</code>中包含<code>PubKHash</code>字段。其分别对应着表中的<code>1</code>号变量的压缩格式和<code>3</code>号变量。</li>
+<li>我们通常说的比特币地址是<code>9</code>号变量</li>
+<li>5号变量往后的计算过程称为“Base58Check Encoding”过程</li>
+<li>更为详细的变量之间的推导计算参见<a target="_blank" rel="noopener" href="https://en.bitcoin.it/wiki/Technical_background_of_version_1_Bitcoin_addresses">链接</a>.</li>
+</ul>
+<p><img src="/images/bitcoin-addr-format.png" height=412 /></p>
+<h2 id="iii.-比特币p2pkh类型地址的位数">III. 比特币P2PKH类型地址的位数</h2>
+<blockquote>
+<p>经常访问一些比特币区块浏览器的数据，我们可以发先比特币的<code>P2PKH</code>的地址位数不全是一样的。举例来说，<a target="_blank" rel="noopener" href="https://www.blockchain.com/btc/address/11111111111111111111BZbvjr">11111111111111111111BZbvjr</a>只有<code>26</code>位，而<a target="_blank" rel="noopener" href="https://www.blockchain.com/btc/address/1BnWPuYQ57dRcWMERGCBnHwv9tKLiw4JFB">1BnWPuYQ57dRcWMERGCBnHwv9tKLiw4JFB</a>地址有<code>34</code>位。 我们在上表中，也提前列出了<code>common bitcoin address</code>的长度区间为<code>26</code>到<code>35</code>. 那么，为什么这些地址的长度会不同呢？</p>
+</blockquote>
+<p>观察上表，容易发现一直到<code>8</code>号变量，所有的变量长度都是固定且相同的。但问题就出来了从<code>8</code>号变量向<code>9</code>号变量转化的计算中。这个计算是个<strong>Base58Check编码过程</strong>，其将若干个<strong>前缀0</strong>表示为一个<strong>字符“1”</strong>，这直接导致了地址变量的长度不一样。</p>
+<h2 id="参考链接">参考链接</h2>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://en.bitcoin.it/wiki/List_of_address_prefixes">List of address prefixes</a></li>
+<li><a target="_blank" rel="noopener" href="https://en.bitcoin.it/wiki/Technical_background_of_version_1_Bitcoin_addresses">Technical background of version 1 Bitcoin addresses</a></li>
+<li><a target="_blank" rel="noopener" href="https://bitcoin.stackexchange.com/questions/36944/what-are-the-minimum-and-maximum-lengths-of-a-mainnet-bitcoin-address">What are the minimum and maximum lengths of a Mainnet Bitcoin address?</a></li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Bitcoin/" rel="tag"># Bitcoin</a>
+              <a href="/tags/Blockchain-Protocol/" rel="tag"># Blockchain - Protocol</a>
+          </div>
+
+        
+  <div class="post-widgets">
+    <div class="wp_rating">
+      <div id="wpac-rating"></div>
+    </div>
+  </div>
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2019/03/17/bitcoin-protocol-op_return/" rel="prev" title="理解比特币的raw transaction —— OP_RETURN类型输出">
+      <i class="fa fa-chevron-left"></i> 理解比特币的raw transaction —— OP_RETURN类型输出
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2019/07/21/btcd-source-code-analysis-3/" rel="next" title="btcd源码解析——节点P2P连接建立的过程 (1)">
+      btcd源码解析——节点P2P连接建立的过程 (1) <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#i.-%E6%AF%94%E7%89%B9%E5%B8%81%E5%9C%B0%E5%9D%80%E4%BB%A5%E4%BB%80%E4%B9%88%E5%AD%97%E7%AC%A6%E5%BC%80%E5%A4%B4"><span class="nav-number">1.</span> <span class="nav-text">I. 比特币地址以什么字符开头</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ii.-%E6%AF%94%E7%89%B9%E5%B8%81%E5%9C%B0%E5%9D%80%E4%BB%A5%E4%BB%80%E4%B9%88%E5%AD%97%E7%AC%A6%E5%BC%80%E5%A4%B4"><span class="nav-number">2.</span> <span class="nav-text">II. 比特币地址以什么字符开头</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#iii.-%E6%AF%94%E7%89%B9%E5%B8%81p2pkh%E7%B1%BB%E5%9E%8B%E5%9C%B0%E5%9D%80%E7%9A%84%E4%BD%8D%E6%95%B0"><span class="nav-number">3.</span> <span class="nav-text">III. 比特币P2PKH类型地址的位数</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E9%93%BE%E6%8E%A5"><span class="nav-number">4.</span> <span class="nav-text">参考链接</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Seafooler</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">33</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">16</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="mailto:seafooler@gmail.com" title="E-Mail → mailto:seafooler@gmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Seafooler</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+  <script>
+  if (CONFIG.page.isPost) {
+    wpac_init = window.wpac_init || [];
+    wpac_init.push({
+      widget: 'Rating',
+      id    : ,
+      el    : 'wpac-rating',
+      color : 'fc6423'
+    });
+    (function() {
+      if ('WIDGETPACK_LOADED' in window) return;
+      WIDGETPACK_LOADED = true;
+      var mc = document.createElement('script');
+      mc.type = 'text/javascript';
+      mc.async = true;
+      mc.src = '//embed.widgetpack.com/widget.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(mc, s.nextSibling);
+    })();
+  }
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+
+</body>
+</html>
