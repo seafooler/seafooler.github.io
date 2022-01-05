@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-kelp.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-kelp.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-kelp.png">
+  <link rel="manifest" href="/images/manifest.json">
+  <meta name="msapplication-config" content="/images/browserconfig.xml">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":{"disqus":{"text":"Load Disqus","order":-1}}},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="本篇博客主要讨论关于PBFT的另一个问题，即：为什么PBFT协议中需要2f+1？">
+<meta property="og:type" content="article">
+<meta property="og:title" content="为什么PBFT协议中需要2f+1">
+<meta property="og:url" content="http://example.com/2021/01/13/why-pbft-2f+1/index.html">
+<meta property="og:site_name" content="Seafooler&#39;s Blog">
+<meta property="og:description" content="本篇博客主要讨论关于PBFT的另一个问题，即：为什么PBFT协议中需要2f+1？">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2021-01-12T16:00:00.000Z">
+<meta property="article:modified_time" content="2022-01-05T12:53:04.652Z">
+<meta property="article:author" content="Seafooler">
+<meta property="article:tag" content="Consensus">
+<meta property="article:tag" content="Blockchain">
+<meta property="article:tag" content="PBFT">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://example.com/2021/01/13/why-pbft-2f+1/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+
+  <title>为什么PBFT协议中需要2f+1 | Seafooler's Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Seafooler's Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>About</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2021/01/13/why-pbft-2f+1/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Seafooler">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Seafooler's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          为什么PBFT协议中需要2f+1
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2021-01-13 00:00:00" itemprop="dateCreated datePublished" datetime="2021-01-13T00:00:00+08:00">2021-01-13</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2022-01-05 20:53:04" itemprop="dateModified" datetime="2022-01-05T20:53:04+08:00">2022-01-05</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Consensus/" itemprop="url" rel="index"><span itemprop="name">Consensus</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>本篇博客主要讨论关于<code>PBFT</code>的另一个问题，即：为什么<code>PBFT</code>协议中需要2f+1？ <span id="more"></span></p>
+<h2 id="i.-写在前面">I. 写在前面</h2>
+<p>关于<code>PBFT</code>中为什么需要2f+1个<code>Prepare</code>/<code>Commit</code>的问题，网上其实有很多博客和文献来阐述，如这篇博客<a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/41819391">PBFT中的几个重要参数</a>以及这本书"Introduction to reliable and secure distributed programming"。 这些博客和文献大都采用了比较理论的证明方式，使用了<code>Quorum</code>的概念。即拜占庭网络中的<code>Quorum</code>值是2f+1，因此<code>PBFT</code>中必须使用2f+1这个参数。这种证明方式总的来说是比较抽象的。</p>
+<p>本文和上面那些博客和文献不同，打算用通俗易懂的例子进行说明。具体来说，是通过举一些反例，即：如果少于2f+1会怎么样？</p>
+<h2 id="ii.-prepare阶段为何需要2f1">II. Prepare阶段为何需要2f+1?</h2>
+<p><code>Prepare</code>阶段时，为何要确认接收到了2f+1条消息 答： 主要是考虑到<code>Primary</code>节点的作恶问题。</p>
+<ul>
+<li>若<code>Primary</code>节点是诚实的，f+1就足够了</li>
+<li>考虑到<code>Primary</code>节点可能会作恶，必须要收到2f+1条消息。假如只要求收到2f条消息：<code>Primary</code>节点是作恶的，另外还有f-1个节点也是作恶的（假设这f个恶意节点构成集群<code>B</code>），剩下的2f+1个节点都是正确的。那么<code>Primary</code>节点坑会给f个正确节点发送<code>a=1</code>的<code>PrePrepare</code>消息（假设这f个正确节点构成集群<code>C</code>），给另外f+1个正确节点发送<code>a=2</code>的<code>PrePrepare</code>消息（假设这f个正确节点构成集群<code>D</code>）。同时，另外集群<code>B</code>中的恶意节点也会给集群<code>C</code>中的正确节点发送<code>a=1</code>的<code>Prepare</code>消息，给集群<code>D</code>中的f+1个正确节点发送<code>a=2</code>的<code>Prepare</code>消息。集群<code>C</code>和集群<code>D</code>中的节点也都会向彼此发送<code>Prepare</code>消息。此时，对于集群<code>C</code>中的节点，其可能收到1个<code>a=1</code>的<code>PrePrepare</code>消息，f-1个<code>a=1</code>的<code>Prepare</code>消息（从集群<code>B</code>收到），和f个<code>a=1</code>的<code>Prepare</code>消息（从集群<code>C</code>中收到，包括自己的）。总计2f条消息，从而得到<code>a=1</code>的结论。另一方面，对于集群<code>D</code>中的节点，其可能收到1个<code>a=2</code>的<code>PrePrepare</code>消息，f-1个<code>a=2</code>的<code>Prepare</code>消息（从集群<code>B</code>收到），和f+1个<code>a=2</code>的<code>Prepare</code>消息（从集群<code>D</code>中收到，包括自己的）。总计2f+1条消息，从而得到<code>a=2</code>的结论。也即集群<code>C</code>和集群<code>D</code>中的节点得出了不一样的结论，没能达成共识。</li>
+</ul>
+<h2 id="iii.-commit阶段为何需要2f1">III. Commit阶段为何需要2f+1?</h2>
+<p>说到这里，另外一个疑问是：既然<code>Prepare</code>阶段已经去除了<code>Primary</code>作恶的影响了，为什么到了<code>Commit</code>阶段还是要求2f+1呢？ 答：这需要首先回顾一下<a target="_blank" rel="noopener" href="https://blog.csdn.net/u014633283/article/details/112506761">上一篇博客</a>中关于<code>Commit</code>阶段必要性的分析。简而言之：<code>Commit</code>阶段配合<code>View Change</code>机制保证了节点状态在不同的<code>View</code>中也可以保持一致。 基于该理解，之所以<code>Commit</code>阶段也要求收到2f+1个<code>Prepared</code>消息，是因为恶意节点可能在当前<code>View</code>中发送了<code>Prepared</code>数据，但在<code>View Change</code>的时候故意不发送该<code>Prepared</code>数据。</p>
+<p>举例来说：假设<code>PBFT</code>集群中有4个节点：<code>A</code>、<code>B</code>、<code>C</code>、<code>D</code>，其中节点<code>D</code>是恶意节点，并且假设上一轮<code>View</code>中，<code>A</code>是主节点。如果只需要2f个<code>Prepared</code>数据，节点<code>C</code>在收到<code>D</code>的<code>Prepared</code>数据后，加上自己的<code>Prepared</code>数据就达到了2f个的计数，从而提交了（也即执行了相应的交易）。此时<code>A</code>和<code>B</code>都还没有到达<code>Prepared</code>状态。并且，在此时发生了<code>View</code>切换的操作，下一个主节点是<code>B</code>。<code>B</code>节点收到了包括<code>自己</code>、<code>A</code>和<code>D</code>的<code>VIEW-CHANGE</code>消息后，就发起了<code>NEW-VIEW</code>消息。但由于<code>A</code>和<code>B</code>都未在上一轮<code>View</code>中到达<code>Prepared</code>状态，因而其<code>VIEW-CHANGE</code>消息中不包含相应的<code>Prepared</code>数据；而<code>D</code>是恶意节点，故意在<code>VIEW-CHANGE</code>消息中不包含相应的<code>Prepared</code>数据。因此，上一轮在节点<code>C</code>中<code>Commit</code>了的数据在新的<code>View</code>中，未能被<code>NEW-VIEW</code>包含，从而可能在后期被其他节点执行矛盾交易，造成集群中节点状态的不一致。</p>
+<h2 id="参考文献">参考文献</h2>
+<ol type="1">
+<li><a target="_blank" rel="noopener" href="http://yangzhe.me/2019/11/25/pbft/">实用拜占庭容错算法（PBFT）</a></li>
+<li><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/41819391">PBFT中的几个重要参数</a></li>
+<li>Cachin C, Guerraoui R, Rodrigues L. Introduction to reliable and secure distributed programming[M]. Springer Science &amp; Business Media, 2011.</li>
+</ol>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Consensus/" rel="tag"># Consensus</a>
+              <a href="/tags/Blockchain/" rel="tag"># Blockchain</a>
+              <a href="/tags/PBFT/" rel="tag"># PBFT</a>
+          </div>
+
+        
+  <div class="post-widgets">
+    <div class="wp_rating">
+      <div id="wpac-rating"></div>
+    </div>
+  </div>
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/01/12/why-pbft-commit/" rel="prev" title="为什么PBFT协议中需要Commit阶段">
+      <i class="fa fa-chevron-left"></i> 为什么PBFT协议中需要Commit阶段
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/01/23/fabric-source-code-analysis-6/" rel="next" title="Fabric中PBFT源码解读——Checkpoint机制">
+      Fabric中PBFT源码解读——Checkpoint机制 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#i.-%E5%86%99%E5%9C%A8%E5%89%8D%E9%9D%A2"><span class="nav-number">1.</span> <span class="nav-text">I. 写在前面</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ii.-prepare%E9%98%B6%E6%AE%B5%E4%B8%BA%E4%BD%95%E9%9C%80%E8%A6%812f1"><span class="nav-number">2.</span> <span class="nav-text">II. Prepare阶段为何需要2f+1?</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#iii.-commit%E9%98%B6%E6%AE%B5%E4%B8%BA%E4%BD%95%E9%9C%80%E8%A6%812f1"><span class="nav-number">3.</span> <span class="nav-text">III. Commit阶段为何需要2f+1?</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%8C%AE"><span class="nav-number">4.</span> <span class="nav-text">参考文献</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Seafooler</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">44</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">17</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="mailto:seafooler@gmail.com" title="E-Mail → mailto:seafooler@gmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Seafooler</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+  <script>
+  if (CONFIG.page.isPost) {
+    wpac_init = window.wpac_init || [];
+    wpac_init.push({
+      widget: 'Rating',
+      id    : ,
+      el    : 'wpac-rating',
+      color : 'fc6423'
+    });
+    (function() {
+      if ('WIDGETPACK_LOADED' in window) return;
+      WIDGETPACK_LOADED = true;
+      var mc = document.createElement('script');
+      mc.type = 'text/javascript';
+      mc.async = true;
+      mc.src = '//embed.widgetpack.com/widget.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(mc, s.nextSibling);
+    })();
+  }
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+
+</body>
+</html>

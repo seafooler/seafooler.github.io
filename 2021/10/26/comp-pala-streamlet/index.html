@@ -43,7 +43,7 @@
 <meta property="og:image" content="http://example.com/images/comp-pala-streamlet/table-comp.png">
 <meta property="og:image" content="http://example.com/images/comp-pala-streamlet/conclusion-comparison.png">
 <meta property="article:published_time" content="2021-10-25T16:00:00.000Z">
-<meta property="article:modified_time" content="2021-12-23T08:23:59.493Z">
+<meta property="article:modified_time" content="2022-01-05T12:12:11.455Z">
 <meta property="article:author" content="Seafooler">
 <meta property="article:tag" content="Consensus">
 <meta property="article:tag" content="Blockchain">
@@ -214,7 +214,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2021-12-23 16:23:59" itemprop="dateModified" datetime="2021-12-23T16:23:59+08:00">2021-12-23</time>
+                <time title="Modified: 2022-01-05 20:12:11" itemprop="dateModified" datetime="2022-01-05T20:12:11+08:00">2022-01-05</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -238,95 +238,146 @@
 
       
         <p>Inspired by the blockchain data structures, lots of streamlined BFT (Byzantine Fault Tolerant) consensus algorithms have been proposed recently, including <code>Tendermint</code>[1], <code>Pili</code>[2], <code>Pala</code>[3], <code>HotStuff</code>[4], and <code>Streamlet</code>[5]. Among them, two extremely-simple ones are quite similar and even born from the same research group (i.e., <a target="_blank" rel="noopener" href="http://elaineshi.com/">Prof. Elaine Shi</a>). <code>Streamlet</code> is claimed to be an improved variant of <code>Pala</code>, which seems to be simpler.</p>
-<p>In this blog, we try to make a comparison between <code>Pala</code> and <code>Streamlet</code>. Note that we only consider the <strong>basic</strong> <code>Pala</code>, which takes a democracy-favoring proposer rotation approach, similar to <code>Streamlet</code>.<br>Furthermore, we want to figure out how can <code>Streamlet</code> simplify the consensus and are the improvements made at any costs?<br><span id="more"></span></p>
-<h2 id="I-A-Characteristic-Brought-by-the-Consecutive-Rule"><a href="#I-A-Characteristic-Brought-by-the-Consecutive-Rule" class="headerlink" title="I. A Characteristic Brought by the Consecutive Rule"></a>I. A Characteristic Brought by the Consecutive Rule</h2><h3 id="A-Consecutive-rule"><a href="#A-Consecutive-rule" class="headerlink" title="A. Consecutive rule"></a>A. Consecutive rule</h3><p>Both <code>Pala</code> and <code>Streamlet</code> finalize the notarized blocks based on the <strong>consecutive rule</strong>, which is defined roughly as follows:</p>
+<p>In this blog, we try to make a comparison between <code>Pala</code> and <code>Streamlet</code>. Note that we only consider the <strong>basic</strong> <code>Pala</code>, which takes a democracy-favoring proposer rotation approach, similar to <code>Streamlet</code>. Furthermore, we want to figure out how can <code>Streamlet</code> simplify the consensus and are the improvements made at any costs? <span id="more"></span></p>
+<h2 id="i.-a-characteristic-brought-by-the-consecutive-rule">I. A Characteristic Brought by the Consecutive Rule</h2>
+<h3 id="a.-consecutive-rule">A. Consecutive rule</h3>
+<p>Both <code>Pala</code> and <code>Streamlet</code> finalize the notarized blocks based on the <strong>consecutive rule</strong>, which is defined roughly as follows:</p>
 <blockquote>
 <p>If two/three adjacent notarized blocks have the consecutive epoch numbers, all the preceding blocks led by the last but one block are considered finailized.</p>
 </blockquote>
-<p>Examples to demonstrate the consecutive rule of <code>Pala</code> and <code>Streamlet</code> are shown as follows:<br><img src="/images/comp-pala-streamlet/finalization-rule.png" height=108 /><br><em>Figure 1. Consecutive rule</em></p>
-<h3 id="B-Security-characteristic-brought-by-two-consecutive-block-rule"><a href="#B-Security-characteristic-brought-by-two-consecutive-block-rule" class="headerlink" title="B. Security characteristic brought by two-consecutive-block rule"></a>B. Security characteristic brought by two-consecutive-block rule</h3><p>With the rule of two consecutive blocks, we can deduce a security characteristic that <strong>if there are two adjacent notarized blocks with consecutive epoch numbers, there would never be a notarized block with the same height as the former block but with higher epoch number.</strong>  In other words, we have the deduction as follows:</p>
-<script type="math/tex; mode=display">
+Examples to demonstrate the consecutive rule of <code>Pala</code> and <code>Streamlet</code> are shown as follows: <img src="/images/comp-pala-streamlet/finalization-rule.png" height=108 />
+<center>
+<b>Figure 1. Consecutive rule</b>
+</center>
+<h3 id="b.-security-characteristic-brought-by-two-consecutive-block-rule">B. Security characteristic brought by two-consecutive-block rule</h3>
+With the rule of two consecutive blocks, we can deduce a security characteristic that <strong>if there are two adjacent notarized blocks with consecutive epoch numbers, there would never be a notarized block with the same height as the former block but with higher epoch number.</strong> In other words, we have the deduction as follows: <span class="math display">\[
 \left.
-\begin{aligned} N(B_2) = 1 \: \& N(B_1) = 1 \: \& N(B_1') = 1 \\ 
+\begin{aligned} N(B_2) = 1 \: \&amp; N(B_1) = 1 \: \&amp; N(B_1&#39;) = 1 \\ 
 E(B_2) = E(B_1+1) \\
-H(B_2) = H(B_1+1) \: \& H(B_1')=H(B_1) \\
+H(B_2) = H(B_1+1) \: \&amp; H(B_1&#39;)=H(B_1) \\
 \end{aligned}
 \ \right \}
-\Rightarrow E(B_1')<E(B_1)</script><p>where $N$ denotes if a block is notarized, while $E$ and $H$ represent the epoch number and height of a block respectively.<br>This characteristic can also be desmontrated by Figure 2:<br><img src="/images/comp-pala-streamlet/sec-characteristic.png" height=200 /><br><em>Figure 2. Security charateristic brought by two-consecutive-block rule</em></p>
-<h3 id="C-Proof-of-security-characteristic"><a href="#C-Proof-of-security-characteristic" class="headerlink" title="C. Proof of security characteristic"></a>C. Proof of security characteristic</h3><p>We will prove this security characteristic by contradiction.</p>
-<p>Assume that there are two different notarized blocks with the same height and one of them is the former block of two consecutive blocks. As shown by Figure 3, we assume $B_1$ and $B_1’$ are different, and $B_1’$ has a higher epoch number. Simply,  we assume $B_1’$ ‘s epoch number is $e_0+3$. Let $B_0’$ be the preceding block referenced by $B_1’$.<br><img src="/images/comp-pala-streamlet/proof-sec-charateristic.png" height=326 /><br><em>Figure 3. Proof of security charateristic</em></p>
-<p>We have that $E(B_1) &gt; E(B_0’)$ and $H(B_1) &gt; H(B_0’)$, where E(B) and H(B) represent the epoch number and height of a block respectively.</p>
-<p>On the other hand, both <code>Pala</code> and <code>Streamlet</code> make a similar voting rule that an honest replica will only vote for the block with a higher epoch/height than its local view. </p>
-<h4 id="1-Proof-for-Pala"><a href="#1-Proof-for-Pala" class="headerlink" title="1. Proof for Pala"></a>1. Proof for <code>Pala</code></h4><p><code>Pala</code> stipulates the voting rule as follows:</p>
+\Rightarrow E(B_1&#39;)&lt;E(B_1)
+\]</span> where <span class="math inline">\(N\)</span> denotes if a block is notarized, while <span class="math inline">\(E\)</span> and <span class="math inline">\(H\)</span> represent the epoch number and height of a block respectively. This characteristic can also be desmontrated by Figure 2: <img src="/images/comp-pala-streamlet/sec-characteristic.png" height=200 />
+<center>
+<b>Figure 2. Security charateristic brought by two-consecutive-block rule</b>
+</center>
+<h3 id="c.-proof-of-security-characteristic">C. Proof of security characteristic</h3>
+<p>We will prove this security characteristic by contradiction.</p>
+Assume that there are two different notarized blocks with the same height and one of them is the former block of two consecutive blocks. As shown by Figure 3, we assume <span class="math inline">\(B_1\)</span> and <span class="math inline">\(B_1&#39;\)</span> are different, and <span class="math inline">\(B_1&#39;\)</span> has a higher epoch number. Simply, we assume <span class="math inline">\(B_1&#39;\)</span> 's epoch number is <span class="math inline">\(e_0+3\)</span>. Let <span class="math inline">\(B_0&#39;\)</span> be the preceding block referenced by <span class="math inline">\(B_1&#39;\)</span>. <img src="/images/comp-pala-streamlet/proof-sec-charateristic.png" height=326 />
+<center>
+<b>Figure 3. Proof of security charateristic</b>
+</center>
+<p>We have that <span class="math inline">\(E(B_1) &gt; E(B_0&#39;)\)</span> and <span class="math inline">\(H(B_1) &gt; H(B_0&#39;)\)</span>, where E(B) and H(B) represent the epoch number and height of a block respectively.</p>
+<p>On the other hand, both <code>Pala</code> and <code>Streamlet</code> make a similar voting rule that an honest replica will only vote for the block with a higher epoch/height than its local view.</p>
+<h4 id="proof-for-pala">1. Proof for <code>Pala</code></h4>
+<p><code>Pala</code> stipulates the voting rule as follows:</p>
 <blockquote>
 <p>Vote on the proposal iff the following hold: the parent chain led by the proposal is notarized and at least as fresh as the freshest notarized chain the node has observed.</p>
 </blockquote>
-<p>In short, a replica in <code>Pala</code> will vote for a block, only if the block extends from its local notarized chain and the block’s <strong>precursor</strong>‘s epoch number is higher than or equal to the largest-epoch notarized chain.</p>
-<p>Back to the above figure in Section I.C, for an honest replica with <code>chain</code> as its local notarized chain, there must be at least $f+1$ honest replicas possessing the notarized chain up to block $B_1$. </p>
-<p>On one hand, if $B_0’$ is not a prefix of $B1$, all these $f+1$ honest replicas will not vote for $B_1’$, since $B_1’$ does not extend their local notarized chain.</p>
-<p>On the other hand,  if $B_0’$ is a prefix of $B1$ (shown by the following figure),  all these $f+1$ honest replicas will not vote for $B_1’$ as well, since $B_0’$’s epoch number is lower than $B_1$.<br><img src="/images/comp-pala-streamlet/routine-pala.png" height=200 /><br><em>Figure 4. Proof for <code>Pala</code></em></p>
-<p>Therefore, $B_1’$ cannot receive $2f+1$ votes or notarized. We reach a contradiction.</p>
-<h4 id="2-Proof-for-Streamlet"><a href="#2-Proof-for-Streamlet" class="headerlink" title="2. Proof for Streamlet"></a>2. Proof for <code>Streamlet</code></h4><p><code>Streamlet</code> stipulates the voting rule as follows:</p>
+<p>In short, a replica in <code>Pala</code> will vote for a block, only if the block extends from its local notarized chain and the block's <strong>precursor</strong>'s epoch number is higher than or equal to the largest-epoch notarized chain.</p>
+<p>Back to the above figure in Section I.C, for an honest replica with <code>chain</code> as its local notarized chain, there must be at least <span class="math inline">\(f+1\)</span> honest replicas possessing the notarized chain up to block <span class="math inline">\(B_1\)</span>.</p>
+<p>On one hand, if <span class="math inline">\(B_0&#39;\)</span> is not a prefix of <span class="math inline">\(B1\)</span>, all these <span class="math inline">\(f+1\)</span> honest replicas will not vote for <span class="math inline">\(B_1&#39;\)</span>, since <span class="math inline">\(B_1&#39;\)</span> does not extend their local notarized chain.</p>
+On the other hand, if <span class="math inline">\(B_0&#39;\)</span> is a prefix of <span class="math inline">\(B1\)</span> (shown by the following figure), all these <span class="math inline">\(f+1\)</span> honest replicas will not vote for <span class="math inline">\(B_1&#39;\)</span> as well, since <span class="math inline">\(B_0&#39;\)</span>'s epoch number is lower than <span class="math inline">\(B_1\)</span>. <img src="/images/comp-pala-streamlet/routine-pala.png" height=200 />
+<center>
+<b>Figure 4. Proof for <code>Pala</code></b>
+</center>
+<p>Therefore, <span class="math inline">\(B_1&#39;\)</span> cannot receive <span class="math inline">\(2f+1\)</span> votes or notarized. We reach a contradiction.</p>
+<h4 id="proof-for-streamlet">2. Proof for <code>Streamlet</code></h4>
+<p><code>Streamlet</code> stipulates the voting rule as follows:</p>
 <blockquote>
-<p>Every player votes for the first proposal they see from the epoch’s leader, as long as the proposed block extends from (one of ) the longest notarized chain(s) that the voter has seen.</p>
+<p>Every player votes for the first proposal they see from the epoch's leader, as long as the proposed block extends from (one of ) the longest notarized chain(s) that the voter has seen.</p>
 </blockquote>
-<p>In short, a replica in <code>Streamlet</code> will vote for a block, only if the block extends from its local notarized chain and the block’s <strong>precursor</strong>‘s <strong>height</strong> is higher than or equal to the longest notarized chain.</p>
-<p>Back to the above figure in Section I.C,  for an honest replica with <code>chain</code> as its local notarized chain, there must be at least $f+1$ honest replicas possessing the notarized chain up to block $B_1$.<br>Since $B_0’$’s height is lower than $B_1$, all these $f+1$ honest replicas will not vote for $B_1’$.</p>
+<p>In short, a replica in <code>Streamlet</code> will vote for a block, only if the block extends from its local notarized chain and the block's <strong>precursor</strong>'s <strong>height</strong> is higher than or equal to the longest notarized chain.</p>
+<p>Back to the above figure in Section I.C, for an honest replica with <code>chain</code> as its local notarized chain, there must be at least <span class="math inline">\(f+1\)</span> honest replicas possessing the notarized chain up to block <span class="math inline">\(B_1\)</span>. Since <span class="math inline">\(B_0&#39;\)</span>'s height is lower than <span class="math inline">\(B_1\)</span>, all these <span class="math inline">\(f+1\)</span> honest replicas will not vote for <span class="math inline">\(B_1&#39;\)</span>.</p>
 <p>We reach a contradiction too.</p>
-<h2 id="II-Supplement-to-the-Security-Charateristic"><a href="#II-Supplement-to-the-Security-Charateristic" class="headerlink" title="II. Supplement to the Security Charateristic"></a>II. Supplement to the Security Charateristic</h2><p>From Section I, we can conclude that <strong>if there are two adjacent notarized blocks with consecutive epoch numbers, and there is another notarized block with the same height as the former block,  the block’s epoch must be lower than the former block.</strong>, which is shown by Figure 5:<br><img src="/images/comp-pala-streamlet/supplement.png" height=200 /><br><em>Figure 5. Temporary conclusision by two-consecutive-block rule</em></p>
-<p>A natural thought is that can we add some supplementary rules to the two-consecutive-block rule, to make $B1’$ with a lower epoch number impossible to be finalized?</p>
+<h2 id="ii.-supplement-to-the-security-charateristic">II. Supplement to the Security Charateristic</h2>
+From Section I, we can conclude that <strong>if there are two adjacent notarized blocks with consecutive epoch numbers, and there is another notarized block with the same height as the former block, the block's epoch must be lower than the former block.</strong>, which is shown by Figure 5: <img src="/images/comp-pala-streamlet/supplement.png" height=200 />
+<center>
+<b>Figure 5. Temporary conclusision by two-consecutive-block rule</b>
+</center>
+<p>A natural thought is that can we add some supplementary rules to the two-consecutive-block rule, to make <span class="math inline">\(B1&#39;\)</span> with a lower epoch number impossible to be finalized?</p>
 <p>Towards achieving this, <code>Pala</code> and <code>Streamlet</code> chooses different routines. In short, <code>Pala</code> remakes use of the voting rule described above, which is based on the definition of <code>fresher than</code> relationship. By contrast, <code>Streamlet</code> strengthens the consecutive-block rule from two to three.</p>
 <p>Next, we talk about how these two routines can be a supplementary to the two-consecutive-block rule.</p>
-<h3 id="A-Routine-of-Pala"><a href="#A-Routine-of-Pala" class="headerlink" title="A. Routine of Pala"></a>A. Routine of <code>Pala</code></h3><p>Note that in <code>Pala</code>, a notazied block with a lower epoch number can exist, as examplified by Figure 6, where both $B_1$ and $B_1’$ can be notarized.<br><img src="/images/comp-pala-streamlet/routine-pala-notarized2.png" height=200 /><br><em>Figure 6. Notarized block with a lower epoch number is possible in <code>Pala</code></em></p>
-<p>However, <code>Pala</code> can guarantee that $B_1’$ will <strong>never be referenced by a later notarized block</strong>, as Figure 7 shows:<br><img src="/images/comp-pala-streamlet/routine-pala-no-successor.png" height=200 /><br><em>Figure 7. Notarized block with a lower epoch number can not be referenced by a later one in <code>Pala</code></em> </p>
-<h4 id="1-Proof-for-Pala-1"><a href="#1-Proof-for-Pala-1" class="headerlink" title="1. Proof for Pala"></a>1. Proof for <code>Pala</code></h4><p>The reason why $B_1’$ will <strong>never be referenced by a later notarized block</strong> can be described as follows.<br>We describe the reason by contradiction. We simply assume that the later block is $B_2’$, whose epoch number is $e_0+3$:<br><img src="/images/comp-pala-streamlet/routine-pala-proof.png" height=160 /><br><em>Figure 8. An assumption to reach the contradiction in <code>Pala</code></em> </p>
-<p>However, since $B_2$ is notarized, at least $f+1$ honest replicas must have voted for $B_2$ and possess the notarized block $B_1$. These replicas will not vote for $B_2’$, since its precursor block $B_1’$ has a lower epoch number than $B_1$. Therefore, $B_2’$ cannot get more than $2f+1$ votes or be notarized, thus reaching a contradiction.</p>
-<p>To sum up, there will be no successor notarized block after $B_1’$. If we stipulate that a block can be finalized by the two-consecutive-block rule, there will be no contradictory finalized blocks. This is exactly stipulated by <code>Pala</code>.</p>
-<h3 id="B-Routine-of-Streamlet"><a href="#B-Routine-of-Streamlet" class="headerlink" title="B. Routine of Streamlet"></a>B. Routine of <code>Streamlet</code></h3><p>On the contrary to <code>Pala</code>,  with the voting rule in <code>Streamlet</code>, $B_1’$ can <strong>also be referenced by a later notarized block</strong>, examplified by Figure 9:<br><img src="/images/comp-pala-streamlet/routine-streamlet-successor.png" height=200 /><br><em>Figure 9. Notarized block with a lower epoch number can also be referenced by a later one in <code>Streamlet</code></em></p>
-<p>To be more specific, all the blocks $B_1$, $B_2$, $B_1’$, and $B_2’$ can be notarized. </p>
-<p>To guarantee safety, <code>Streamlet</code> picks another routine, which strengthens the finazliation rule from two consecutive blocks to three consecutive blocks. Under the three-consecutive-block rule, we have that <strong>if there are three adjacent notarized blocks with consecutive epoch numbers, there will not be another notarized block with the same height as the middle block</strong>, examplified as follows:<br><img src="/images/comp-pala-streamlet/routine-streamlet-3-consecutive.png" height=170 /><br><em>Figure 10. A notarized block with the same height as the middle block cannot exist in <code>Streamlet</code></em> </p>
-<h4 id="1-Proof-for-Streamlet"><a href="#1-Proof-for-Streamlet" class="headerlink" title="1. Proof for Streamlet"></a>1. Proof for <code>Streamlet</code></h4><p>Next, we explain why the three-consecutive-block rule in <code>Streamlet</code> can guarantee that there will not be another notarized block with the same height as the middle block, thus achieving safety.</p>
-<p>Review that in Section I.C.2, under a two-consecutive-block rule, there will be no block with the same height as the former block and a higher epoch number, shown as Figure 11(a) as follows. Derived from Figure 11(a), we can easily draw a similar conclusion shown by Figure 11(b).<br><img src="/images/comp-pala-streamlet/routine-streamlet-two-cases.png" height=200 /><br><em>Figure 11. A notarized block with the same height as the middle block cannot exist in <code>Streamlet</code></em></p>
+<h3 id="a.-routine-of-pala">A. Routine of <code>Pala</code></h3>
+Note that in <code>Pala</code>, a notazied block with a lower epoch number can exist, as examplified by Figure 6, where both <span class="math inline">\(B_1\)</span> and <span class="math inline">\(B_1&#39;\)</span> can be notarized. <img src="/images/comp-pala-streamlet/routine-pala-notarized2.png" height=200 />
+<center>
+<b>Figure 6. Notarized block with a lower epoch number is possible in <code>Pala</code></b>
+</center>
+However, <code>Pala</code> can guarantee that <span class="math inline">\(B_1&#39;\)</span> will <strong>never be referenced by a later notarized block</strong>, as Figure 7 shows: <img src="/images/comp-pala-streamlet/routine-pala-no-successor.png" height=200 />
+<center>
+<b>Figure 7. Notarized block with a lower epoch number can not be referenced by a later one in <code>Pala</code></b>
+</center>
+<h4 id="proof-for-pala-1">1. Proof for <code>Pala</code></h4>
+The reason why <span class="math inline">\(B_1&#39;\)</span> will <strong>never be referenced by a later notarized block</strong> can be described as follows. We describe the reason by contradiction. We simply assume that the later block is <span class="math inline">\(B_2&#39;\)</span>, whose epoch number is <span class="math inline">\(e_0+3\)</span>: <img src="/images/comp-pala-streamlet/routine-pala-proof.png" height=160 />
+<center>
+<b>Figure 8. An assumption to reach the contradiction in <code>Pala</code></b>
+</center>
+<p>However, since <span class="math inline">\(B_2\)</span> is notarized, at least <span class="math inline">\(f+1\)</span> honest replicas must have voted for <span class="math inline">\(B_2\)</span> and possess the notarized block <span class="math inline">\(B_1\)</span>. These replicas will not vote for <span class="math inline">\(B_2&#39;\)</span>, since its precursor block <span class="math inline">\(B_1&#39;\)</span> has a lower epoch number than <span class="math inline">\(B_1\)</span>. Therefore, <span class="math inline">\(B_2&#39;\)</span> cannot get more than <span class="math inline">\(2f+1\)</span> votes or be notarized, thus reaching a contradiction.</p>
+<p>To sum up, there will be no successor notarized block after <span class="math inline">\(B_1&#39;\)</span>. If we stipulate that a block can be finalized by the two-consecutive-block rule, there will be no contradictory finalized blocks. This is exactly stipulated by <code>Pala</code>.</p>
+<h3 id="b.-routine-of-streamlet">B. Routine of <code>Streamlet</code></h3>
+On the contrary to <code>Pala</code>, with the voting rule in <code>Streamlet</code>, <span class="math inline">\(B_1&#39;\)</span> can <strong>also be referenced by a later notarized block</strong>, examplified by Figure 9: <img src="/images/comp-pala-streamlet/routine-streamlet-successor.png" height=200 />
+<center>
+<b>Figure 9. Notarized block with a lower epoch number can also be referenced by a later one in <code>Streamlet</code></b>
+</center>
+<p>To be more specific, all the blocks <span class="math inline">\(B_1\)</span>, <span class="math inline">\(B_2\)</span>, <span class="math inline">\(B_1&#39;\)</span>, and <span class="math inline">\(B_2&#39;\)</span> can be notarized.</p>
+To guarantee safety, <code>Streamlet</code> picks another routine, which strengthens the finazliation rule from two consecutive blocks to three consecutive blocks. Under the three-consecutive-block rule, we have that <strong>if there are three adjacent notarized blocks with consecutive epoch numbers, there will not be another notarized block with the same height as the middle block</strong>, examplified as follows: <img src="/images/comp-pala-streamlet/routine-streamlet-3-consecutive.png" height=170 />
+<center>
+<b>Figure 10. A notarized block with the same height as the middle block cannot exist in <code>Streamlet</code></b>
+</center>
+<h4 id="proof-for-streamlet-1">1. Proof for <code>Streamlet</code></h4>
+<p>Next, we explain why the three-consecutive-block rule in <code>Streamlet</code> can guarantee that there will not be another notarized block with the same height as the middle block, thus achieving safety.</p>
+Review that in Section I.C.2, under a two-consecutive-block rule, there will be no block with the same height as the former block and a higher epoch number, shown as Figure 11(a) as follows. Derived from Figure 11(a), we can easily draw a similar conclusion shown by Figure 11(b). <img src="/images/comp-pala-streamlet/routine-streamlet-two-cases.png" height=200 />
+<center>
+<b>Figure 11. A notarized block with the same height as the middle block cannot exist in <code>Streamlet</code></b>
+</center>
 <p>Combining Figure 11(a) and Figure 11(b), we can get the proof for <code>Streamlet</code>. We describe it in two cases, with the Figure 12 as an example.</p>
 <ul>
-<li>Case 1 shown by Figure 12(a): $B_1’$ cannot have an epoch number larger than $e_0+2$, which can be directly deduced from Figure 11(a).</li>
-<li>Case 2 shown by Figure(b): we prove it by contradiction. Assume that $B_1’$ has an epoch number lower than $e_0$, for example $e_0-1$. According to  Figure 11(b), $B_0$ cannot be notarized, which is contradictory to the existence of three-consecutive-blocks ($B_0$, $B_1$, and $B_2$). Therefore, $B_1’$ cannot have an epoch number lower than $e_0$</li>
+<li>Case 1 shown by Figure 12(a): <span class="math inline">\(B_1&#39;\)</span> cannot have an epoch number larger than <span class="math inline">\(e_0+2\)</span>, which can be directly deduced from Figure 11(a).</li>
+<li>Case 2 shown by Figure(b): we prove it by contradiction. Assume that <span class="math inline">\(B_1&#39;\)</span> has an epoch number lower than <span class="math inline">\(e_0\)</span>, for example <span class="math inline">\(e_0-1\)</span>. According to Figure 11(b), <span class="math inline">\(B_0\)</span> cannot be notarized, which is contradictory to the existence of three-consecutive-blocks (<span class="math inline">\(B_0\)</span>, <span class="math inline">\(B_1\)</span>, and <span class="math inline">\(B_2\)</span>). Therefore, <span class="math inline">\(B_1&#39;\)</span> cannot have an epoch number lower than <span class="math inline">\(e_0\)</span></li>
 </ul>
-<p><img src="/images/comp-pala-streamlet/routine-streamlet-proof-two-cases.png" height=200 /><br><em>Figure 12. Proof for <code>Streamlet</code></em></p>
-<h2 id="III-Conclusion"><a href="#III-Conclusion" class="headerlink" title="III. Conclusion"></a>III. Conclusion</h2><p><code>Pala</code> has a simpler finalization rule but a more complicated voting rule than <code>Streamlet</code>, as shown by Table 1. In general, specification of <code>Pala</code> is a little more complex than <code>Streamlet</code>, since its introduction of <code>fresher than</code> relation. However, two-consecutive-block finalization rule can be easier to attain, which makes <code>Pala</code> more efficient.</p>
+<img src="/images/comp-pala-streamlet/routine-streamlet-proof-two-cases.png" height=200 />
+<center>
+<b>Figure 12. Proof for <code>Streamlet</code></b>
+</center>
+<h2 id="iii.-conclusion">III. Conclusion</h2>
+<p><code>Pala</code> has a simpler finalization rule but a more complicated voting rule than <code>Streamlet</code>, as shown by Table 1. In general, specification of <code>Pala</code> is a little more complex than <code>Streamlet</code>, since its introduction of <code>fresher than</code> relation. However, two-consecutive-block finalization rule can be easier to attain, which makes <code>Pala</code> more efficient.</p>
 <!-- <img src="/images/comp-pala-streamlet/table-comp.png" height=100 /> -->
 <p><em>Table 1. A simple comparison</em></p>
-<div class="table-container">
 <table>
 <thead>
-<tr>
+<tr class="header">
 <th>Rule</th>
 <th><code>Pala</code></th>
 <th><code>Streamlet</code></th>
 </tr>
 </thead>
 <tbody>
-<tr>
+<tr class="odd">
 <td><strong>Voting rule</strong></td>
 <td>Fresher than relation (epoch based)</td>
 <td>Height based</td>
 </tr>
-<tr>
+<tr class="even">
 <td><strong>Finalization rule</strong></td>
 <td>Two consecutive blocks</td>
 <td>Three consecutive blocks</td>
 </tr>
 </tbody>
 </table>
-</div>
-<h3 id="A-A-simple-comparison-of-two-adjacent-blocks-between-Pala-and-Streamlet"><a href="#A-A-simple-comparison-of-two-adjacent-blocks-between-Pala-and-Streamlet" class="headerlink" title="A. A simple comparison of two adjacent blocks between Pala and Streamlet"></a>A. A simple comparison of two adjacent blocks between <code>Pala</code> and <code>Streamlet</code></h3><p>If we only consider two adjacent blocks, different cases can be demonstrated by Figure 13, where the number in Figure 13 represents the epoch number.<br><img src="/images/comp-pala-streamlet/conclusion-comparison.png" height=256 /><br><em>Figure 13. Cases of two adjacent blocks</em></p>
+<h3 id="a.-a-simple-comparison-of-two-adjacent-blocks-between-pala-and-streamlet">A. A simple comparison of two adjacent blocks between <code>Pala</code> and <code>Streamlet</code></h3>
+If we only consider two adjacent blocks, different cases can be demonstrated by Figure 13, where the number in Figure 13 represents the epoch number. <img src="/images/comp-pala-streamlet/conclusion-comparison.png" height=256 />
+<center>
+<b>Figure 13. Cases of two adjacent blocks</b>
+</center>
 <p>As can be seen from Figure 13, cases of (b) and (d) are possible, which indicates the two-block (non-consecutive) rule is not enough for <code>Streamlet</code> or <code>Pala</code>. Case of Figure 13(c) shows that even the two-consecutive-block rule is not enough for <code>Streamlet</code>. However, the two-consecutive-block rule is enough for <code>Pala</code>, as shown by Figure 13(a).</p>
-<h2 id="Reference"><a href="#Reference" class="headerlink" title="Reference"></a>Reference</h2><ol>
-<li>Buchman, E. “Tendermint: Byzantine fault tolerance in the age of blockchains.” Doctoral dissertation, 2016.</li>
-<li>Chan, T. H., Pass, R., &amp; Shi, E. “PiLi: An Extremely Simple Synchronous Blockchain.” Cryptology ePrint Archive, 2018.</li>
-<li>Chan, T. H., Pass, R., &amp; Shi, E. “Pala: A simple partially synchronous blockchain.” Cryptology ePrint Archive, 2018.</li>
-<li>Yin, M., Malkhi, D., Reiter, M. K., Gueta, G. G., &amp; Abraham, I. “HotStuff: BFT consensus with linearity and responsiveness.” In Proceedings of the 2019 ACM Symposium on Principles of Distributed Computing (PODC’19), pp. 347-356.</li>
-<li>Chan, B. Y., &amp; Shi, E.  “Streamlet: Textbook streamlined blockchains.” In Proceedings of the 2nd ACM Conference on Advances in Financial Technologies (AFT’20), pp. 1-11.</li>
+<h2 id="reference">Reference</h2>
+<ol type="1">
+<li>Buchman, E. "Tendermint: Byzantine fault tolerance in the age of blockchains." Doctoral dissertation, 2016.</li>
+<li>Chan, T. H., Pass, R., &amp; Shi, E. "PiLi: An Extremely Simple Synchronous Blockchain." Cryptology ePrint Archive, 2018.</li>
+<li>Chan, T. H., Pass, R., &amp; Shi, E. "Pala: A simple partially synchronous blockchain." Cryptology ePrint Archive, 2018.</li>
+<li>Yin, M., Malkhi, D., Reiter, M. K., Gueta, G. G., &amp; Abraham, I. "HotStuff: BFT consensus with linearity and responsiveness." In Proceedings of the 2019 ACM Symposium on Principles of Distributed Computing (PODC'19), pp. 347-356.</li>
+<li>Chan, B. Y., &amp; Shi, E. "Streamlet: Textbook streamlined blockchains." In Proceedings of the 2nd ACM Conference on Advances in Financial Technologies (AFT'20), pp. 1-11.</li>
 </ol>
 
     </div>
@@ -418,7 +469,7 @@ H(B_2) = H(B_1+1) \: \& H(B_1')=H(B_1) \\
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#I-A-Characteristic-Brought-by-the-Consecutive-Rule"><span class="nav-number">1.</span> <span class="nav-text">I. A Characteristic Brought by the Consecutive Rule</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#A-Consecutive-rule"><span class="nav-number">1.1.</span> <span class="nav-text">A. Consecutive rule</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#B-Security-characteristic-brought-by-two-consecutive-block-rule"><span class="nav-number">1.2.</span> <span class="nav-text">B. Security characteristic brought by two-consecutive-block rule</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#C-Proof-of-security-characteristic"><span class="nav-number">1.3.</span> <span class="nav-text">C. Proof of security characteristic</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-Proof-for-Pala"><span class="nav-number">1.3.1.</span> <span class="nav-text">1. Proof for Pala</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-Proof-for-Streamlet"><span class="nav-number">1.3.2.</span> <span class="nav-text">2. Proof for Streamlet</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#II-Supplement-to-the-Security-Charateristic"><span class="nav-number">2.</span> <span class="nav-text">II. Supplement to the Security Charateristic</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#A-Routine-of-Pala"><span class="nav-number">2.1.</span> <span class="nav-text">A. Routine of Pala</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-Proof-for-Pala-1"><span class="nav-number">2.1.1.</span> <span class="nav-text">1. Proof for Pala</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#B-Routine-of-Streamlet"><span class="nav-number">2.2.</span> <span class="nav-text">B. Routine of Streamlet</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-Proof-for-Streamlet"><span class="nav-number">2.2.1.</span> <span class="nav-text">1. Proof for Streamlet</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#III-Conclusion"><span class="nav-number">3.</span> <span class="nav-text">III. Conclusion</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#A-A-simple-comparison-of-two-adjacent-blocks-between-Pala-and-Streamlet"><span class="nav-number">3.1.</span> <span class="nav-text">A. A simple comparison of two adjacent blocks between Pala and Streamlet</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Reference"><span class="nav-number">4.</span> <span class="nav-text">Reference</span></a></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#i.-a-characteristic-brought-by-the-consecutive-rule"><span class="nav-number">1.</span> <span class="nav-text">I. A Characteristic Brought by the Consecutive Rule</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#a.-consecutive-rule"><span class="nav-number">1.1.</span> <span class="nav-text">A. Consecutive rule</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#b.-security-characteristic-brought-by-two-consecutive-block-rule"><span class="nav-number">1.2.</span> <span class="nav-text">B. Security characteristic brought by two-consecutive-block rule</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#c.-proof-of-security-characteristic"><span class="nav-number">1.3.</span> <span class="nav-text">C. Proof of security characteristic</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#proof-for-pala"><span class="nav-number">1.3.1.</span> <span class="nav-text">1. Proof for Pala</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#proof-for-streamlet"><span class="nav-number">1.3.2.</span> <span class="nav-text">2. Proof for Streamlet</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ii.-supplement-to-the-security-charateristic"><span class="nav-number">2.</span> <span class="nav-text">II. Supplement to the Security Charateristic</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#a.-routine-of-pala"><span class="nav-number">2.1.</span> <span class="nav-text">A. Routine of Pala</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#proof-for-pala-1"><span class="nav-number">2.1.1.</span> <span class="nav-text">1. Proof for Pala</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#b.-routine-of-streamlet"><span class="nav-number">2.2.</span> <span class="nav-text">B. Routine of Streamlet</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#proof-for-streamlet-1"><span class="nav-number">2.2.1.</span> <span class="nav-text">1. Proof for Streamlet</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#iii.-conclusion"><span class="nav-number">3.</span> <span class="nav-text">III. Conclusion</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#a.-a-simple-comparison-of-two-adjacent-blocks-between-pala-and-streamlet"><span class="nav-number">3.1.</span> <span class="nav-text">A. A simple comparison of two adjacent blocks between Pala and Streamlet</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#reference"><span class="nav-number">4.</span> <span class="nav-text">Reference</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -432,7 +483,7 @@ H(B_2) = H(B_1+1) \: \& H(B_1')=H(B_1) \\
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">33</span>
+          <span class="site-state-item-count">44</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
@@ -445,7 +496,7 @@ H(B_2) = H(B_1+1) \: \& H(B_1')=H(B_1) \\
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">16</span>
+        <span class="site-state-item-count">17</span>
         <span class="site-state-item-name">tags</span></a>
       </div>
   </nav>

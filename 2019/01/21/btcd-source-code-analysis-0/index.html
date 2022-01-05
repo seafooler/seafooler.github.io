@@ -21,18 +21,18 @@
     var CONFIG = {"hostname":"example.com","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":{"disqus":{"text":"Load Disqus","order":-1}}},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
   </script>
 
-  <meta name="description" content="因为学习的需要，这一年半和接下来更长的时间都会与Bitcoin打交道。不可避免地，需要对Bitcoin的源码进行修改。网上找过一些Bitcoin源码分析的资源，但大多都是基于C++实现的源码。笔者对C++并不是很熟悉，相反，用Go语言用得更多一些。所以，这个系列的博客会针对Go语言实现的Bitcoin进行分析，也即btcd。因为btcd的实现中将wallet的功能独立了出来，形成一个新的项目btc">
+  <meta name="description" content="因为学习的需要，这一年半和接下来更长的时间都会与Bitcoin打交道。不可避免地，需要对Bitcoin的源码进行修改。 网上找过一些Bitcoin源码分析的资源，但大多都是基于C++实现的源码。笔者对C++并不是很熟悉，相反，用Go语言用得更多一些。所以，这个系列的博客会针对Go语言实现的Bitcoin进行分析，也即btcd。因为btcd的实现中将wallet的功能独立了出来，形成一个新的项目bt">
 <meta property="og:type" content="article">
 <meta property="og:title" content="btcd源码解析 (0)">
 <meta property="og:url" content="http://example.com/2019/01/21/btcd-source-code-analysis-0/index.html">
 <meta property="og:site_name" content="Seafooler&#39;s Blog">
-<meta property="og:description" content="因为学习的需要，这一年半和接下来更长的时间都会与Bitcoin打交道。不可避免地，需要对Bitcoin的源码进行修改。网上找过一些Bitcoin源码分析的资源，但大多都是基于C++实现的源码。笔者对C++并不是很熟悉，相反，用Go语言用得更多一些。所以，这个系列的博客会针对Go语言实现的Bitcoin进行分析，也即btcd。因为btcd的实现中将wallet的功能独立了出来，形成一个新的项目btc">
+<meta property="og:description" content="因为学习的需要，这一年半和接下来更长的时间都会与Bitcoin打交道。不可避免地，需要对Bitcoin的源码进行修改。 网上找过一些Bitcoin源码分析的资源，但大多都是基于C++实现的源码。笔者对C++并不是很熟悉，相反，用Go语言用得更多一些。所以，这个系列的博客会针对Go语言实现的Bitcoin进行分析，也即btcd。因为btcd的实现中将wallet的功能独立了出来，形成一个新的项目bt">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2019-01-20T16:00:00.000Z">
-<meta property="article:modified_time" content="2022-01-05T05:54:12.787Z">
+<meta property="article:modified_time" content="2022-01-05T13:10:05.167Z">
 <meta property="article:author" content="Seafooler">
 <meta property="article:tag" content="Bitcoin">
-<meta property="article:tag" content="Blockchain - Golang - Code analysis">
+<meta property="article:tag" content="Blockchain">
 <meta name="twitter:card" content="summary">
 
 <link rel="canonical" href="http://example.com/2019/01/21/btcd-source-code-analysis-0/">
@@ -198,7 +198,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2022-01-05 13:54:12" itemprop="dateModified" datetime="2022-01-05T13:54:12+08:00">2022-01-05</time>
+                <time title="Modified: 2022-01-05 21:10:05" itemprop="dateModified" datetime="2022-01-05T21:10:05+08:00">2022-01-05</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -221,23 +221,28 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <p>因为学习的需要，这一年半和接下来更长的时间都会与<code>Bitcoin</code>打交道。不可避免地，需要对<code>Bitcoin</code>的源码进行修改。<br>网上找过一些<code>Bitcoin</code>源码分析的资源，但大多都是基于<code>C++</code>实现的源码。笔者对<code>C++</code>并不是很熟悉，相反，用<code>Go</code>语言用得更多一些。所以，这个系列的博客会针对<code>Go</code>语言实现的<code>Bitcoin</code>进行分析，也即<a target="_blank" rel="noopener" href="https://github.com/btcsuite/btcd">btcd</a>。因为<code>btcd</code>的实现中将<code>wallet</code>的功能独立了出来，形成一个新的项目<a target="_blank" rel="noopener" href="https://github.com/btcsuite/btcwallet">btcdwallet</a>，因此我们也会对<code>btcdwallet</code>的代码实现进行分析。<br><span id="more"></span></p>
-<h2 id="I-代码及软件版本"><a href="#I-代码及软件版本" class="headerlink" title="I. 代码及软件版本"></a>I. 代码及软件版本</h2><p>有必要明确一下<code>btcd</code>和<code>btcwallet</code>代码版本号，以及<code>Go</code>语言的版本号：</p>
+        <p>因为学习的需要，这一年半和接下来更长的时间都会与<code>Bitcoin</code>打交道。不可避免地，需要对<code>Bitcoin</code>的源码进行修改。 网上找过一些<code>Bitcoin</code>源码分析的资源，但大多都是基于<code>C++</code>实现的源码。笔者对<code>C++</code>并不是很熟悉，相反，用<code>Go</code>语言用得更多一些。所以，这个系列的博客会针对<code>Go</code>语言实现的<code>Bitcoin</code>进行分析，也即<a target="_blank" rel="noopener" href="https://github.com/btcsuite/btcd">btcd</a>。因为<code>btcd</code>的实现中将<code>wallet</code>的功能独立了出来，形成一个新的项目<a target="_blank" rel="noopener" href="https://github.com/btcsuite/btcwallet">btcdwallet</a>，因此我们也会对<code>btcdwallet</code>的代码实现进行分析。 <span id="more"></span></p>
+<h2 id="i.-代码及软件版本">I. 代码及软件版本</h2>
+<p>有必要明确一下<code>btcd</code>和<code>btcwallet</code>代码版本号，以及<code>Go</code>语言的版本号：</p>
 <ul>
-<li><code>btcd</code>版本：[git commit log]  ed77733ec07dfc8a513741138419b8d9d3de9d2d</li>
+<li><code>btcd</code>版本：[git commit log] ed77733ec07dfc8a513741138419b8d9d3de9d2d</li>
 <li><code>btcwallet</code>版本：[git commit log] 9ad115360b375a08265d088580606a398202e3ac</li>
 <li><code>Go</code>版本：go1.11.2</li>
 </ul>
-<h2 id="II-系统运行步骤"><a href="#II-系统运行步骤" class="headerlink" title="II. 系统运行步骤"></a>II. 系统运行步骤</h2><p>考虑到<code>btcd</code>和<code>btcwallet</code>的官方文档描述得不够详细，我们在这里演示一下<code>btcd</code>，<code>btcwallet</code>和<code>btcctl</code>的运行步骤。<br>我们以运行一个<code>simnet</code>网络为例。</p>
-<h3 id="A-生成挖矿地址"><a href="#A-生成挖矿地址" class="headerlink" title="A. 生成挖矿地址"></a>A. 生成挖矿地址</h3><p>在运行<code>btcd</code>时，需要通过<code>--miningaddr</code>指定一个挖矿的地址。这个挖矿地址我们需要借助<code>btcwallet</code>来生成，但<code>btcwallet</code>生成挖矿地址的过程又需要和<code>btcd</code>通信。这里就形成了一个环，也即：<strong><code>btcd</code>依赖于<code>btcwallet</code>，<code>btcwallet</code>又依赖于<code>btcd</code></strong>。</p>
+<h2 id="ii.-系统运行步骤">II. 系统运行步骤</h2>
+<p>考虑到<code>btcd</code>和<code>btcwallet</code>的官方文档描述得不够详细，我们在这里演示一下<code>btcd</code>，<code>btcwallet</code>和<code>btcctl</code>的运行步骤。 我们以运行一个<code>simnet</code>网络为例。</p>
+<h3 id="a.-生成挖矿地址">A. 生成挖矿地址</h3>
+<p>在运行<code>btcd</code>时，需要通过<code>--miningaddr</code>指定一个挖矿的地址。这个挖矿地址我们需要借助<code>btcwallet</code>来生成，但<code>btcwallet</code>生成挖矿地址的过程又需要和<code>btcd</code>通信。这里就形成了一个环，也即：<strong><code>btcd</code>依赖于<code>btcwallet</code>，<code>btcwallet</code>又依赖于<code>btcd</code></strong>。</p>
 <p>我们的处理方式是：</p>
-<ol>
+<ol type="1">
 <li>先不指定<code>--miningaddr</code>运行<code>btcd</code>：<code>./btcd -u seafooler -P 123456 --simnet</code></li>
 <li>然后运行<code>btcwallet</code>连接<code>btcd</code>: <code>./btcwallet -u seafooler -P 123456 --simnet</code> (需要注意的是，在第一次运行<code>btcwallet</code>时，需要首先利用<code>--create</code>选项初始化一个钱包：<code>./btcwallet -u seafooler -P 123456 --simnet --create</code>)</li>
 <li>再运行<code>btcctl</code>发送指令给<code>btcwallet</code>生成地址：<code>./btcctl -u seafooler -P 123456 --wallet --simnet getnewaddress</code></li>
 </ol>
-<h3 id="B-指定挖矿地址重启btcd"><a href="#B-指定挖矿地址重启btcd" class="headerlink" title="B. 指定挖矿地址重启btcd"></a>B. 指定挖矿地址重启btcd</h3><p>基于以上步骤生成的挖矿地址，重新启动<code>btcd</code>，如下所示：<code>/btcd -u seafooler -P 123456 --simnet --miningaddr=SN9t3caxhG77Pn7cAitHHz7C9b5Jaadkt6</code></p>
-<h3 id="C-挖矿操作"><a href="#C-挖矿操作" class="headerlink" title="C. 挖矿操作"></a>C. 挖矿操作</h3><p>使用<code>btcctl</code>运行<code>./btcctl -u seafooler -P 123456 --wallet --simnet generate 1</code>命令即可生成一个新区块。此时通过命令<code>./btcctl -u seafooler -P 123456 --wallet --simnet getbalance</code>查看当前账户余额，会发现余额为<strong>0</strong>.<br>这是因为新挖出的区块奖励需要等待100个区块之后才能生效，也即使用<code>./btcctl -u seafooler -P 123456 --wallet --simnet generate 99</code>命令继续挖出99个新区块后，即可查询到当前余额为<strong>50</strong>.</p>
+<h3 id="b.-指定挖矿地址重启btcd">B. 指定挖矿地址重启btcd</h3>
+<p>基于以上步骤生成的挖矿地址，重新启动<code>btcd</code>，如下所示：<code>/btcd -u seafooler -P 123456 --simnet --miningaddr=SN9t3caxhG77Pn7cAitHHz7C9b5Jaadkt6</code></p>
+<h3 id="c.-挖矿操作">C. 挖矿操作</h3>
+<p>使用<code>btcctl</code>运行<code>./btcctl -u seafooler -P 123456 --wallet --simnet generate 1</code>命令即可生成一个新区块。此时通过命令<code>./btcctl -u seafooler -P 123456 --wallet --simnet getbalance</code>查看当前账户余额，会发现余额为<strong>0</strong>. 这是因为新挖出的区块奖励需要等待100个区块之后才能生效，也即使用<code>./btcctl -u seafooler -P 123456 --wallet --simnet generate 99</code>命令继续挖出99个新区块后，即可查询到当前余额为<strong>50</strong>.</p>
 
     </div>
 
@@ -248,7 +253,7 @@
       <footer class="post-footer">
           <div class="post-tags">
               <a href="/tags/Bitcoin/" rel="tag"># Bitcoin</a>
-              <a href="/tags/Blockchain-Golang-Code-analysis/" rel="tag"># Blockchain - Golang - Code analysis</a>
+              <a href="/tags/Blockchain/" rel="tag"># Blockchain</a>
           </div>
 
         
@@ -262,8 +267,8 @@
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/2018/03/02/eth-priv-contract/" rel="prev" title="基于以太坊私有链部署智能合约">
-      <i class="fa fa-chevron-left"></i> 基于以太坊私有链部署智能合约
+    <a href="/2018/10/21/nodejs-web3/" rel="prev" title="以太坊实战——从nodejs终端使用web3模块">
+      <i class="fa fa-chevron-left"></i> 以太坊实战——从nodejs终端使用web3模块
     </a></div>
       <div class="post-nav-item">
     <a href="/2019/01/22/btcd-source-code-analysis-1/" rel="next" title="btcd源码解析——从“新区块的生成”开始 (1)">
@@ -327,7 +332,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#I-%E4%BB%A3%E7%A0%81%E5%8F%8A%E8%BD%AF%E4%BB%B6%E7%89%88%E6%9C%AC"><span class="nav-number">1.</span> <span class="nav-text">I. 代码及软件版本</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#II-%E7%B3%BB%E7%BB%9F%E8%BF%90%E8%A1%8C%E6%AD%A5%E9%AA%A4"><span class="nav-number">2.</span> <span class="nav-text">II. 系统运行步骤</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#A-%E7%94%9F%E6%88%90%E6%8C%96%E7%9F%BF%E5%9C%B0%E5%9D%80"><span class="nav-number">2.1.</span> <span class="nav-text">A. 生成挖矿地址</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#B-%E6%8C%87%E5%AE%9A%E6%8C%96%E7%9F%BF%E5%9C%B0%E5%9D%80%E9%87%8D%E5%90%AFbtcd"><span class="nav-number">2.2.</span> <span class="nav-text">B. 指定挖矿地址重启btcd</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#C-%E6%8C%96%E7%9F%BF%E6%93%8D%E4%BD%9C"><span class="nav-number">2.3.</span> <span class="nav-text">C. 挖矿操作</span></a></li></ol></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#i.-%E4%BB%A3%E7%A0%81%E5%8F%8A%E8%BD%AF%E4%BB%B6%E7%89%88%E6%9C%AC"><span class="nav-number">1.</span> <span class="nav-text">I. 代码及软件版本</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ii.-%E7%B3%BB%E7%BB%9F%E8%BF%90%E8%A1%8C%E6%AD%A5%E9%AA%A4"><span class="nav-number">2.</span> <span class="nav-text">II. 系统运行步骤</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#a.-%E7%94%9F%E6%88%90%E6%8C%96%E7%9F%BF%E5%9C%B0%E5%9D%80"><span class="nav-number">2.1.</span> <span class="nav-text">A. 生成挖矿地址</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#b.-%E6%8C%87%E5%AE%9A%E6%8C%96%E7%9F%BF%E5%9C%B0%E5%9D%80%E9%87%8D%E5%90%AFbtcd"><span class="nav-number">2.2.</span> <span class="nav-text">B. 指定挖矿地址重启btcd</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#c.-%E6%8C%96%E7%9F%BF%E6%93%8D%E4%BD%9C"><span class="nav-number">2.3.</span> <span class="nav-text">C. 挖矿操作</span></a></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -341,7 +346,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">33</span>
+          <span class="site-state-item-count">44</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
@@ -354,7 +359,7 @@
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">16</span>
+        <span class="site-state-item-count">17</span>
         <span class="site-state-item-name">tags</span></a>
       </div>
   </nav>

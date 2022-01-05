@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-kelp.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-kelp.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-kelp.png">
+  <link rel="manifest" href="/images/manifest.json">
+  <meta name="msapplication-config" content="/images/browserconfig.xml">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":{"disqus":{"text":"Load Disqus","order":-1}}},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="本篇博客是PBFT代码解读的第五篇博客。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Fabric中PBFT源码解读（5）">
+<meta property="og:url" content="http://example.com/2021/01/11/fabric-source-code-analysis-5/index.html">
+<meta property="og:site_name" content="Seafooler&#39;s Blog">
+<meta property="og:description" content="本篇博客是PBFT代码解读的第五篇博客。">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2021-01-10T16:00:00.000Z">
+<meta property="article:modified_time" content="2022-01-05T13:09:43.328Z">
+<meta property="article:author" content="Seafooler">
+<meta property="article:tag" content="Blockchain">
+<meta property="article:tag" content="PBFT">
+<meta property="article:tag" content="Fabric">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://example.com/2021/01/11/fabric-source-code-analysis-5/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+
+  <title>Fabric中PBFT源码解读（5） | Seafooler's Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Seafooler's Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>About</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2021/01/11/fabric-source-code-analysis-5/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Seafooler">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Seafooler's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Fabric中PBFT源码解读（5）
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2021-01-11 00:00:00" itemprop="dateCreated datePublished" datetime="2021-01-11T00:00:00+08:00">2021-01-11</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2022-01-05 21:09:43" itemprop="dateModified" datetime="2022-01-05T21:09:43+08:00">2022-01-05</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Code-analysis/" itemprop="url" rel="index"><span itemprop="name">Code-analysis</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>本篇博客是<code>PBFT</code>代码解读的第五篇博客。 <span id="more"></span></p>
+<h2 id="ix.-节点对reqbatch的执行流程">IX. 节点对reqBatch的执行流程</h2>
+<p>本系列的<a target="_blank" rel="noopener" href="https://blog.csdn.net/u014633283/article/details/112307024">第一篇博客</a>介绍了源代码的获取和测试用例的选择；<a target="_blank" rel="noopener" href="https://blog.csdn.net/u014633283/article/details/112308084">第二篇博客</a>介绍了<code>Primary</code>节点对<code>repBatch</code>的处理，以及对<code>PrePrepare</code>消息的发送；<a target="_blank" rel="noopener" href="https://blog.csdn.net/u014633283/article/details/112344708">第三篇博客</a>介绍了<code>Preprepare</code>消息的接收以及<code>Prepare</code>消息的发送、<code>Prepare</code>消息的接收以及<code>Commit</code>消息的发送。<a target="_blank" rel="noopener" href="https://blog.csdn.net/u014633283/article/details/112346508">第四篇博客</a>介绍了Commit消息的接收以及测试用例的结束。 强烈建议读者先阅读上述四篇博客，再来阅读当前这篇。</p>
+<p>为方便读者查阅，本系列博客的链接整理如下：</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/u014633283/article/details/112307024">Fabric中PBFT源码解读 （1）</a></li>
+<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/u014633283/article/details/112308084">Fabric中PBFT源码解读 （2）</a></li>
+<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/u014633283/article/details/112344708">Fabric中PBFT源码解读 （3）</a></li>
+<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/u014633283/article/details/112346508">Fabric中PBFT源码解读 （4）</a></li>
+<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/u014633283/article/details/112364913">Fabric中PBFT源码解读 （5）</a></li>
+</ul>
+<p>在<a target="_blank" rel="noopener" href="https://blog.csdn.net/u014633283/article/details/112346508">第四篇博客</a>中第VII节的最后，我们介绍到节点在接收到<code>execDoneEvent</code>类型的<code>Event</code>后，将调用<code>instance.execDoneSync()</code>对该<code>event</code>对应的<code>reqBatch</code>进行执行。为方便后面的表述，我们假设<code>reqBatch</code>代表了一批交易。 为方便读者理解，我们将相关代码再次摘录如下： <figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// [pbft-core.go] ProcessEvent</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(instance *pbftCore)</span> <span class="title">ProcessEvent</span><span class="params">(e events.Event)</span> <span class="title">events</span>.<span class="title">Event</span></span> &#123;</span><br><span class="line">    <span class="keyword">switch</span> et := e.(<span class="keyword">type</span>) &#123;</span><br><span class="line">    ...</span><br><span class="line">    <span class="keyword">case</span> execDoneEvent:</span><br><span class="line">        instance.execDoneSync()</span><br><span class="line">        ...</span><br><span class="line">    &#125;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure> 容易看到，这里主要是调用了<code>execDoneSync</code>函数，后者的代码主体如下所示： <figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// [pbft-core.go] ProcessEvent-&gt;execDoneSync</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(instance *pbftCore)</span> <span class="title">execDoneSync</span><span class="params">()</span></span> &#123;</span><br><span class="line">	<span class="keyword">if</span> instance.currentExec != <span class="literal">nil</span> &#123;								<span class="comment">// L993</span></span><br><span class="line">		...</span><br><span class="line">		instance.lastExec = *instance.currentExec</span><br><span class="line">		...</span><br><span class="line">	&#125; ...</span><br><span class="line">	instance.currentExec = <span class="literal">nil</span>										<span class="comment">// L1005</span></span><br><span class="line"></span><br><span class="line">	instance.executeOutstanding()									<span class="comment">// L1007</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure> <code>execDoneSync</code>函数的主要功能是调用了<code>executeOutstanding</code>函数（L1007行），后者实现了交易的真正执行。这里需要解释一下的是L993行到L1005行的代码。这些代码主要是对上一次的交易执行进行一个收尾工作，包括将<code>lastExec</code>字段赋值为<code>currentExec</code>，然后将<code>currentExec</code>置为<code>nil</code>。这也是为什么当前函数命名为<code>execDoneSync</code>，它实现了对上一次执行的“同步/收尾”。 我们继续看<code>executeOutstanding</code>函数的代码： <figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// [pbft-core.go] ProcessEvent-&gt;execDoneSync-&gt;executeOutstanding</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(instance *pbftCore)</span> <span class="title">executeOutstanding</span><span class="params">()</span></span> &#123;</span><br><span class="line">	<span class="keyword">if</span> instance.currentExec != <span class="literal">nil</span> &#123;								<span class="comment">// L913</span></span><br><span class="line">		...</span><br><span class="line">		<span class="keyword">return</span></span><br><span class="line">	&#125;</span><br><span class="line">	...</span><br><span class="line">	<span class="keyword">for</span> idx := <span class="keyword">range</span> instance.certStore &#123;							<span class="comment">// L919</span></span><br><span class="line">		<span class="keyword">if</span> instance.executeOne(idx) &#123;								<span class="comment">// L920</span></span><br><span class="line">			<span class="keyword">break</span>													<span class="comment">// L921</span></span><br><span class="line">		&#125;</span><br><span class="line">	&#125;																<span class="comment">// L923</span></span><br><span class="line">	...</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> pbftCore <span class="keyword">struct</span> &#123;</span><br><span class="line">	...</span><br><span class="line">	certStore       <span class="keyword">map</span>[msgID]*msgCert</span><br><span class="line">	...</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> msgCert <span class="keyword">struct</span> &#123;</span><br><span class="line">	digest      <span class="keyword">string</span></span><br><span class="line">	prePrepare  *PrePrepare</span><br><span class="line">	sentPrepare <span class="keyword">bool</span></span><br><span class="line">	prepare     []*Prepare</span><br><span class="line">	sentCommit  <span class="keyword">bool</span></span><br><span class="line">	commit      []*Commit</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure> <code>executeOutstanding</code>函数的L913行首先判断了前面的“收尾工作”是否正确完成了，没有的话就直接返回了。L919行至L923行对<code>certStore</code>中的键值对进行遍历。<code>certStore</code>是一个<code>map[msgID]*msgCert</code>类型的变量，<code>msgCert</code>类型保存了一次<code>PBFT</code>共识的所有<code>prePrepare</code>、<code>prepare</code>、<code>commit</code>等消息。因此，<code>certStore</code>实际上保存了是所有的共识数据。每一条共识数据都对应了一条<code>repBatch</code>。 回到<code>executeOutstanding</code>函数的L919行，其将<code>certStore</code>中的所有共识数据进行遍历，针对每一条共识数据执行<code>executeOne</code>函数（L920行）。</p>
+<p>这里，可能有读者会问，我们前面不是针对某一个特定的<code>reqBatch</code>去执行交易的吗？不就只有这一个<code>repBatch</code>吗？为什么这里又要遍历所有的共识数据呢？ 这是因为不同<code>repBatch</code>的共识完成时间可能是乱序的。比如说当前完成共识的<code>repBatch</code>为<code>repBatch_1</code>，但可能<code>repBatch_2</code>先于<code>repBatch_1</code>完成共识了。由于<code>repBatch_2</code>依赖于<code>repBatch_1</code>，必须等<code>repBatch_1</code>执行后才能执行。那么<code>repBatch_2</code>就只会先保存在<code>certStore</code>中。等到当前的<code>for</code>循环遍历时，才可能执行<code>repBatch_2</code>。</p>
+<p>此外，这里需要注意的是，当<code>executeOne</code>函数的返回结果为<code>true</code>时，当前循环就结束了，继而从<code>executeOutstanding</code>函数、<code>execDoneSync</code>函数中返回了。也就是说：<code>executeOne</code>函数每次只执行一个<code>reqBatch</code>。这也是为什么我在上一段中说“可能”执行<code>repBatch_2</code>的原因，因为如果当前执行了<code>repBatch_1</code>，<code>repBatch_2</code>又得等到下一次才能执行。 那么，<code>repBatch_2</code>到底何时才能执行，我们接下来就会介绍到。</p>
+<p><code>executeOne</code>函数的主体代码如下所示： <figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// [pbft-core.go] ProcessEvent-&gt;execDoneSync-&gt;executeOutstanding-&gt;executeOne</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(instance *pbftCore)</span> <span class="title">executeOne</span><span class="params">(idx msgID)</span> <span class="title">bool</span></span> &#123;</span><br><span class="line">	cert := instance.certStore[idx]										<span class="comment">// L931</span></span><br><span class="line">	</span><br><span class="line">	<span class="keyword">if</span> idx.n != instance.lastExec+<span class="number">1</span> || cert == <span class="literal">nil</span> || cert.prePrepare == <span class="literal">nil</span> &#123;	<span class="comment">// L933</span></span><br><span class="line">		<span class="keyword">return</span> <span class="literal">false</span></span><br><span class="line">	&#125;</span><br><span class="line">	...</span><br><span class="line">	digest := cert.digest												<span class="comment">// L944</span></span><br><span class="line">	reqBatch := instance.reqBatchStore[digest]							<span class="comment">// L945</span></span><br><span class="line">	</span><br><span class="line">	<span class="keyword">if</span> !instance.committed(digest, idx.v, idx.n) &#123;						<span class="comment">// L947</span></span><br><span class="line">		<span class="keyword">return</span> <span class="literal">false</span></span><br><span class="line">	&#125;</span><br><span class="line">	...</span><br><span class="line">	currentExec := idx.n</span><br><span class="line">	instance.currentExec = &amp;currentExec									<span class="comment">// L953</span></span><br><span class="line">	...</span><br><span class="line">	<span class="keyword">if</span> digest == <span class="string">&quot;&quot;</span> &#123;													<span class="comment">// L956</span></span><br><span class="line">		...</span><br><span class="line">		instance.execDoneSync()</span><br><span class="line">	&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">		logger.Infof(<span class="string">&quot;...&quot;</span>)</span><br><span class="line">		instance.consumer.execute(idx.n, reqBatch)						<span class="comment">// L964</span></span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure> <code>executeOne</code>函数首先从<code>certStore</code>中取出<code>cert</code>（L931行）。 L933行进行了三项检查：</p>
+<ul>
+<li>当前要执行的<code>repBatch</code>的编号必须正好是已执行的<code>repBatch</code>的编号加1，也即需要保证：按序执行</li>
+<li>共识数据<code>cert</code>必须是存在的</li>
+<li><code>prePrepare</code>数据也必须是存在的</li>
+</ul>
+<p>L944行和L945获取将要执行的<code>repBatch</code>的数据。 L947行又进行了一次检查。这是因为<code>instance.certStore</code>中是保存了所有的共识数据，包括<strong>已经完成</strong>共识的和<strong>正在进行</strong>共识的。而我们前面提到的<code>for</code>循环只是简单的将<code>instance.certStore</code>中的所有共识数据进行遍历。因此，对于每一条数据都应该检查一下其是否已经完成了共识，即达到了<code>committed</code>状态。</p>
+<p>L953行将<code>currentExec</code>设置为<code>idx.n</code>。后面在执行完成后将<code>currentExec</code>再次置为<code>nil</code>需要等到下次<code>execDoneSync</code>函数执行时，这一点在前面也已经进行了解释。</p>
+<p>L956行对空请求进行处理，L960行对非空请求进行处理。</p>
+<ul>
+<li>我们先来看非空请求的处理。可以看到，其再次调用了<code>execute</code>函数，即回到了<a target="_blank" rel="noopener" href="https://blog.csdn.net/u014633283/article/details/112346508">上一篇博客</a>中第VII节的最后部分。也就是说，在执行了一次<code>repBatch</code>的最后，又发起了一次执行<code>repBatch</code>的调用。这也就回答了前面的一个问题“<code>repBatch_2</code>到底何时才能执行”：在<code>repBatch_1</code>执行结束后，再次调用<code>execute</code>函数，来执行<code>repBatch_2</code>。</li>
+<li>空请求的处理，主要是直接调用了<code>execDoneSync</code>函数。与非空请求的处理进行对比，这里省去了通过<code>managerImpl.events</code>通道进行消息转发的过程。这是因为空请求不涉及到对区块链状态的改变，因而可以简化调用流程。</li>
+</ul>
+<p>看到这里，读者可能会有一个最后的疑问：说好的<code>repBatch</code>的执行呢？调用来调用去，没见到具体的代码执行过程啊。 没错！这是因为我们这里分析的是一个测试用例，在该测试用例中定义了一个<code>simpleConsumer</code>类来模拟代码执行。该<code>simpleConsumer</code>类我们在前面几篇博客中已经反复提及到了。真实的<code>PBFT</code>集群运行时，是使用<code>obcBatch</code>类及其方法来执行代码的。<code>obcBatch.execute</code>函数的相关代码如下所示： <figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// [batch.go] execute</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(op *obcBatch)</span> <span class="title">execute</span><span class="params">(seqNo <span class="keyword">uint64</span>, reqBatch *RequestBatch)</span></span> &#123;</span><br><span class="line">	<span class="keyword">var</span> txs []*pb.Transaction</span><br><span class="line">	<span class="keyword">for</span> _, req := <span class="keyword">range</span> reqBatch.GetBatch() &#123;</span><br><span class="line">		tx := &amp;pb.Transaction&#123;&#125;</span><br><span class="line">		<span class="keyword">if</span> err := proto.Unmarshal(req.Payload, tx); err != <span class="literal">nil</span> &#123;</span><br><span class="line">			...</span><br><span class="line">		&#125;</span><br><span class="line">		...</span><br><span class="line">		txs = <span class="built_in">append</span>(txs, tx)</span><br><span class="line">		op.deduplicator.Execute(req)</span><br><span class="line">	&#125;</span><br><span class="line">	...</span><br><span class="line">	op.stack.Execute(meta, txs)										<span class="comment">// L213</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure> 容易看出，<code>obcBatch.execute</code>函数将<code>reqBatch</code>中每一条交易反序列化到<code>txs</code>中，并在L213行执行这些交易。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Blockchain/" rel="tag"># Blockchain</a>
+              <a href="/tags/PBFT/" rel="tag"># PBFT</a>
+              <a href="/tags/Fabric/" rel="tag"># Fabric</a>
+          </div>
+
+        
+  <div class="post-widgets">
+    <div class="wp_rating">
+      <div id="wpac-rating"></div>
+    </div>
+  </div>
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/01/10/fabric-source-code-analysis-4/" rel="prev" title="Fabric中PBFT源码解读（4）">
+      <i class="fa fa-chevron-left"></i> Fabric中PBFT源码解读（4）
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/01/12/why-pbft-commit/" rel="next" title="为什么PBFT协议中需要Commit阶段">
+      为什么PBFT协议中需要Commit阶段 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#ix.-%E8%8A%82%E7%82%B9%E5%AF%B9reqbatch%E7%9A%84%E6%89%A7%E8%A1%8C%E6%B5%81%E7%A8%8B"><span class="nav-number">1.</span> <span class="nav-text">IX. 节点对reqBatch的执行流程</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Seafooler</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">44</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">17</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="mailto:seafooler@gmail.com" title="E-Mail → mailto:seafooler@gmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Seafooler</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+  <script>
+  if (CONFIG.page.isPost) {
+    wpac_init = window.wpac_init || [];
+    wpac_init.push({
+      widget: 'Rating',
+      id    : ,
+      el    : 'wpac-rating',
+      color : 'fc6423'
+    });
+    (function() {
+      if ('WIDGETPACK_LOADED' in window) return;
+      WIDGETPACK_LOADED = true;
+      var mc = document.createElement('script');
+      mc.type = 'text/javascript';
+      mc.async = true;
+      mc.src = '//embed.widgetpack.com/widget.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(mc, s.nextSibling);
+    })();
+  }
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+
+</body>
+</html>

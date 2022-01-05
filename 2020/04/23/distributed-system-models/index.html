@@ -32,10 +32,10 @@
 <meta property="og:image" content="http://example.com/images/distributed-system-models/failure-model2.png">
 <meta property="og:image" content="http://example.com/images/distributed-system-models/failure-model3.png">
 <meta property="article:published_time" content="2020-04-22T16:00:00.000Z">
-<meta property="article:modified_time" content="2022-01-05T10:03:37.536Z">
+<meta property="article:modified_time" content="2022-01-05T13:23:18.946Z">
 <meta property="article:author" content="Seafooler">
-<meta property="article:tag" content="distributed-system">
-<meta property="article:tag" content="theory">
+<meta property="article:tag" content="Distributed_system">
+<meta property="article:tag" content="Theory">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="http://example.com/images/distributed-system-models/failure-model1.png">
 
@@ -202,7 +202,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2022-01-05 18:03:37" itemprop="dateModified" datetime="2022-01-05T18:03:37+08:00">2022-01-05</time>
+                <time title="Modified: 2022-01-05 21:23:18" itemprop="dateModified" datetime="2022-01-05T21:23:18+08:00">2022-01-05</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -210,7 +210,7 @@
               </span>
               <span class="post-meta-item-text">In</span>
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/distributed-theory/" itemprop="url" rel="index"><span itemprop="name">distributed-theory</span></a>
+                  <a href="/categories/Distributed-theory/" itemprop="url" rel="index"><span itemprop="name">Distributed theory</span></a>
                 </span>
             </span>
 
@@ -225,79 +225,84 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <p>分布式系统中的网络模型和故障模型是个老生常谈的问题了。然而这两个模型的界限和联系似乎并不清晰，本篇博客打算谈谈笔者对这两个模型的理解。<br><span id="more"></span></p>
-<h2 id="I-写在前面"><a href="#I-写在前面" class="headerlink" title="I. 写在前面"></a>I. 写在前面</h2><p>分布式系统中的网络模型和故障模型是个老生常谈的问题了:</p>
+        <p>分布式系统中的网络模型和故障模型是个老生常谈的问题了。然而这两个模型的界限和联系似乎并不清晰，本篇博客打算谈谈笔者对这两个模型的理解。 <span id="more"></span></p>
+<h2 id="i.-写在前面">I. 写在前面</h2>
+<p>分布式系统中的网络模型和故障模型是个老生常谈的问题了:</p>
 <ul>
 <li>关于网络模型，相信大家都知道分为：同步网络和异步网络。</li>
-<li>对于故障模型，大家可能会有点懵。因为无论是在各种教材上还是在各种博客中关于该模型的划分都很杂、很乱，甚至相互之间有些矛盾。举例来说，大家可能看到过下面这两张图。这两张图分别对故障模型进行了划分，但划分结果却迥然不同。<!-- ![在这里插入图片描述](https://img-blog.csdnimg.cn/20200423230520744.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3UwMTQ2MzMyODM=,size_16,color_FFFFFF,t_70) -->
-<img src="/images/distributed-system-models/failure-model1.png" height=312 /><!-- ![在这里插入图片描述](https://img-blog.csdnimg.cn/20200423230520723.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3UwMTQ2MzMyODM=,size_16,color_FFFFFF,t_70) -->
-<img src="/images/distributed-system-models/failure-model2.png" height=256 /></li>
+<li>对于故障模型，大家可能会有点懵。因为无论是在各种教材上还是在各种博客中关于该模型的划分都很杂、很乱，甚至相互之间有些矛盾。举例来说，大家可能看到过下面这两张图。这两张图分别对故障模型进行了划分，但划分结果却迥然不同。 <!-- ![在这里插入图片描述](https://img-blog.csdnimg.cn/20200423230520744.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3UwMTQ2MzMyODM=,size_16,color_FFFFFF,t_70) --> <img src="/images/distributed-system-models/failure-model1.png" height=312 /> <!-- ![在这里插入图片描述](https://img-blog.csdnimg.cn/20200423230520723.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3UwMTQ2MzMyODM=,size_16,color_FFFFFF,t_70) --> <img src="/images/distributed-system-models/failure-model2.png" height=256 /></li>
 </ul>
 <p>此外，大家有没有思考过这个问题：</p>
 <ul>
 <li>网络模型和故障模型的关系是什么？大家似乎在讨论故障模型的时候，直接就忽略网络模型了</li>
 </ul>
 <p>在本篇博客中，我们也想谈谈这两个模型。对于故障模型，我们努力将现有的各种划分结果进行统一，使得我们的划分结果更加系统科学。此外，我们也尝试从新的角度理解网络模型，并回答网络模型和故障模型的关系。</p>
-<h2 id="II-再理解网络模型"><a href="#II-再理解网络模型" class="headerlink" title="II. 再理解网络模型"></a>II. 再理解网络模型</h2><p>网络模型分为：同步网络和异步网络，两者的不严谨定义分别如下所示：</p>
+<h2 id="ii.-再理解网络模型">II. 再理解网络模型</h2>
+<p>网络模型分为：同步网络和异步网络，两者的不严谨定义分别如下所示：</p>
 <ul>
 <li>同步网络：网络中消息传递的延迟有上限，节点的处理延迟延迟有上限</li>
 <li>异步网络：网络中消息传递的延迟没有上限，节点的处理延迟无上限</li>
 </ul>
-<p>这里需要指出的是，尽管“网络模型”这个词字面上只包含了“网络”，但其实际上对<strong>节点处理延迟</strong>也进行了规定。<br>此外，在我们看来，同步网络和异步网络的最大区别在于<strong>故障的可检测性</strong>。具体来说，在同步网络中，其他节点或网络的故障可以通过 <strong>超时（ping/timeout)</strong> 进行检测；而在异步网络中，这些故障是无法进行检测的。<br>由于我们只能通过<strong>超时（ping/timeout)</strong>在同步网络中进行故障检测，可检测的故障也只有<code>节点崩溃</code>或<code>网络链路断开</code>这种错误（就故障而言，<code>节点崩溃</code>和<code>网络链路断开</code>是等价的，这在3.1节种将进行讨论）。<br>记住这个结论，该结论将在第IV节中用到。</p>
-<h3 id="A-一个疑问"><a href="#A-一个疑问" class="headerlink" title="A. 一个疑问"></a>A. 一个疑问</h3><p>看久了故障模型和网络模型，我曾经有的一个疑问是：</p>
+<p>这里需要指出的是，尽管“网络模型”这个词字面上只包含了“网络”，但其实际上对<strong>节点处理延迟</strong>也进行了规定。 此外，在我们看来，同步网络和异步网络的最大区别在于<strong>故障的可检测性</strong>。具体来说，在同步网络中，其他节点或网络的故障可以通过 <strong>超时（ping/timeout)</strong> 进行检测；而在异步网络中，这些故障是无法进行检测的。 由于我们只能通过<strong>超时（ping/timeout)</strong>在同步网络中进行故障检测，可检测的故障也只有<code>节点崩溃</code>或<code>网络链路断开</code>这种错误（就故障而言，<code>节点崩溃</code>和<code>网络链路断开</code>是等价的，这在3.1节种将进行讨论）。 记住这个结论，该结论将在第IV节中用到。</p>
+<h3 id="a.-一个疑问">A. 一个疑问</h3>
+<p>看久了故障模型和网络模型，我曾经有的一个疑问是：</p>
 <blockquote>
 <p>同步网络中是否保证了网络链路不会发生断开？</p>
 </blockquote>
 <p>答案是<strong>不保证</strong>。同步网络中也会出现链路断开，因此才需要使用<strong>超时(ping/timeout)</strong>进行检测。当然，异步网络中更不会保证链路不断开。</p>
-<h2 id="III-故障模型的划分"><a href="#III-故障模型的划分" class="headerlink" title="III. 故障模型的划分"></a>III. 故障模型的划分</h2><p>综合比较多个划分结果，我们将故障模型重新划分如下图所示，相应的解释如下表。<br><!-- ![在这里插入图片描述](https://img-blog.csdnimg.cn/20200423230426288.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3UwMTQ2MzMyODM=,size_16,color_FFFFFF,t_70#pic_center) --><br><img src="/images/distributed-system-models/failure-model3.png" height=380 /></p>
-<div class="table-container">
+<h2 id="iii.-故障模型的划分">III. 故障模型的划分</h2>
+<p>综合比较多个划分结果，我们将故障模型重新划分如下图所示，相应的解释如下表。 <!-- ![在这里插入图片描述](https://img-blog.csdnimg.cn/20200423230426288.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3UwMTQ2MzMyODM=,size_16,color_FFFFFF,t_70#pic_center) --> <img src="/images/distributed-system-models/failure-model3.png" height=380 /></p>
 <table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
 <thead>
-<tr>
+<tr class="header">
 <th>故障划分</th>
 <th>解释</th>
 </tr>
 </thead>
 <tbody>
-<tr>
+<tr class="odd">
 <td>Byzantine failure</td>
 <td>节点可以任意篡改发送给其他节点的数据</td>
 </tr>
-<tr>
+<tr class="even">
 <td>Authentication detectable byzantine failure (ADB)</td>
 <td>Byzantine failure的特例；节点可以篡改数据，但不能伪造其他节点的数据</td>
 </tr>
-<tr>
+<tr class="odd">
 <td>Response failure</td>
 <td>ADB的特例，节点可以返回错误数据，但只能返回受限的错误数据</td>
 </tr>
-<tr>
+<tr class="even">
 <td>Performance failure</td>
 <td>又名timing failure, 节点未在特定时间段内收到数据，即时间太早或太晚</td>
 </tr>
-<tr>
+<tr class="odd">
 <td>Omission failure</td>
 <td>Performance failure的特例；节点收到数据的时间无限晚，即收不到数据</td>
 </tr>
-<tr>
+<tr class="even">
 <td>Crash failure</td>
 <td>Omission failure的特例；在omission failure的基础上，增加了节点停止响应的假设，也即持续性地omission failure</td>
 </tr>
-<tr>
+<tr class="odd">
 <td>Fail-stop failure</td>
 <td>Crash failure的特例；在Crash failure的基础上增加了错误可检测的假设</td>
 </tr>
 </tbody>
 </table>
-</div>
 <p>从图中我们可以看出，越在外层的错误模型（如<code>Byzantine failure</code>）所作的假设越少，越在内层的错误模型（如<code>Crash failure</code>）所作的假设越多。也即，一个在内层模型中可行的共识方案未必可以在外层模型中可行。</p>
 <p>以下，我们分别讨论故障模型的一个疑问和两个分类。</p>
-<h3 id="A-一个疑问-1"><a href="#A-一个疑问-1" class="headerlink" title="A. 一个疑问"></a>A. 一个疑问</h3><p>一直以来，我对故障模型存在一个疑问：</p>
+<h3 id="a.-一个疑问-1">A. 一个疑问</h3>
+<p>一直以来，我对故障模型存在一个疑问：</p>
 <blockquote>
 <p>故障模型是针对节点还是针对网络而言的？也即：故障模型中的故障讨论的是节点故障还是网络故障</p>
 </blockquote>
-<p>我思考的结论是两者（节点故障和网络故障）<strong>都包括</strong>。<br>我个人对此的理解是：从分布式系统中节点的角度来看，<strong>节点故障和网络故障是无法区分的</strong>，甚至一定程度上是<strong>等价</strong>的。举例来说：“网络延迟”和“节点处理速率慢”等价；“网络链路断开”和“节点宕机”等价；“网络链路中路由器篡改数据”和“节点恶意篡改数据”等价。因此，故障模型中的故障是将节点和网络包含在一起进行讨论的。</p>
-<p>这里顺便对<code>Omission failure</code>故障模型的含义进行深入讨论。<br>将<code>Omission failure</code>和<code>Performance failure</code>以及<code>Crash failure</code>进行对比，<code>Omission failure</code>故障模型的含义包括两个层面：</p>
+<p>我思考的结论是两者（节点故障和网络故障）<strong>都包括</strong>。 我个人对此的理解是：从分布式系统中节点的角度来看，<strong>节点故障和网络故障是无法区分的</strong>，甚至一定程度上是<strong>等价</strong>的。举例来说：“网络延迟”和“节点处理速率慢”等价；“网络链路断开”和“节点宕机”等价；“网络链路中路由器篡改数据”和“节点恶意篡改数据”等价。因此，故障模型中的故障是将节点和网络包含在一起进行讨论的。</p>
+<p>这里顺便对<code>Omission failure</code>故障模型的含义进行深入讨论。 将<code>Omission failure</code>和<code>Performance failure</code>以及<code>Crash failure</code>进行对比，<code>Omission failure</code>故障模型的含义包括两个层面：</p>
 <ul>
 <li>针对某个特定消息来说，节点A可能永远无法收到来自节点B回复（即：存在消息丢失）</li>
 <li>但对于该消息之后的消息，节点A可能重新收到来自节点B回复（即：恢复对后续消息的响应）</li>
@@ -308,25 +313,31 @@
 <li>当故障是网络故障时，<code>Omission failure</code>描述了以下场景：网络在短暂断开后，可能又恢复了连接；但与此同时，节点B一直在正常运转。这种场景实际上是我们熟悉的<strong>网络分区</strong>现象。</li>
 </ul>
 <p>也就是说：<strong>网络分区故障实际上是<code>Omission failure</code>的一个特例</strong>。</p>
-<h3 id="B-按照故障发生的领域分类（Domain-of-failure-occurrence）"><a href="#B-按照故障发生的领域分类（Domain-of-failure-occurrence）" class="headerlink" title="B. 按照故障发生的领域分类（Domain of failure occurrence）"></a>B. 按照故障发生的领域分类（Domain of failure occurrence）</h3><h4 id="1-值故障-Value-failure"><a href="#1-值故障-Value-failure" class="headerlink" title="1. 值故障 (Value failure)"></a>1. 值故障 (Value failure)</h4><p>值故障的含义是节点接收到的数据值发生了故障:</p>
+<h3 id="b.-按照故障发生的领域分类domain-of-failure-occurrence">B. 按照故障发生的领域分类（Domain of failure occurrence）</h3>
+<h4 id="值故障-value-failure">1. 值故障 (Value failure)</h4>
+<p>值故障的含义是节点接收到的数据值发生了故障:</p>
 <ul>
 <li>Byzantine failure</li>
 <li>Authentication detectable byzantine failure (ADB)</li>
 <li>Response failure</li>
 </ul>
-<h4 id="2-时间故障-（Time-failure）"><a href="#2-时间故障-（Time-failure）" class="headerlink" title="2. 时间故障 （Time failure）"></a>2. 时间故障 （Time failure）</h4><p>时间故障的含义是节点接收到数据的事件发生的故障。<br>这里的<code>time failure</code>和上表中的<code>Performance failure</code>那一行中的<code>timing failure</code>不同。这里将最里层的4个故障统称为<code>time failure</code></p>
+<h4 id="时间故障-time-failure">2. 时间故障 （Time failure）</h4>
+<p>时间故障的含义是节点接收到数据的事件发生的故障。 这里的<code>time failure</code>和上表中的<code>Performance failure</code>那一行中的<code>timing failure</code>不同。这里将最里层的4个故障统称为<code>time failure</code></p>
 <ul>
 <li>Performance failure</li>
 <li>Omission failure</li>
 <li>Crash failure</li>
 <li>Fail-stop failure</li>
 </ul>
-<h3 id="C-按照用户对数据的感知分类（Perception-by-the-system-users）"><a href="#C-按照用户对数据的感知分类（Perception-by-the-system-users）" class="headerlink" title="C. 按照用户对数据的感知分类（Perception by the system users）"></a>C. 按照用户对数据的感知分类（Perception by the system users）</h3><h4 id="1-非一致性故障-Inconsistent-failure"><a href="#1-非一致性故障-Inconsistent-failure" class="headerlink" title="1. 非一致性故障 (Inconsistent failure)"></a>1. 非一致性故障 (Inconsistent failure)</h4><p>非一致性故障是指其他节点从同一节点中接收到的数据是不一致的:</p>
+<h3 id="c.-按照用户对数据的感知分类perception-by-the-system-users">C. 按照用户对数据的感知分类（Perception by the system users）</h3>
+<h4 id="非一致性故障-inconsistent-failure">1. 非一致性故障 (Inconsistent failure)</h4>
+<p>非一致性故障是指其他节点从同一节点中接收到的数据是不一致的:</p>
 <ul>
 <li>Byzantine or arbitary failures</li>
 <li>Authentication detectable byzantine failure (ADB)</li>
 </ul>
-<h4 id="2-一致性故障-Consistent-failure"><a href="#2-一致性故障-Consistent-failure" class="headerlink" title="2. 一致性故障 (Consistent failure)"></a>2. 一致性故障 (Consistent failure)</h4><p>一致性故障是指其他节点从同一节点中接收到的数据是一致的，在此基础上出现的其他故障:</p>
+<h4 id="一致性故障-consistent-failure">2. 一致性故障 (Consistent failure)</h4>
+<p>一致性故障是指其他节点从同一节点中接收到的数据是一致的，在此基础上出现的其他故障:</p>
 <ul>
 <li>Response failure</li>
 <li>Performance failure</li>
@@ -334,10 +345,15 @@
 <li>Crash failure</li>
 <li>Fail-stop failure</li>
 </ul>
-<h2 id="IV-网络模型和故障模型的关系"><a href="#IV-网络模型和故障模型的关系" class="headerlink" title="IV. 网络模型和故障模型的关系"></a>IV. 网络模型和故障模型的关系</h2><h3 id="A-再讨论Fail-stop-failure模型"><a href="#A-再讨论Fail-stop-failure模型" class="headerlink" title="A. 再讨论Fail-stop failure模型"></a>A. 再讨论Fail-stop failure模型</h3><p>在开始网络模型和故障模型的关系之前，我们先讨论一下<code>Fail-stop failure</code>这个特殊的故障模型。<br>前面我们介绍了<code>Fail-stop failure</code>这个模型，其是在<code>Crash failure</code>模型的基础上增加了<strong>故障可检测</strong>的假设。回顾我们在第II节中的理解：同步网络和异步网络最大的区别在于故障的可检测性。<br><strong>因此，Fail-stop failure模型本质上是在Crash failure模型的基础上增加了“同步网络”的假设。</strong><br>那么为什么在其他几类模型中不增加“同步网络”的假设，使其演变为另一种模型呢？</p>
-<h3 id="B-是否可以对其他模型增加“同步网络”的假设？"><a href="#B-是否可以对其他模型增加“同步网络”的假设？" class="headerlink" title="B. 是否可以对其他模型增加“同步网络”的假设？"></a>B. 是否可以对其他模型增加“同步网络”的假设？</h3><p>回顾我们在第II节中的结论，同步网络中可检测的故障只有节点崩溃或网络链路断开这种故障。而这种故障正对应于<code>Crash failure</code>。<br>也就是说，在除<code>Crash failure</code>和<code>Fail-stop failure</code>之外的其他5类故障模型中，<strong>同步网络和异步网络的假设并不会对模型产生影响</strong>。<br>因此，无需对其他模型怎加“同步网络”的假设。</p>
-<h3 id="C-网络模型和故障模型的正交性"><a href="#C-网络模型和故障模型的正交性" class="headerlink" title="C. 网络模型和故障模型的正交性"></a>C. 网络模型和故障模型的正交性</h3><p>一定程度上来看，网络模型和故障模型是正交的。但，是否将不同的网络模型和故障模型进行叠加，需要考虑其叠加后的意义。<br>正如IV.B节中所说，在除<code>Crash failure</code>之外的其他5类故障模型，<strong>叠加网络模型不会分化出新的模型</strong>。因而，我们在众多的教材和博客中，都不会看到它们相叠加的讨论。</p>
-<h2 id="参考链接"><a href="#参考链接" class="headerlink" title="参考链接"></a>参考链接</h2><ol>
+<h2 id="iv.-网络模型和故障模型的关系">IV. 网络模型和故障模型的关系</h2>
+<h3 id="a.-再讨论fail-stop-failure模型">A. 再讨论Fail-stop failure模型</h3>
+<p>在开始网络模型和故障模型的关系之前，我们先讨论一下<code>Fail-stop failure</code>这个特殊的故障模型。 前面我们介绍了<code>Fail-stop failure</code>这个模型，其是在<code>Crash failure</code>模型的基础上增加了<strong>故障可检测</strong>的假设。回顾我们在第II节中的理解：同步网络和异步网络最大的区别在于故障的可检测性。 <strong>因此，Fail-stop failure模型本质上是在Crash failure模型的基础上增加了“同步网络”的假设。</strong> 那么为什么在其他几类模型中不增加“同步网络”的假设，使其演变为另一种模型呢？</p>
+<h3 id="b.-是否可以对其他模型增加同步网络的假设">B. 是否可以对其他模型增加“同步网络”的假设？</h3>
+<p>回顾我们在第II节中的结论，同步网络中可检测的故障只有节点崩溃或网络链路断开这种故障。而这种故障正对应于<code>Crash failure</code>。 也就是说，在除<code>Crash failure</code>和<code>Fail-stop failure</code>之外的其他5类故障模型中，<strong>同步网络和异步网络的假设并不会对模型产生影响</strong>。 因此，无需对其他模型怎加“同步网络”的假设。</p>
+<h3 id="c.-网络模型和故障模型的正交性">C. 网络模型和故障模型的正交性</h3>
+<p>一定程度上来看，网络模型和故障模型是正交的。但，是否将不同的网络模型和故障模型进行叠加，需要考虑其叠加后的意义。 正如IV.B节中所说，在除<code>Crash failure</code>之外的其他5类故障模型，<strong>叠加网络模型不会分化出新的模型</strong>。因而，我们在众多的教材和博客中，都不会看到它们相叠加的讨论。</p>
+<h2 id="参考链接">参考链接</h2>
+<ol type="1">
 <li><a target="_blank" rel="noopener" href="http://u.cs.biu.ac.il/~ariel/download/ds590/pdfs/chp08.pdf">Fault tolerance, Chap08</a></li>
 <li><a target="_blank" rel="noopener" href="http://alvaro-videla.com/2013/12/failure-modes-in-distributed-systems.html">Failure modes in distributed systems</a></li>
 <li><a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Failure_semantics">Failure semantic - Wikipedia</a></li>
@@ -359,8 +375,8 @@
 
       <footer class="post-footer">
           <div class="post-tags">
-              <a href="/tags/distributed-system/" rel="tag"># distributed-system</a>
-              <a href="/tags/theory/" rel="tag"># theory</a>
+              <a href="/tags/Distributed-system/" rel="tag"># Distributed_system</a>
+              <a href="/tags/Theory/" rel="tag"># Theory</a>
           </div>
 
         
@@ -439,7 +455,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#I-%E5%86%99%E5%9C%A8%E5%89%8D%E9%9D%A2"><span class="nav-number">1.</span> <span class="nav-text">I. 写在前面</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#II-%E5%86%8D%E7%90%86%E8%A7%A3%E7%BD%91%E7%BB%9C%E6%A8%A1%E5%9E%8B"><span class="nav-number">2.</span> <span class="nav-text">II. 再理解网络模型</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#A-%E4%B8%80%E4%B8%AA%E7%96%91%E9%97%AE"><span class="nav-number">2.1.</span> <span class="nav-text">A. 一个疑问</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#III-%E6%95%85%E9%9A%9C%E6%A8%A1%E5%9E%8B%E7%9A%84%E5%88%92%E5%88%86"><span class="nav-number">3.</span> <span class="nav-text">III. 故障模型的划分</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#A-%E4%B8%80%E4%B8%AA%E7%96%91%E9%97%AE-1"><span class="nav-number">3.1.</span> <span class="nav-text">A. 一个疑问</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#B-%E6%8C%89%E7%85%A7%E6%95%85%E9%9A%9C%E5%8F%91%E7%94%9F%E7%9A%84%E9%A2%86%E5%9F%9F%E5%88%86%E7%B1%BB%EF%BC%88Domain-of-failure-occurrence%EF%BC%89"><span class="nav-number">3.2.</span> <span class="nav-text">B. 按照故障发生的领域分类（Domain of failure occurrence）</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-%E5%80%BC%E6%95%85%E9%9A%9C-Value-failure"><span class="nav-number">3.2.1.</span> <span class="nav-text">1. 值故障 (Value failure)</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-%E6%97%B6%E9%97%B4%E6%95%85%E9%9A%9C-%EF%BC%88Time-failure%EF%BC%89"><span class="nav-number">3.2.2.</span> <span class="nav-text">2. 时间故障 （Time failure）</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#C-%E6%8C%89%E7%85%A7%E7%94%A8%E6%88%B7%E5%AF%B9%E6%95%B0%E6%8D%AE%E7%9A%84%E6%84%9F%E7%9F%A5%E5%88%86%E7%B1%BB%EF%BC%88Perception-by-the-system-users%EF%BC%89"><span class="nav-number">3.3.</span> <span class="nav-text">C. 按照用户对数据的感知分类（Perception by the system users）</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-%E9%9D%9E%E4%B8%80%E8%87%B4%E6%80%A7%E6%95%85%E9%9A%9C-Inconsistent-failure"><span class="nav-number">3.3.1.</span> <span class="nav-text">1. 非一致性故障 (Inconsistent failure)</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-%E4%B8%80%E8%87%B4%E6%80%A7%E6%95%85%E9%9A%9C-Consistent-failure"><span class="nav-number">3.3.2.</span> <span class="nav-text">2. 一致性故障 (Consistent failure)</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#IV-%E7%BD%91%E7%BB%9C%E6%A8%A1%E5%9E%8B%E5%92%8C%E6%95%85%E9%9A%9C%E6%A8%A1%E5%9E%8B%E7%9A%84%E5%85%B3%E7%B3%BB"><span class="nav-number">4.</span> <span class="nav-text">IV. 网络模型和故障模型的关系</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#A-%E5%86%8D%E8%AE%A8%E8%AE%BAFail-stop-failure%E6%A8%A1%E5%9E%8B"><span class="nav-number">4.1.</span> <span class="nav-text">A. 再讨论Fail-stop failure模型</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#B-%E6%98%AF%E5%90%A6%E5%8F%AF%E4%BB%A5%E5%AF%B9%E5%85%B6%E4%BB%96%E6%A8%A1%E5%9E%8B%E5%A2%9E%E5%8A%A0%E2%80%9C%E5%90%8C%E6%AD%A5%E7%BD%91%E7%BB%9C%E2%80%9D%E7%9A%84%E5%81%87%E8%AE%BE%EF%BC%9F"><span class="nav-number">4.2.</span> <span class="nav-text">B. 是否可以对其他模型增加“同步网络”的假设？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#C-%E7%BD%91%E7%BB%9C%E6%A8%A1%E5%9E%8B%E5%92%8C%E6%95%85%E9%9A%9C%E6%A8%A1%E5%9E%8B%E7%9A%84%E6%AD%A3%E4%BA%A4%E6%80%A7"><span class="nav-number">4.3.</span> <span class="nav-text">C. 网络模型和故障模型的正交性</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E9%93%BE%E6%8E%A5"><span class="nav-number">5.</span> <span class="nav-text">参考链接</span></a></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#i.-%E5%86%99%E5%9C%A8%E5%89%8D%E9%9D%A2"><span class="nav-number">1.</span> <span class="nav-text">I. 写在前面</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ii.-%E5%86%8D%E7%90%86%E8%A7%A3%E7%BD%91%E7%BB%9C%E6%A8%A1%E5%9E%8B"><span class="nav-number">2.</span> <span class="nav-text">II. 再理解网络模型</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#a.-%E4%B8%80%E4%B8%AA%E7%96%91%E9%97%AE"><span class="nav-number">2.1.</span> <span class="nav-text">A. 一个疑问</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#iii.-%E6%95%85%E9%9A%9C%E6%A8%A1%E5%9E%8B%E7%9A%84%E5%88%92%E5%88%86"><span class="nav-number">3.</span> <span class="nav-text">III. 故障模型的划分</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#a.-%E4%B8%80%E4%B8%AA%E7%96%91%E9%97%AE-1"><span class="nav-number">3.1.</span> <span class="nav-text">A. 一个疑问</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#b.-%E6%8C%89%E7%85%A7%E6%95%85%E9%9A%9C%E5%8F%91%E7%94%9F%E7%9A%84%E9%A2%86%E5%9F%9F%E5%88%86%E7%B1%BBdomain-of-failure-occurrence"><span class="nav-number">3.2.</span> <span class="nav-text">B. 按照故障发生的领域分类（Domain of failure occurrence）</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%80%BC%E6%95%85%E9%9A%9C-value-failure"><span class="nav-number">3.2.1.</span> <span class="nav-text">1. 值故障 (Value failure)</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%97%B6%E9%97%B4%E6%95%85%E9%9A%9C-time-failure"><span class="nav-number">3.2.2.</span> <span class="nav-text">2. 时间故障 （Time failure）</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#c.-%E6%8C%89%E7%85%A7%E7%94%A8%E6%88%B7%E5%AF%B9%E6%95%B0%E6%8D%AE%E7%9A%84%E6%84%9F%E7%9F%A5%E5%88%86%E7%B1%BBperception-by-the-system-users"><span class="nav-number">3.3.</span> <span class="nav-text">C. 按照用户对数据的感知分类（Perception by the system users）</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%9D%9E%E4%B8%80%E8%87%B4%E6%80%A7%E6%95%85%E9%9A%9C-inconsistent-failure"><span class="nav-number">3.3.1.</span> <span class="nav-text">1. 非一致性故障 (Inconsistent failure)</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%B8%80%E8%87%B4%E6%80%A7%E6%95%85%E9%9A%9C-consistent-failure"><span class="nav-number">3.3.2.</span> <span class="nav-text">2. 一致性故障 (Consistent failure)</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#iv.-%E7%BD%91%E7%BB%9C%E6%A8%A1%E5%9E%8B%E5%92%8C%E6%95%85%E9%9A%9C%E6%A8%A1%E5%9E%8B%E7%9A%84%E5%85%B3%E7%B3%BB"><span class="nav-number">4.</span> <span class="nav-text">IV. 网络模型和故障模型的关系</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#a.-%E5%86%8D%E8%AE%A8%E8%AE%BAfail-stop-failure%E6%A8%A1%E5%9E%8B"><span class="nav-number">4.1.</span> <span class="nav-text">A. 再讨论Fail-stop failure模型</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#b.-%E6%98%AF%E5%90%A6%E5%8F%AF%E4%BB%A5%E5%AF%B9%E5%85%B6%E4%BB%96%E6%A8%A1%E5%9E%8B%E5%A2%9E%E5%8A%A0%E5%90%8C%E6%AD%A5%E7%BD%91%E7%BB%9C%E7%9A%84%E5%81%87%E8%AE%BE"><span class="nav-number">4.2.</span> <span class="nav-text">B. 是否可以对其他模型增加“同步网络”的假设？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#c.-%E7%BD%91%E7%BB%9C%E6%A8%A1%E5%9E%8B%E5%92%8C%E6%95%85%E9%9A%9C%E6%A8%A1%E5%9E%8B%E7%9A%84%E6%AD%A3%E4%BA%A4%E6%80%A7"><span class="nav-number">4.3.</span> <span class="nav-text">C. 网络模型和故障模型的正交性</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E9%93%BE%E6%8E%A5"><span class="nav-number">5.</span> <span class="nav-text">参考链接</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -453,7 +469,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">33</span>
+          <span class="site-state-item-count">44</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
@@ -466,7 +482,7 @@
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">16</span>
+        <span class="site-state-item-count">17</span>
         <span class="site-state-item-name">tags</span></a>
       </div>
   </nav>

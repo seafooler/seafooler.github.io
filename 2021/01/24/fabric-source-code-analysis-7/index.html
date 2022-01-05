@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-kelp.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-kelp.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-kelp.png">
+  <link rel="manifest" href="/images/manifest.json">
+  <meta name="msapplication-config" content="/images/browserconfig.xml">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":{"disqus":{"text":"Load Disqus","order":-1}}},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="本篇博客是继续对Hyperledger Fabric中的PBFT代码进行解读，重点关注状态同步机制的实现。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Fabric中PBFT源码解读——状态同步">
+<meta property="og:url" content="http://example.com/2021/01/24/fabric-source-code-analysis-7/index.html">
+<meta property="og:site_name" content="Seafooler&#39;s Blog">
+<meta property="og:description" content="本篇博客是继续对Hyperledger Fabric中的PBFT代码进行解读，重点关注状态同步机制的实现。">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2021-01-23T16:00:00.000Z">
+<meta property="article:modified_time" content="2022-01-05T13:09:34.744Z">
+<meta property="article:author" content="Seafooler">
+<meta property="article:tag" content="Blockchain">
+<meta property="article:tag" content="PBFT">
+<meta property="article:tag" content="Fabric">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://example.com/2021/01/24/fabric-source-code-analysis-7/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+
+  <title>Fabric中PBFT源码解读——状态同步 | Seafooler's Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Seafooler's Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>About</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2021/01/24/fabric-source-code-analysis-7/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Seafooler">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Seafooler's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Fabric中PBFT源码解读——状态同步
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2021-01-24 00:00:00" itemprop="dateCreated datePublished" datetime="2021-01-24T00:00:00+08:00">2021-01-24</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2022-01-05 21:09:34" itemprop="dateModified" datetime="2022-01-05T21:09:34+08:00">2022-01-05</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Code-analysis/" itemprop="url" rel="index"><span itemprop="name">Code-analysis</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>本篇博客是继续对<code>Hyperledger Fabric</code>中的<code>PBFT</code>代码进行解读，重点关注状态同步机制的实现。 <span id="more"></span></p>
+<h2 id="i.写在前面">I.写在前面</h2>
+<h3 id="a.-前置阅读">A. 前置阅读</h3>
+<p>本篇博客是建立在之前一些博客的基础上。一切重复的知识介绍，笔者在这篇博客中就不再赘述了。 因此，强烈建议读者先去阅读一下以下这几篇博客。</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/u014633283/article/details/112307024">Fabric中PBFT源码解读 （1）</a></li>
+<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/u014633283/article/details/112308084">Fabric中PBFT源码解读 （2）</a></li>
+<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/u014633283/article/details/112344708">Fabric中PBFT源码解读 （3）</a></li>
+<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/u014633283/article/details/112346508">Fabric中PBFT源码解读 （4）</a></li>
+<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/u014633283/article/details/112364913">Fabric中PBFT源码解读 （5）</a></li>
+<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/u014633283/article/details/113060870">Fabric中PBFT源码解读——Checkpoint机制</a></li>
+</ul>
+<h3 id="b.-instance.skipinprogress字段">B. instance.skipInProgress字段</h3>
+<p>在前面一篇博客<a target="_blank" rel="noopener" href="https://blog.csdn.net/u014633283/article/details/113060870">Fabric中PBFT源码解读——Checkpoint机制</a>中，我们介绍到在<code>weakCheckpointSetOutOfRange</code>函数中，若发现当前节点的状态数据落后了，则将<code>instance.skipInProgress</code>字段设置为<code>true</code>。相关代码摘录如下： <figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// [pbft-core.go] recvCheckpoint -&gt; weakCheckpointSetOutOfRange</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(instance *pbftCore)</span> <span class="title">weakCheckpointSetOutOfRange</span><span class="params">(chkpt *Checkpoint)</span> <span class="title">bool</span></span> &#123;</span><br><span class="line">    ...</span><br><span class="line">    <span class="keyword">if</span> chkpt.SequenceNumber &lt; H &#123;                             <span class="comment">// L1063</span></span><br><span class="line">        ...</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        ...</span><br><span class="line">        <span class="keyword">if</span> <span class="built_in">len</span>(instance.hChkpts) &gt;= instance.f+<span class="number">1</span> &#123;             <span class="comment">// L1073</span></span><br><span class="line">            ...</span><br><span class="line">            <span class="keyword">if</span> m := chkptSeqNumArray[<span class="built_in">len</span>(chkptSeqNumArray)-(instance.f+<span class="number">1</span>)]; m &gt; H &#123;</span><br><span class="line">                ...</span><br><span class="line">                instance.skipInProgress = <span class="literal">true</span>                <span class="comment">// L1094</span></span><br><span class="line">                ...</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure> <code>instance.skipInProgress</code>字段主要作了一种标记：当前节点需要进行状态同步。在后面的<strong>合适时机</strong>，节点将基于该标记真正发起状态同步操作。 本篇博客将介绍<code>Fabric</code> <code>PBFT</code>代码中与状态同步相关的代码。</p>
+<h2 id="ii.-标记需要进行状态同步">II. 标记需要进行“状态同步”</h2>
+<p>如上一小节所述，节点的状态同步分为了两个步骤：（1）通过<code>instance.skipInProgress</code>字段标记需要进行“状态同步”；（2）在合适的时机，检查<code>instance.skipInProgress</code>字段，若为<code>true</code>，则启动状态同步操作。 除了上一小节中所说的<code>weakCheckpointSetOutOfRange</code>函数可能会对<code>skipInProgress</code>字段进行标记，另外一个地方也可能会对该字段进行标记，如下所示： <figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// [pbft-core.go] stateTransfer</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(instance *pbftCore)</span> <span class="title">stateTransfer</span><span class="params">(optional *stateUpdateTarget)</span></span> &#123;</span><br><span class="line">    <span class="keyword">if</span> !instance.skipInProgress &#123;</span><br><span class="line">        ...</span><br><span class="line">        instance.skipInProgress = <span class="literal">true</span></span><br><span class="line">        ...</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    instance.retryStateTransfer(optional)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure> 可以看到<code>stateTransfer</code>只是对<code>retryStateTransfer</code>函数做了一次封装。后面我们会介绍到：启动状态同步的真实操作就是通过调用<code>retryStateTransfer</code>函数实现的。因此，对于<code>stateTransfer</code>函数中的操作，我们可以理解为：其在一个函数中同时完成了节点状态同步的两个步骤，从而可以立即启动节点状态的同步。</p>
+<h2 id="iii.-启动状态同步操作">III. 启动“状态同步”操作</h2>
+<p>启动“状态同步”操作的时机主要有两个：一是在<code>ProcessEvent</code>函数中，二是在<code>witnessCheckpointWeakCert</code>函数中。相关代码分别如下所示： <figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// [pbft-core.go] ProcessEvent</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(instance *pbftCore)</span> <span class="title">ProcessEvent</span><span class="params">(e events.Event)</span> <span class="title">events</span>.<span class="title">Event</span></span> &#123;</span><br><span class="line">    ...</span><br><span class="line">    <span class="keyword">switch</span> et := e.(<span class="keyword">type</span>) &#123;</span><br><span class="line">    ...</span><br><span class="line">    <span class="keyword">case</span> execDoneEvent:</span><br><span class="line">        instance.execDoneSync()</span><br><span class="line">        <span class="keyword">if</span> instance.skipInProgress &#123;</span><br><span class="line">            instance.retryStateTransfer(<span class="literal">nil</span>)</span><br><span class="line">        &#125;</span><br><span class="line">        ...</span><br><span class="line">    &#125;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// [pbft-core.go] witnessCheckpointWeakCert</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(instance *pbftCore)</span> <span class="title">witnessCheckpointWeakCert</span><span class="params">(chkpt *Checkpoint)</span></span> &#123;</span><br><span class="line">    ...</span><br><span class="line">    <span class="keyword">if</span> instance.skipInProgress &#123;</span><br><span class="line">        ...</span><br><span class="line">        instance.retryStateTransfer(target)</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure> 在<code>ProcessEvent</code>函数中，每当一个请求执行完毕后，就会判断一下是不是需要进行状态同步。<code>witnessCheckpointWeakCert</code>函数是在<code>recvCheckpoint</code>函数中检测到有f+1个相同的<code>Checkpoint</code>消息时（也即表明此<code>Checkpoint</code>大概率是稳定的<code>Checkpoint</code>）被调用。<code>witnessCheckpointWeakCert</code>函数首先构建一个“状态同步”的目标<code>target</code>，然后判断一下是不是需要进行状态同步。</p>
+<p>容易看出，无论是哪一种情形，都是通过调用<code>retryStateTransfer</code>函数进行状态同步的。</p>
+<p>另一方面，调用<code>retryStateTransfer</code>函数的代码还包括以下两处：1)<code>ProcessEvent</code>函数的<code>stateUpdatedEvent case</code> 和 2）<code>stateTransfer</code>函数。<code>stateTransfer</code>函数的相关代码已经在第II节中介绍了，<code>ProcessEvent</code>函数的相关代码如下所示： <figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// [pbft-core.go] ProcessEvent</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(instance *pbftCore)</span> <span class="title">ProcessEvent</span><span class="params">(e events.Event)</span> <span class="title">events</span>.<span class="title">Event</span></span> &#123;</span><br><span class="line">    ...</span><br><span class="line">    <span class="keyword">switch</span> et := e.(<span class="keyword">type</span>) &#123;</span><br><span class="line">    ...</span><br><span class="line">    <span class="keyword">case</span> stateUpdatedEvent:</span><br><span class="line">        ...</span><br><span class="line">        <span class="keyword">if</span> et.target == <span class="literal">nil</span> || update.seqNo &lt; instance.h &#123;</span><br><span class="line">            ...</span><br><span class="line">            <span class="keyword">if</span> instance.highStateTarget == <span class="literal">nil</span> &#123;</span><br><span class="line">                ...</span><br><span class="line">            &#125; <span class="keyword">else</span> <span class="keyword">if</span> update.seqNo &lt; instance.highStateTarget.seqNo &#123;</span><br><span class="line">                ...</span><br><span class="line">                instance.retryStateTransfer(<span class="literal">nil</span>)</span><br><span class="line">            &#125;...</span><br><span class="line">            instance.skipInProgress = <span class="literal">false</span></span><br><span class="line">            ...</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure> 后面会介绍到：当一次状态更新操作完成后，会发出一个<code>stateUpdatedEvent</code>。相应地，在<code>ProcessEvent</code>中处理该类型<code>event</code>时，将会再次检查当前的<code>low-water mark</code>和已完成的状态更新操作的<code>seqNo</code>。若后者小于前者，则说明需要再次进行状态更新操作，也即调用<code>retryStateTransfer</code>函数。否则，将<code>skipInProgress</code>字段置为<code>false</code>。</p>
+<p>综上，调用<code>retryStateTransfer</code>函数进行状态同步的时机包括四个：1）<code>ProcessEvent</code>函数的<code>execDoneEvent case</code>；2）<code>ProcessEvent</code>函数的<code>stateUpdatedEvent case</code>；3）<code>witnessCheckpointWeakCert</code>函数；4）<code>stateTransfer</code>函数。</p>
+<h2 id="iv.-retrystatetransfer函数的实现细节">IV. retryStateTransfer函数的实现细节</h2>
+<p><code>retryStateTransfer</code>函数的主体代码如下所示： <figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// [pbft-core.go] retryStateTransfer</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(instance *pbftCore)</span> <span class="title">retryStateTransfer</span><span class="params">(optional *stateUpdateTarget)</span></span> &#123;</span><br><span class="line">    <span class="keyword">if</span> instance.currentExec != <span class="literal">nil</span> &#123;                        <span class="comment">// L886</span></span><br><span class="line">        logger.Debugf(...)</span><br><span class="line">        <span class="keyword">return</span></span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">if</span> instance.stateTransferring &#123;                         <span class="comment">// L891</span></span><br><span class="line">        logger.Debugf(...)</span><br><span class="line">        <span class="keyword">return</span></span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    target := optional                                    <span class="comment">// L896</span></span><br><span class="line">    <span class="keyword">if</span> target == <span class="literal">nil</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> instance.highStateTarget == <span class="literal">nil</span> &#123;                <span class="comment">// L898</span></span><br><span class="line">            ...</span><br><span class="line">            <span class="keyword">return</span></span><br><span class="line">        &#125;</span><br><span class="line">        target = instance.highStateTarget                   <span class="comment">// L902</span></span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    instance.stateTransferring = <span class="literal">true</span>                       <span class="comment">// L905</span></span><br><span class="line">    ...</span><br><span class="line">    instance.consumer.skipTo(target.seqNo, target.id, target.replicas) <span class="comment">// L908</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<ol type="1">
+<li><code>retryStateTransfer</code>函数首先会判断当前节点是否正在执行一个请求（L886行）。如果是，则停止状态更新，直接返回。</li>
+<li>L891行会判断当前节点是否正在进行状态更新，若是，也停止状态更新，直接返回。判断当前节点是否正在进行状态更新依赖于<code>stateTransferring</code>字段，该字段在L905行被赋值为<code>true</code>，表明正式进行状态更新。</li>
+<li>L896行定义的<code>target</code>变量，用于保存将要同步的目标状态。该变量受两个参数的影响，一个是<code>retryStateTransfer</code>函数传入的参数<code>optional</code>，另一个是<code>instance</code>保存的字段<code>highStateTarget</code>。<code>highStateTarget</code>的优先级比<code>optional</code>高，因此优先将<code>target</code>变量赋值为<code>highStateTarget</code>值（L902行）。但若两者都为<code>nil</code>（L898行），则停止状态更新，直接返回。</li>
+<li>L908行调用<code>skipTo</code>函数进行状态的更新。<code>skipTo</code>函数其实是<code>innerStack</code>接口中定义的一个函数，依赖于使用<code>PBFT</code>模块进行共识的其他模块的实现。具体而言，在<code>Fabric</code>中共有三种<code>innerStack</code>接口的实现：1）<code>consensus/pbft/pbft.go</code>文件中<code>obcGeneric</code>类，该类与区块链深入绑定，是真正用于区块链应用的实现类；2）<code>consensus/pbft/mock_utilities_test.go</code>文件中的<code>omniProto</code>类，该类主要用于测试，且基本上是一些空实现；3）<code>consensus/pbft/pbft-core_mock_test.go</code>文件中<code>simpleConsumer</code>类，该类也主要用于测试。和之前的几篇<a target="_blank" rel="noopener" href="https://blog.csdn.net/u014633283/article/details/112307024">博客</a>一样，本博客主要关注<code>simpleConsumer</code>类中的实现。</li>
+</ol>
+<h2 id="v.-simpleconsumer.skipto函数的实现细节">V. simpleConsumer.skipTo函数的实现细节</h2>
+<p><code>simpleConsumer.skipTo</code>函数的主体代码如下所示： <figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// [pbft-core_mock_test.go] skipTo函数</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(sc *simpleConsumer)</span> <span class="title">skipTo</span><span class="params">(seqNo <span class="keyword">uint64</span>, id []<span class="keyword">byte</span>, replicas []<span class="keyword">uint64</span>)</span></span> &#123;</span><br><span class="line">	...</span><br><span class="line">	sc.executions = seqNo                                   <span class="comment">// L117</span></span><br><span class="line">	<span class="keyword">go</span> <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;                                            <span class="comment">// L118</span></span><br><span class="line">		sc.pe.manager.Queue() &lt;- stateUpdatedEvent&#123;            <span class="comment">// L119</span></span><br><span class="line">			chkpt: &amp;checkpointMessage&#123;</span><br><span class="line">				seqNo: seqNo,</span><br><span class="line">				id:    id,</span><br><span class="line">			&#125;,</span><br><span class="line">			target: &amp;pb.BlockchainInfo&#123;&#125;,</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;()</span><br><span class="line">	sc.pbftNet.debugMsg(<span class="string">&quot;TEST: skipping to %d\n&quot;</span>, seqNo)        <span class="comment">// L127</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure> <code>simpleConsumer.skipTo</code>函数的实现部分也比较简单：</p>
+<ol type="1">
+<li>由于状态同步完成后的执行请求数将达到<code>seqNo</code>，因此L117行将<code>executions</code>字段设置为seqNo</li>
+<li>L118行启动了一个协程，其中新建了一个<code>stateUpdatedEvent</code>类型的变量，并发送到<code>chan Event</code>通道中。这一部分的具体运行流程已经在博客<a target="_blank" rel="noopener" href="https://blog.csdn.net/u014633283/article/details/112308084">Fabric中PBFT源码解读（2）</a>进行了详细介绍，感兴趣的读者可以前往查阅。 正如本博客第III节中所述，<code>stateUpdatedEvent</code>类型的<code>event</code>将可能再次开启下一轮的状态同步。</li>
+</ol>
+<p>读者可能会困惑：这里并没有进行数据传输操作啊，怎么实现状态同步呢？ 这是因为，我们这里只是<code>pbft-core_mock_test.go</code>测试文件中的代码，具体的数据传输操作是跟使用<code>PBFT</code>共识的应用紧密相关的。因此，这里只是打印了一个<code>log</code>，如L127行。</p>
+<h2 id="参考文献">参考文献</h2>
+<ol type="1">
+<li><a target="_blank" rel="noopener" href="http://yangzhe.me/2020/01/04/fabric-pbft/">PBFT代码篇：fabric 中的 PBFT 实现</a></li>
+<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/jiang_xinxing/article/details/53787071">Hyperledger Fabric的PBFT源码分析（一）</a></li>
+<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/u014633283/article/details/112307024">Fabric中PBFT源码解读 （1）</a></li>
+<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/u014633283/article/details/113060870">Fabric中PBFT源码解读——Checkpoint机制</a></li>
+</ol>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Blockchain/" rel="tag"># Blockchain</a>
+              <a href="/tags/PBFT/" rel="tag"># PBFT</a>
+              <a href="/tags/Fabric/" rel="tag"># Fabric</a>
+          </div>
+
+        
+  <div class="post-widgets">
+    <div class="wp_rating">
+      <div id="wpac-rating"></div>
+    </div>
+  </div>
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/01/23/fabric-source-code-analysis-6/" rel="prev" title="Fabric中PBFT源码解读——Checkpoint机制">
+      <i class="fa fa-chevron-left"></i> Fabric中PBFT源码解读——Checkpoint机制
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/09/08/design-bft-pbft/" rel="next" title="Consensus From One-phase To Two-phase, A Routine Of PBFT">
+      Consensus From One-phase To Two-phase, A Routine Of PBFT <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#i.%E5%86%99%E5%9C%A8%E5%89%8D%E9%9D%A2"><span class="nav-number">1.</span> <span class="nav-text">I.写在前面</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#a.-%E5%89%8D%E7%BD%AE%E9%98%85%E8%AF%BB"><span class="nav-number">1.1.</span> <span class="nav-text">A. 前置阅读</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#b.-instance.skipinprogress%E5%AD%97%E6%AE%B5"><span class="nav-number">1.2.</span> <span class="nav-text">B. instance.skipInProgress字段</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ii.-%E6%A0%87%E8%AE%B0%E9%9C%80%E8%A6%81%E8%BF%9B%E8%A1%8C%E7%8A%B6%E6%80%81%E5%90%8C%E6%AD%A5"><span class="nav-number">2.</span> <span class="nav-text">II. 标记需要进行“状态同步”</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#iii.-%E5%90%AF%E5%8A%A8%E7%8A%B6%E6%80%81%E5%90%8C%E6%AD%A5%E6%93%8D%E4%BD%9C"><span class="nav-number">3.</span> <span class="nav-text">III. 启动“状态同步”操作</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#iv.-retrystatetransfer%E5%87%BD%E6%95%B0%E7%9A%84%E5%AE%9E%E7%8E%B0%E7%BB%86%E8%8A%82"><span class="nav-number">4.</span> <span class="nav-text">IV. retryStateTransfer函数的实现细节</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#v.-simpleconsumer.skipto%E5%87%BD%E6%95%B0%E7%9A%84%E5%AE%9E%E7%8E%B0%E7%BB%86%E8%8A%82"><span class="nav-number">5.</span> <span class="nav-text">V. simpleConsumer.skipTo函数的实现细节</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%8C%AE"><span class="nav-number">6.</span> <span class="nav-text">参考文献</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Seafooler</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">44</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">17</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="mailto:seafooler@gmail.com" title="E-Mail → mailto:seafooler@gmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Seafooler</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+  <script>
+  if (CONFIG.page.isPost) {
+    wpac_init = window.wpac_init || [];
+    wpac_init.push({
+      widget: 'Rating',
+      id    : ,
+      el    : 'wpac-rating',
+      color : 'fc6423'
+    });
+    (function() {
+      if ('WIDGETPACK_LOADED' in window) return;
+      WIDGETPACK_LOADED = true;
+      var mc = document.createElement('script');
+      mc.type = 'text/javascript';
+      mc.async = true;
+      mc.src = '//embed.widgetpack.com/widget.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(mc, s.nextSibling);
+    })();
+  }
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+
+</body>
+</html>

@@ -161,7 +161,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://example.com/2019/08/05/btcd-source-code-analysis-8/">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2020/05/05/serialization-function/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
@@ -175,7 +175,7 @@
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
-            <a href="/2019/08/05/btcd-source-code-analysis-8/" class="post-title-link" itemprop="url">btcd源码解析——peer节点之间的区块数据同步 (4) —— 区块数据的存储</a>
+            <a href="/2020/05/05/serialization-function/" class="post-title-link" itemprop="url">谈谈序列化的作用</a>
         </h2>
 
         <div class="post-meta">
@@ -185,14 +185,338 @@
               </span>
               <span class="post-meta-item-text">Posted on</span>
 
-              <time title="Created: 2019-08-05 00:00:00" itemprop="dateCreated datePublished" datetime="2019-08-05T00:00:00+08:00">2019-08-05</time>
+              <time title="Created: 2020-05-05 00:00:00" itemprop="dateCreated datePublished" datetime="2020-05-05T00:00:00+08:00">2020-05-05</time>
             </span>
               <span class="post-meta-item">
                 <span class="post-meta-item-icon">
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2022-01-05 15:48:21" itemprop="dateModified" datetime="2022-01-05T15:48:21+08:00">2022-01-05</time>
+                <time title="Modified: 2022-01-05 21:24:29" itemprop="dateModified" datetime="2022-01-05T21:24:29+08:00">2022-01-05</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Programming/" itemprop="url" rel="index"><span itemprop="name">Programming</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>我们应该都用过各种序列化（serialization）的方法（如Python中的pickle.dumps），甚至自己也写过一些序列化的小工具，但可能很少深入思考过序列化的作用。本篇博客即对该问题进行探讨。
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2020/05/05/serialization-function/#more" rel="contents">
+                Read more &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2020/04/29/relation-flp-cap/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Seafooler">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Seafooler's Blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2020/04/29/relation-flp-cap/" class="post-title-link" itemprop="url">谈谈FLP和CAP的关系</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2020-04-29 00:00:00" itemprop="dateCreated datePublished" datetime="2020-04-29T00:00:00+08:00">2020-04-29</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2022-01-05 21:23:06" itemprop="dateModified" datetime="2022-01-05T21:23:06+08:00">2022-01-05</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Distributed-theory/" itemprop="url" rel="index"><span itemprop="name">Distributed theory</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>承接上一篇博客:<a target="_blank" rel="noopener" href="https://blog.csdn.net/u014633283/article/details/105720070">也谈分布式系统中的网络模型和故障模型</a>，本篇博客仍然想探讨一些分布式系统的理论知识。
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2020/04/29/relation-flp-cap/#more" rel="contents">
+                Read more &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2020/04/23/distributed-system-models/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Seafooler">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Seafooler's Blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2020/04/23/distributed-system-models/" class="post-title-link" itemprop="url">也谈分布式系统中的网络模型和故障模型</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2020-04-23 00:00:00" itemprop="dateCreated datePublished" datetime="2020-04-23T00:00:00+08:00">2020-04-23</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2022-01-05 21:23:18" itemprop="dateModified" datetime="2022-01-05T21:23:18+08:00">2022-01-05</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Distributed-theory/" itemprop="url" rel="index"><span itemprop="name">Distributed theory</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>分布式系统中的网络模型和故障模型是个老生常谈的问题了。然而这两个模型的界限和联系似乎并不清晰，本篇博客打算谈谈笔者对这两个模型的理解。
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2020/04/23/distributed-system-models/#more" rel="contents">
+                Read more &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2020/03/10/bitcoin-protocol-txid/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Seafooler">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Seafooler's Blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2020/03/10/bitcoin-protocol-txid/" class="post-title-link" itemprop="url">并不唯一的交易ID</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2020-03-10 00:00:00" itemprop="dateCreated datePublished" datetime="2020-03-10T00:00:00+08:00">2020-03-10</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2022-01-05 21:21:55" itemprop="dateModified" datetime="2022-01-05T21:21:55+08:00">2022-01-05</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Bitcoin-protocol/" itemprop="url" rel="index"><span itemprop="name">Bitcoin protocol</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>我们知道，比特币中使用<code>交易ID</code> (<code>TxID</code>) 来作为交易在全网的唯一标识。在此语境下，绝大多数人都认为<code>TxID</code>一定是全网唯一的。 绝大多数情况是这样。但事实上，曾经两起出现过在不同区块中的交易的TxID相同的情况。本篇博客即来介绍这两起<code>TxID</code>碰撞的故事。
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2020/03/10/bitcoin-protocol-txid/#more" rel="contents">
+                Read more &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2020/03/08/btcd-source-code-analysis-14/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Seafooler">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Seafooler's Blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2020/03/08/btcd-source-code-analysis-14/" class="post-title-link" itemprop="url">btcd源码解析——交易创建(3)——构造解锁脚本</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2020-03-08 00:00:00" itemprop="dateCreated datePublished" datetime="2020-03-08T00:00:00+08:00">2020-03-08</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2022-01-05 21:10:24" itemprop="dateModified" datetime="2022-01-05T21:10:24+08:00">2022-01-05</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -215,14 +539,259 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <p>前两篇博客<a target="_blank" rel="noopener" href="https://blog.csdn.net/u014633283/article/details/97101031">headersFirstMode模式</a>和<a target="_blank" rel="noopener" href="https://blog.csdn.net/u014633283/article/details/97681958">非headersFirstMode模式</a>主要介绍了区块数据同步过程中两个节点如何交互。但我们当时遗留下一个问题：在<code>peer A</code>接收到区块数据之后，是如何将这个区块存储到本地的。回忆我们在<a target="_blank" rel="noopener" href="https://blog.csdn.net/u014633283/article/details/97101031">headersFirstMode模式</a>的I.F小节最后提到的</p>
+          <p><a target="_blank" rel="noopener" href="https://blog.csdn.net/u014633283/article/details/104622344">上一篇博客</a>的最后，我们讲到 <code>AddAllInputScripts</code>函数体中针对每一个非<code>witness</code>的<code>input</code>调用了<code>SignTxOutput</code>函数。该函数主要用来对当前<code>input</code>构造解锁脚本。 解锁脚本构造的最关键部分在于签名的构造，因而该函数中是用了<code>Sign</code>这个词。 此外，<code>SignTxOutput</code>函数名中虽然写的是<code>output</code>，但这个<code>output</code>是<code>UTXO</code>的意思，也就是当前交易的<code>input</code>。</p>
+<p><strong>在继续本篇博客的阅读之前，强烈建议读者先阅读关于签名机制的三篇博客<a target="_blank" rel="noopener" href="https://blog.csdn.net/u014633283/article/details/104676657">签名机制(1) —— 基础知识</a>, <a target="_blank" rel="noopener" href="https://blog.csdn.net/u014633283/article/details/104677139">签名机制(2) ——签名流程</a>和<a target="_blank" rel="noopener" href="https://blog.csdn.net/u014633283/article/details/104680712">签名机制(3) —— 源码分析</a>，其中介绍了各种签名哈希类型下<code>message</code>的内容。</strong>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2020/03/08/btcd-source-code-analysis-14/#more" rel="contents">
+                Read more &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2020/03/07/btcd-source-code-analysis-13/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Seafooler">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Seafooler's Blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2020/03/07/btcd-source-code-analysis-13/" class="post-title-link" itemprop="url">btcd源码解析——签名机制(3)——源码分析</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2020-03-07 00:00:00" itemprop="dateCreated datePublished" datetime="2020-03-07T00:00:00+08:00">2020-03-07</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2022-01-05 21:10:21" itemprop="dateModified" datetime="2022-01-05T21:10:21+08:00">2022-01-05</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Code-analysis/" itemprop="url" rel="index"><span itemprop="name">Code-analysis</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>在开始本篇博客之前，我们首先回顾一下前两篇博客的内容 <a target="_blank" rel="noopener" href="https://blog.csdn.net/u014633283/article/details/104676657">第一篇博客</a>介绍了比特币签名相关的基础知识，<a target="_blank" rel="noopener" href="https://blog.csdn.net/u014633283/article/details/104677139">第二篇博客</a>博客介绍了签名的基本原理。本篇博客将从<code>btcd</code>的源码层面分析签名的具体流程。
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2020/03/07/btcd-source-code-analysis-13/#more" rel="contents">
+                Read more &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2020/03/06/btcd-source-code-analysis-12/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Seafooler">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Seafooler's Blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2020/03/06/btcd-source-code-analysis-12/" class="post-title-link" itemprop="url">btcd源码解析——签名机制(2)——签名流程</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2020-03-06 00:00:00" itemprop="dateCreated datePublished" datetime="2020-03-06T00:00:00+08:00">2020-03-06</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2022-01-05 21:10:17" itemprop="dateModified" datetime="2022-01-05T21:10:17+08:00">2022-01-05</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Code-analysis/" itemprop="url" rel="index"><span itemprop="name">Code-analysis</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>在前一篇<a target="_blank" rel="noopener" href="https://blog.csdn.net/u014633283/article/details/104676657">博客</a>中，我们介绍了比特币签名机制的基础知识。本篇博客我们将从原理层介绍签名流程。<a target="_blank" rel="noopener" href="https://blog.csdn.net/u014633283/article/details/104680712">下一篇博客</a>从<code>btcd</code>源码层面讲解签名流程。
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2020/03/06/btcd-source-code-analysis-12/#more" rel="contents">
+                Read more &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2020/03/05/btcd-source-code-analysis-11/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Seafooler">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Seafooler's Blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2020/03/05/btcd-source-code-analysis-11/" class="post-title-link" itemprop="url">btcd源码解析——签名机制(1)——基础知识</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2020-03-05 00:00:00" itemprop="dateCreated datePublished" datetime="2020-03-05T00:00:00+08:00">2020-03-05</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2022-01-05 21:10:14" itemprop="dateModified" datetime="2022-01-05T21:10:14+08:00">2022-01-05</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Code-analysis/" itemprop="url" rel="index"><span itemprop="name">Code-analysis</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>在前面的比特币源码分析中，我们有意忽略了签名机制部分的介绍。 但比特币的签名机制远非我们想象的那么简单，正如这篇博客<a target="_blank" rel="noopener" href="https://curiosity-driven.org/bitcoin-contracts#kickstarter">Bitcoin contracts</a>所言：</p>
 <blockquote>
-<p>由于block的数据存储过程比较复杂，我们在后面会再写一篇博客介绍：从P2P连接中接收到的block数据是如何存储的</p>
+<p>Bitcoin achieves high flexibility due to three features: 1. scripts — unlocking funds in transactions is done using a simple scripting language, 2. signature hash flags — indicate which parts of the transaction are signed, 3. sequence numbers and lock time — mark transactions as not valid until specified time.</p>
 </blockquote>
-<p>本篇博客主要就来介绍“区块数据的存储过程”。<br>
+<p>换句话说，正是因为不同签名格式(<code>signature hash flags</code>)的存在，才使得比特币的编程功能更加灵活多变。 接下来的三篇博客即从原理和源码两个角度来分析比特币的签名机制。 本篇博客先介绍基础知识，<a target="_blank" rel="noopener" href="https://blog.csdn.net/u014633283/article/details/104677139">第二篇博客</a>介绍签名流程的基本原理，<a target="_blank" rel="noopener" href="https://blog.csdn.net/u014633283/article/details/104680712">第三篇博客</a>从<code>btcd</code>源码层面讲解签名流程。</p>
+<p>源码分析所针对的<code>btcd</code>版本为: ed77733ec07dfc8a513741138419b8d9d3de9d2d
           <!--noindex-->
             <div class="post-button">
-              <a class="btn" href="/2019/08/05/btcd-source-code-analysis-8/#more" rel="contents">
+              <a class="btn" href="/2020/03/05/btcd-source-code-analysis-11/#more" rel="contents">
                 Read more &raquo;
               </a>
             </div>
@@ -246,7 +815,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://example.com/2019/07/29/btcd-source-code-analysis-7/">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2020/03/02/btcd-source-code-analysis-10/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
@@ -260,7 +829,7 @@
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
-            <a href="/2019/07/29/btcd-source-code-analysis-7/" class="post-title-link" itemprop="url">btcd源码解析——peer节点之间的区块数据同步 (3) —— 非headersFirstMode模式</a>
+            <a href="/2020/03/02/btcd-source-code-analysis-10/" class="post-title-link" itemprop="url">btcd源码解析——交易创建 (2)——input的创建</a>
         </h2>
 
         <div class="post-meta">
@@ -270,14 +839,14 @@
               </span>
               <span class="post-meta-item-text">Posted on</span>
 
-              <time title="Created: 2019-07-29 00:00:00" itemprop="dateCreated datePublished" datetime="2019-07-29T00:00:00+08:00">2019-07-29</time>
+              <time title="Created: 2020-03-02 00:00:00" itemprop="dateCreated datePublished" datetime="2020-03-02T00:00:00+08:00">2020-03-02</time>
             </span>
               <span class="post-meta-item">
                 <span class="post-meta-item-icon">
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2022-01-05 15:35:37" itemprop="dateModified" datetime="2022-01-05T15:35:37+08:00">2022-01-05</time>
+                <time title="Modified: 2022-01-05 21:10:11" itemprop="dateModified" datetime="2022-01-05T21:10:11+08:00">2022-01-05</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -300,10 +869,10 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <p>上一篇博客<a target="_blank" rel="noopener" href="https://blog.csdn.net/u014633283/article/details/97101031">btcd源码解析——peer节点之间的区块数据同步(2)——headersFirstMode模式</a>介绍了<code>headersFirstMode</code>模式下，<code>peer</code>节点之间的数据同步过程。本篇博客将介绍<code>非headersFirstMode</code>模式下的数据同步过程。<br>因为本篇博客中的许多函数都已经在上一篇博客中进行了讲解，且在此不会过多赘述，强烈建议读者在阅读完上一篇博客之后再来阅读本篇博客。<br>
+          <p>前一篇博客<a target="_blank" rel="noopener" href="https://blog.csdn.net/u014633283/article/details/104562196">btcd源码解析——交易创建</a>中的III.B节介绍了创建<code>output</code>的细节，本篇博客主要介绍<code>input</code>的创建细节。
           <!--noindex-->
             <div class="post-button">
-              <a class="btn" href="/2019/07/29/btcd-source-code-analysis-7/#more" rel="contents">
+              <a class="btn" href="/2020/03/02/btcd-source-code-analysis-10/#more" rel="contents">
                 Read more &raquo;
               </a>
             </div>
@@ -327,7 +896,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://example.com/2019/07/25/btcd-source-code-analysis-6/">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2020/02/28/btcd-source-code-analysis-9/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
@@ -341,7 +910,7 @@
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
-            <a href="/2019/07/25/btcd-source-code-analysis-6/" class="post-title-link" itemprop="url">btcd源码解析——peer节点之间的区块数据同步 (2) —— headersFirstMode模式</a>
+            <a href="/2020/02/28/btcd-source-code-analysis-9/" class="post-title-link" itemprop="url">btcd源码解析——交易创建 (1)</a>
         </h2>
 
         <div class="post-meta">
@@ -351,14 +920,14 @@
               </span>
               <span class="post-meta-item-text">Posted on</span>
 
-              <time title="Created: 2019-07-25 00:00:00" itemprop="dateCreated datePublished" datetime="2019-07-25T00:00:00+08:00">2019-07-25</time>
+              <time title="Created: 2020-02-28 00:00:00" itemprop="dateCreated datePublished" datetime="2020-02-28T00:00:00+08:00">2020-02-28</time>
             </span>
               <span class="post-meta-item">
                 <span class="post-meta-item-icon">
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2022-01-05 15:29:38" itemprop="dateModified" datetime="2022-01-05T15:29:38+08:00">2022-01-05</time>
+                <time title="Modified: 2022-01-05 21:10:53" itemprop="dateModified" datetime="2022-01-05T21:10:53+08:00">2022-01-05</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -381,584 +950,16 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <p>上一篇博客<a target="_blank" rel="noopener" href="https://blog.csdn.net/u014633283/article/details/97039551">btcd源码解析——peer节点之间的区块数据同步 (1)</a>中，我们介绍了peer A是如何发起数据同步的请求的，当时讲到存在两种模式：<code>headersFirstMode</code>模式和<code>非headersFirstMode</code>模式。本篇博客，我们将介绍<code>headersFirstMode</code>模式下数据同步的细节。<br>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2019/07/25/btcd-source-code-analysis-6/#more" rel="contents">
-                Read more &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://example.com/2019/07/24/btcd-source-code-analysis-5/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="Seafooler">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Seafooler's Blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2019/07/24/btcd-source-code-analysis-5/" class="post-title-link" itemprop="url">btcd源码解析——peer节点之间的区块数据同步 (1)</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2019-07-24 00:00:00" itemprop="dateCreated datePublished" datetime="2019-07-24T00:00:00+08:00">2019-07-24</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2022-01-05 15:11:13" itemprop="dateModified" datetime="2022-01-05T15:11:13+08:00">2022-01-05</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">In</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Code-analysis/" itemprop="url" rel="index"><span itemprop="name">Code-analysis</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>从这一篇博客开始，我们将介绍<code>btcd</code>节点之间的数据同步。考虑到内容太长，分为三篇博客来讲解:</p>
+          <p>从本节开始，我们从源码层面关注比特币交易的构建过程。 其中，我们尤其会关注比特币解锁脚本（为了使用<code>UTXO</code>）和新的锁定脚本（为了生成新的<code>UTXO</code>）的创建细节。我们相信通过跟踪两种脚本的创建过程，我们将对于比特币的交易细节理解得更为深入。</p>
+<p>新交易的创建会涉及到两个代码仓库（<code>btcd</code>和<code>btcwallet</code>）编译生成的三个可执行文件（<code>btcd</code>，<code>btcctl</code>，和<code>btcwallet</code>）。 <code>btcd</code>和<code>btcwallet</code>代码版本号如下所示：</p>
 <ul>
-<li>第一篇 (本篇) 介绍节点是如何发起数据请求的</li>
-<li>第二篇介绍<code>headersFirstMode</code>模式下的数据同步</li>
-<li>第三篇介绍<code>非headersFirstMode</code>模式下的数据同步</li>
+<li><code>btcd</code>版本：[git commit log]: ed77733ec07dfc8a513741138419b8d9d3de9d2d</li>
+<li><code>btcwallet</code>版本：[git commit log]: ae9416ad7623598121a7c8ad67a202c1be767155</li>
 </ul>
-<p>源码解析是基于<a target="_blank" rel="noopener" href="https://github.com/btcsuite/btcd">btcd</a>仓库<code>c26ffa870fd817666a857af1bf6498fabba1ffe3</code>的<code>commit id</code> 版本。</p>
-<p>我们假设<code>peer B</code>是先启动的节点，<code>peer A</code>后启动。<code>peer A</code>在启动后需要从<code>peer B</code>同步数据，那么<code>peer A</code>应该首先向<code>peer B</code>发送数据请求。<br>
+<p>读者如果没有阅读过之前的这两篇博客<a target="_blank" rel="noopener" href="https://blog.csdn.net/u014633283/article/details/86568706">btcd源码解析</a>和<a target="_blank" rel="noopener" href="https://blog.csdn.net/u014633283/article/details/86590287">btcd源码解析——从“新区块的生成”开始</a>，<strong>强烈建议</strong>先阅读完再来阅读本篇博客。
           <!--noindex-->
             <div class="post-button">
-              <a class="btn" href="/2019/07/24/btcd-source-code-analysis-5/#more" rel="contents">
-                Read more &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://example.com/2019/07/22/btcd-source-code-analysis-4/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="Seafooler">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Seafooler's Blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2019/07/22/btcd-source-code-analysis-4/" class="post-title-link" itemprop="url">btcd源码解析——节点P2P连接建立的过程 (2)</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2019-07-22 00:00:00" itemprop="dateCreated datePublished" datetime="2019-07-22T00:00:00+08:00">2019-07-22</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2022-01-05 15:07:03" itemprop="dateModified" datetime="2022-01-05T15:07:03+08:00">2022-01-05</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">In</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Code-analysis/" itemprop="url" rel="index"><span itemprop="name">Code-analysis</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>我们接着上一篇<a target="_blank" rel="noopener" href="https://blog.csdn.net/u014633283/article/details/96713093">博客</a>，继续讲解<code>P2P</code><strong>主动连接的管理</strong>和<strong>被动接受连接</strong>的过程。<br>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2019/07/22/btcd-source-code-analysis-4/#more" rel="contents">
-                Read more &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://example.com/2019/07/21/btcd-source-code-analysis-3/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="Seafooler">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Seafooler's Blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2019/07/21/btcd-source-code-analysis-3/" class="post-title-link" itemprop="url">btcd源码解析——节点P2P连接建立的过程 (1)</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2019-07-21 00:00:00" itemprop="dateCreated datePublished" datetime="2019-07-21T00:00:00+08:00">2019-07-21</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2022-01-05 14:59:22" itemprop="dateModified" datetime="2022-01-05T14:59:22+08:00">2022-01-05</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">In</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Code-analysis/" itemprop="url" rel="index"><span itemprop="name">Code-analysis</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>从这一篇博客开始，我们将介绍<code>btcd</code>节点之间<code>P2P</code>连接建立的过程。考虑到内容太长，分为上下两篇博客来讲解。这两篇博客之后，我们将继续介绍节点之间数据的同步过程。<br>源码解析是基于<a target="_blank" rel="noopener" href="https://github.com/btcsuite/btcd">btcd</a>仓库<code>c26ffa870fd817666a857af1bf6498fabba1ffe3</code>的<code>commit id</code> 版本。<br>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2019/07/21/btcd-source-code-analysis-3/#more" rel="contents">
-                Read more &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://example.com/2019/03/18/bitcoin-protocol-addr-format/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="Seafooler">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Seafooler's Blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2019/03/18/bitcoin-protocol-addr-format/" class="post-title-link" itemprop="url">关于比特币地址的一些问题和解答</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2019-03-18 00:00:00" itemprop="dateCreated datePublished" datetime="2019-03-18T00:00:00+08:00">2019-03-18</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2022-01-05 15:58:29" itemprop="dateModified" datetime="2022-01-05T15:58:29+08:00">2022-01-05</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">In</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Bitcoin-protocol/" itemprop="url" rel="index"><span itemprop="name">Bitcoin-protocol</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>比特币的地址是由一个字符串表示的。比较常见的是以<code>1</code>开头的字符串，也有以<code>2</code>, <code>3</code>, <code>m</code>, 和 <code>n</code> 开头的字符串。关于这些字符串的区别和联系，笔者一直有很多问题，也在网上搜过很多答案。因此，这篇文章主要是做一个问题和答案的汇总，也包括我自己的一些理解。<br>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2019/03/18/bitcoin-protocol-addr-format/#more" rel="contents">
-                Read more &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://example.com/2019/03/17/bitcoin-protocol-op_return/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="Seafooler">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Seafooler's Blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2019/03/17/bitcoin-protocol-op_return/" class="post-title-link" itemprop="url">理解比特币的raw transaction —— OP_RETURN类型输出</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2019-03-17 00:00:00" itemprop="dateCreated datePublished" datetime="2019-03-17T00:00:00+08:00">2019-03-17</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2022-01-05 14:42:41" itemprop="dateModified" datetime="2022-01-05T14:42:41+08:00">2022-01-05</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">In</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Bitcoin-protocol/" itemprop="url" rel="index"><span itemprop="name">Bitcoin-protocol</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>上一篇<a target="_blank" rel="noopener" href="https://blog.csdn.net/u014633283/article/details/88601341">博客</a>中，我们介绍了简单的<code>P2PKH</code>类型输出。这一篇博客，我们将介绍<code>OP_RETURN</code>类型的输出。<br>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2019/03/17/bitcoin-protocol-op_return/#more" rel="contents">
-                Read more &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://example.com/2019/03/16/bitcoin-protocol-p2pkh/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="Seafooler">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Seafooler's Blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2019/03/16/bitcoin-protocol-p2pkh/" class="post-title-link" itemprop="url">理解比特币的raw transaction —— P2PKH类型输出</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2019-03-16 00:00:00" itemprop="dateCreated datePublished" datetime="2019-03-16T00:00:00+08:00">2019-03-16</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2022-01-05 14:30:43" itemprop="dateModified" datetime="2022-01-05T14:30:43+08:00">2022-01-05</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">In</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Bitcoin-protocol/" itemprop="url" rel="index"><span itemprop="name">Bitcoin-protocol</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>我们经常需要查看比特币中的一些交易数据，比如说一笔交易的发送方和接收方账户是什么，交易额为多少。其实，通过一些比特币的区块浏览器很容易能够查询到。区块浏览器其实是帮我们提前解析好了数据，并通过网页的形式展现出来。<br>比特币中真实存储在区块中的数据其实是一些<code>raw transaction</code>，这些<code>raw transaction</code>是怎么被解析出来的呢？或者说，<code>raw transaction</code>中的各个字段分别代表什么含义。<br>这篇博客将首先介绍<code>raw transaction</code>的一般格式。然后以一个简单的<code>raw transaction</code>为例，理解其中各个字段的含义。<br>这篇博客主要关注最简单的只包含<code>P2PKH</code>类型的交易。<br>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2019/03/16/bitcoin-protocol-p2pkh/#more" rel="contents">
-                Read more &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://example.com/2019/01/23/btcd-source-code-analysis-2/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="Seafooler">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Seafooler's Blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2019/01/23/btcd-source-code-analysis-2/" class="post-title-link" itemprop="url">btcd源码解析——从“新区块的生成”开始 (2)</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2019-01-23 00:00:00" itemprop="dateCreated datePublished" datetime="2019-01-23T00:00:00+08:00">2019-01-23</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2022-01-05 14:11:33" itemprop="dateModified" datetime="2022-01-05T14:11:33+08:00">2022-01-05</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">In</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Code-analysis/" itemprop="url" rel="index"><span itemprop="name">Code-analysis</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>接着上一篇<a target="_blank" rel="noopener" href="https://blog.csdn.net/u014633283/article/details/86590287">博客</a>，我们继续来讲解作为客户端的<code>btcwallet</code>是如何工作的。也即，作为客户端的<code>btcwallet</code>是如何与<code>btcd</code>进程交互的。<br>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2019/01/23/btcd-source-code-analysis-2/#more" rel="contents">
+              <a class="btn" href="/2020/02/28/btcd-source-code-analysis-9/#more" rel="contents">
                 Read more &raquo;
               </a>
             </div>
@@ -981,7 +982,7 @@
 
   
   <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/page/2/"><i class="fa fa-angle-left" aria-label="Previous page"></i></a><a class="page-number" href="/">1</a><a class="page-number" href="/page/2/">2</a><span class="page-number current">3</span><a class="page-number" href="/page/4/">4</a><a class="extend next" rel="next" href="/page/4/"><i class="fa fa-angle-right" aria-label="Next page"></i></a>
+    <a class="extend prev" rel="prev" href="/page/2/"><i class="fa fa-angle-left" aria-label="Previous page"></i></a><a class="page-number" href="/">1</a><a class="page-number" href="/page/2/">2</a><span class="page-number current">3</span><a class="page-number" href="/page/4/">4</a><a class="page-number" href="/page/5/">5</a><a class="extend next" rel="next" href="/page/4/"><i class="fa fa-angle-right" aria-label="Next page"></i></a>
   </nav>
 
 
@@ -1047,7 +1048,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">33</span>
+          <span class="site-state-item-count">44</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
@@ -1060,7 +1061,7 @@
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">16</span>
+        <span class="site-state-item-count">17</span>
         <span class="site-state-item-name">tags</span></a>
       </div>
   </nav>

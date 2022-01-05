@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-kelp.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-kelp.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-kelp.png">
+  <link rel="manifest" href="/images/manifest.json">
+  <meta name="msapplication-config" content="/images/browserconfig.xml">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":{"disqus":{"text":"Load Disqus","order":-1}}},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="笔者一直以来想学习一下PBFT的完整工程实践。但在网上搜了很多源码和博客，都没能找到一份比较独立且完整的PBFT实现。无奈之下，只能从Hyperledger Fabric的代码中学习其PBFT共识部分的代码。 因此，接下来的系列博客中，笔者将介绍在Fabric中是如何实现PBFT共识算法的。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Fabric中PBFT源码解读（1）">
+<meta property="og:url" content="http://example.com/2021/01/07/fabric-source-code-analysis-1/index.html">
+<meta property="og:site_name" content="Seafooler&#39;s Blog">
+<meta property="og:description" content="笔者一直以来想学习一下PBFT的完整工程实践。但在网上搜了很多源码和博客，都没能找到一份比较独立且完整的PBFT实现。无奈之下，只能从Hyperledger Fabric的代码中学习其PBFT共识部分的代码。 因此，接下来的系列博客中，笔者将介绍在Fabric中是如何实现PBFT共识算法的。">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2021-01-06T16:00:00.000Z">
+<meta property="article:modified_time" content="2022-01-05T13:09:56.928Z">
+<meta property="article:author" content="Seafooler">
+<meta property="article:tag" content="Blockchain">
+<meta property="article:tag" content="PBFT">
+<meta property="article:tag" content="Fabric">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://example.com/2021/01/07/fabric-source-code-analysis-1/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+
+  <title>Fabric中PBFT源码解读（1） | Seafooler's Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Seafooler's Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>About</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2021/01/07/fabric-source-code-analysis-1/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Seafooler">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Seafooler's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Fabric中PBFT源码解读（1）
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2021-01-07 00:00:00" itemprop="dateCreated datePublished" datetime="2021-01-07T00:00:00+08:00">2021-01-07</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2022-01-05 21:09:56" itemprop="dateModified" datetime="2022-01-05T21:09:56+08:00">2022-01-05</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Code-analysis/" itemprop="url" rel="index"><span itemprop="name">Code-analysis</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>笔者一直以来想学习一下<code>PBFT</code>的完整工程实践。但在网上搜了很多源码和博客，都没能找到一份比较独立且完整的<code>PBFT</code>实现。无奈之下，只能从<code>Hyperledger Fabric</code>的代码中学习其<code>PBFT</code>共识部分的代码。 因此，接下来的系列博客中，笔者将介绍在<code>Fabric</code>中是如何实现<code>PBFT</code>共识算法的。 <span id="more"></span></p>
+<h2 id="i.-写在前面">I. 写在前面</h2>
+<p>为方便读者查阅，本系列博客的链接整理如下：</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/u014633283/article/details/112307024">Fabric中PBFT源码解读 （1）</a></li>
+<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/u014633283/article/details/112308084">Fabric中PBFT源码解读 （2）</a></li>
+<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/u014633283/article/details/112344708">Fabric中PBFT源码解读 （3）</a></li>
+<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/u014633283/article/details/112346508">Fabric中PBFT源码解读 （4）</a></li>
+<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/u014633283/article/details/112364913">Fabric中PBFT源码解读 （5）</a></li>
+</ul>
+<h3 id="a.-源码版本及获取">A. 源码版本及获取</h3>
+<p><code>Fabric</code>在<code>0.6</code>版本中采用了<code>PBFT</code>，因此在从<a target="_blank" rel="noopener" href="https://github.com/hyperledger/fabric">github</a>中下载了源代码后，需要首先切换到<code>v0.6.0-preview</code>分支。<code>PBFT</code>共识相关的代码主要包含在<code>fabric/consensus</code>和<code>fabric/consensus/pbft</code>路径下。前者包含了各种共识算法都需要的一些工具类，后者重点实现了<code>PBFT</code>共识。</p>
+<h3 id="b.-对testnetwork函数的测试">B. 对TestNetwork函数的测试</h3>
+<p>查看<code>fabric/consensus/pbft</code>路径下的代码，可以看到有很多测试文件。每个测试文件中又包含了若干个测试函数。这里我们选取了<code>pbft-core_test.go</code>文件中的<code>TestNetwork</code>测试函数。通过解读该函数，基本上可以了解<code>PBFT</code>代码的运行流程。</p>
+<p>为降低流程分析的复杂度，首先将<code>pbft-core_test.go</code>中L258行的<code>validator</code>值改为<code>4</code>。如下所示： <figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// [pbft-core_test.go]TestNetwork</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">TestNetwork</span><span class="params">(t *testing.T)</span></span> &#123;</span><br><span class="line">	validatorCount := <span class="number">4</span></span><br><span class="line">	...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h2 id="ii.-构建测试网络">II. 构建测试网络</h2>
+<p>以下从<code>TestNetwork</code>函数开始源码的解读。<code>TestNetwork</code>函数的主体代码如下所示： <figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// [pbft-core_test.go]TestNetwork</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">TestNetwork</span><span class="params">(t *testing.T)</span></span> &#123;</span><br><span class="line">    validatorCount := <span class="number">4</span>                             <span class="comment">// L258</span></span><br><span class="line">    net := makePBFTNetwork(validatorCount, <span class="literal">nil</span>)       <span class="comment">// L259</span></span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure> <code>TestNetwork</code>函数首先调用<code>makePBFTNetwork</code>函数生成了一个包含<code>4</code>个节点的<code>PBFT</code>网络，后者的代码主体如下。 <figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// [pbft-core_test.go]TestNetwork -&gt; [pbft-core_mock_test.go]makePBFTNetwork</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">makePBFTNetwork</span><span class="params">(N <span class="keyword">int</span>, config *viper.Viper)</span> *<span class="title">pbftNetwork</span></span> &#123; <span class="comment">// L152</span></span><br><span class="line">    ...</span><br><span class="line">    endpointFunc := <span class="function"><span class="keyword">func</span><span class="params">(id <span class="keyword">uint64</span>, net *testnet)</span> <span class="title">endpoint</span></span> &#123; <span class="comment">// L159</span></span><br><span class="line">        tep := makeTestEndpoint(id, net)</span><br><span class="line">        pe := &amp;pbftEndpoint&#123;</span><br><span class="line">			testEndpoint: tep,</span><br><span class="line">			manager:      events.NewManagerImpl(),			<span class="comment">// L162</span></span><br><span class="line">		&#125;</span><br><span class="line">        ...</span><br><span class="line">        pe.pbft = newPbftCore(id, config, pe.sc, events.NewTimerFactoryImpl(pe.manager))                     <span class="comment">// L170</span></span><br><span class="line">        ...</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    pn := &amp;pbftNetwork&#123;testnet: makeTestnet(N, endpointFunc)&#125;   <span class="comment">// L179</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure> <code>makePBFTNetwork</code>函数L159行首先定义了一个用于生成<code>endpoint</code>的函数，其中每个<code>endpoint</code>代表了一个节点。<code>endpoint</code>其实是一个接口，为进行测试，源码中实现了一个<code>testEndpoint</code>类。L160行利用<code>makeTestEndpoint</code>函数生成了<code>testEndpoint</code>类的实例。 为实现<code>pbft</code>的测试，还在<code>pbft-core_mock_test.go</code>文件的L29行定义了一个辅助类<code>pbftEndpoint</code>。该辅助类将一个节点的多个功能部分进行了组合。 节点的核心功能由<code>pbftCore</code>类实现，因此在L170行调用<code>newPbftCore</code>函数生成了<code>pbftCore</code>类的实例。 需要注意的是，L519行只是定义了生成<code>endpoint</code>的函数，该函数在L179行传入到<code>makeTestnet</code>函数中进行了调用。<code>makeTestnet</code>函数生成了代表当前测试网络的<code>testnet</code>类的一个实例。该实例包含了若干个<code>endpoint</code>，定义了一个<code>msgs</code>变量和一个<code>filterFn</code>函数。<code>testnet</code>的具体定义如下所示。 <figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// [pbft-core_mock_test.go] TestNetwork -&gt; [pbft-core_mock_test.go]makePBFTNetwork -&gt; testnet</span></span><br><span class="line"><span class="keyword">type</span> testnet <span class="keyword">struct</span> &#123;</span><br><span class="line">    debug     <span class="keyword">bool</span></span><br><span class="line">	N         <span class="keyword">int</span></span><br><span class="line">	closed    <span class="keyword">chan</span> <span class="keyword">struct</span>&#123;&#125;</span><br><span class="line">	endpoints []endpoint</span><br><span class="line">	msgs      <span class="keyword">chan</span> taggedMsg</span><br><span class="line">	filterFn  <span class="function"><span class="keyword">func</span><span class="params">(<span class="keyword">int</span>, <span class="keyword">int</span>, []<span class="keyword">byte</span>)</span> []<span class="title">byte</span></span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h2 id="iii.-生成测试数据">III. 生成测试数据</h2>
+<p>回到<code>TestNetwork</code>函数，在生成测试网络后，该函数进一步生成了测试数据，并将其传入到<code>节点0</code>（即<code>Primary</code>节点）中。<code>TestNetwork</code>函数的相关代码如下所示： <figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// [pbft-core_test.go]TestNetwork</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">TestNetwork</span><span class="params">(t *testing.T)</span></span> &#123;</span><br><span class="line">    ...</span><br><span class="line">    reqBatch := createPbftReqBatch(<span class="number">1</span>, <span class="keyword">uint64</span>(generateBroadcaster(validatorCount)))          <span class="comment">// L261</span></span><br><span class="line">    net.pbftEndpoints[<span class="number">0</span>].manager.Queue() &lt;- reqBatch  <span class="comment">// L262</span></span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure> <code>TestNetwork</code>函数的L261行调用<code>createPbftReqBatch</code>函数生成类为<code>RequestBatch</code>的测试数据。该测试数据在L262行被发送到第0个节点中。由前面的介绍可知，<code>net</code>的第0个<code>pbftEndpoint</code>即代表第0个节点。 <code>pbftEndpoint</code>类的定义如下。<code>pbftEndpoint</code>类中定义了一个<code>Manager</code>类别的变量，<code>Manager</code>实际上是一个接口。由<code>makePBFTNetwork</code>函数的L162行可知，该变量实际上实例化了一个<code>managerImpl</code>类。后者是<code>Manager</code>接口的实现类。 <figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// [pbft-core_test.go]TestNetwork -&gt; [pbft-core_mock_test.go]pbftEndpoint</span></span><br><span class="line"><span class="keyword">type</span> pbftEndpoint <span class="keyword">struct</span> &#123;                      <span class="comment">// L29</span></span><br><span class="line">	*testEndpoint</span><br><span class="line">	pbft    *pbftCore</span><br><span class="line">	sc      *simpleConsumer</span><br><span class="line">	manager events.Manager</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure> <code>managerImpl</code>类中定义了类别为<code>chan Event</code>的<code>events</code>变量，并定义<code>Queue</code>函数返回该变量，相关代码如下所示： <figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// [pbft-core_test.go]TestNetwork -&gt; [pbft-core_mock_test.go]pbftEndpoint -&gt; [events.go]managerImpl</span></span><br><span class="line"><span class="keyword">type</span> managerImpl <span class="keyword">struct</span> &#123;                   <span class="comment">// L80</span></span><br><span class="line">	threaded  </span><br><span class="line">	receiver Receiver</span><br><span class="line">	events   <span class="keyword">chan</span> Event</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(em *managerImpl)</span> <span class="title">Queue</span><span class="params">()</span> <span class="title">chan</span>&lt;- <span class="title">Event</span></span> &#123;   <span class="comment">// L105</span></span><br><span class="line">	<span class="keyword">return</span> em.events</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Blockchain/" rel="tag"># Blockchain</a>
+              <a href="/tags/PBFT/" rel="tag"># PBFT</a>
+              <a href="/tags/Fabric/" rel="tag"># Fabric</a>
+          </div>
+
+        
+  <div class="post-widgets">
+    <div class="wp_rating">
+      <div id="wpac-rating"></div>
+    </div>
+  </div>
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/12/06/understanding-consistency/" rel="prev" title="对分布式系统中各种一致性的理解">
+      <i class="fa fa-chevron-left"></i> 对分布式系统中各种一致性的理解
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/01/08/fabric-source-code-analysis-2/" rel="next" title="Fabric中PBFT源码解读（2）">
+      Fabric中PBFT源码解读（2） <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#i.-%E5%86%99%E5%9C%A8%E5%89%8D%E9%9D%A2"><span class="nav-number">1.</span> <span class="nav-text">I. 写在前面</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#a.-%E6%BA%90%E7%A0%81%E7%89%88%E6%9C%AC%E5%8F%8A%E8%8E%B7%E5%8F%96"><span class="nav-number">1.1.</span> <span class="nav-text">A. 源码版本及获取</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#b.-%E5%AF%B9testnetwork%E5%87%BD%E6%95%B0%E7%9A%84%E6%B5%8B%E8%AF%95"><span class="nav-number">1.2.</span> <span class="nav-text">B. 对TestNetwork函数的测试</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ii.-%E6%9E%84%E5%BB%BA%E6%B5%8B%E8%AF%95%E7%BD%91%E7%BB%9C"><span class="nav-number">2.</span> <span class="nav-text">II. 构建测试网络</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#iii.-%E7%94%9F%E6%88%90%E6%B5%8B%E8%AF%95%E6%95%B0%E6%8D%AE"><span class="nav-number">3.</span> <span class="nav-text">III. 生成测试数据</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Seafooler</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">44</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">17</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="mailto:seafooler@gmail.com" title="E-Mail → mailto:seafooler@gmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Seafooler</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+  <script>
+  if (CONFIG.page.isPost) {
+    wpac_init = window.wpac_init || [];
+    wpac_init.push({
+      widget: 'Rating',
+      id    : ,
+      el    : 'wpac-rating',
+      color : 'fc6423'
+    });
+    (function() {
+      if ('WIDGETPACK_LOADED' in window) return;
+      WIDGETPACK_LOADED = true;
+      var mc = document.createElement('script');
+      mc.type = 'text/javascript';
+      mc.async = true;
+      mc.src = '//embed.widgetpack.com/widget.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(mc, s.nextSibling);
+    })();
+  }
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+
+</body>
+</html>

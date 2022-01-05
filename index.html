@@ -274,7 +274,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2021-12-23 16:23:59" itemprop="dateModified" datetime="2021-12-23T16:23:59+08:00">2021-12-23</time>
+                <time title="Modified: 2022-01-05 20:12:11" itemprop="dateModified" datetime="2022-01-05T20:12:11+08:00">2022-01-05</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -298,7 +298,7 @@
 
       
           <p>Inspired by the blockchain data structures, lots of streamlined BFT (Byzantine Fault Tolerant) consensus algorithms have been proposed recently, including <code>Tendermint</code>[1], <code>Pili</code>[2], <code>Pala</code>[3], <code>HotStuff</code>[4], and <code>Streamlet</code>[5]. Among them, two extremely-simple ones are quite similar and even born from the same research group (i.e., <a target="_blank" rel="noopener" href="http://elaineshi.com/">Prof. Elaine Shi</a>). <code>Streamlet</code> is claimed to be an improved variant of <code>Pala</code>, which seems to be simpler.</p>
-<p>In this blog, we try to make a comparison between <code>Pala</code> and <code>Streamlet</code>. Note that we only consider the <strong>basic</strong> <code>Pala</code>, which takes a democracy-favoring proposer rotation approach, similar to <code>Streamlet</code>.<br>Furthermore, we want to figure out how can <code>Streamlet</code> simplify the consensus and are the improvements made at any costs?<br>
+<p>In this blog, we try to make a comparison between <code>Pala</code> and <code>Streamlet</code>. Note that we only consider the <strong>basic</strong> <code>Pala</code>, which takes a democracy-favoring proposer rotation approach, similar to <code>Streamlet</code>. Furthermore, we want to figure out how can <code>Streamlet</code> simplify the consensus and are the improvements made at any costs?
           <!--noindex-->
             <div class="post-button">
               <a class="btn" href="/2021/10/26/comp-pala-streamlet/#more" rel="contents">
@@ -381,7 +381,7 @@
       
           <p>In recent years, more and more blockchain systems are proposed to improve the system performance. One of the significant directions taken by these works is to parallelize the block creation and dissemination, with OHIE [1] and Occam [2] as representatives.</p>
 <p>In this blog, we try to raise a model to unify these new blockchain systems. Also, we are surprised to find that this model can even unify a class of asynchronous blockchain systems, such as HoneybadgerBFT [3].</p>
-<p>At the end of this blog, we further propose a simpler blockchain system under this model.<br>
+<p>At the end of this blog, we further propose a simpler blockchain system under this model.
           <!--noindex-->
             <div class="post-button">
               <a class="btn" href="/2021/10/15/unification-parallel-block/#more" rel="contents">
@@ -462,8 +462,8 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <p>While I was reading the <code>HoneybadgerBFT</code> <a target="_blank" rel="noopener" href="https://dl.acm.org/doi/abs/10.1145/2976749.2978399">paper</a>, a question came to me is that “<strong>Reliable Broadcast (<code>RBC</code>) seems to implement the functions of a consensus algorithm already, why an extra phase of Asynchronous Binary Agreement (<code>ABA</code>) is needed</strong>“?</p>
-<p>In this blog, we will try to answer this question.<br>
+          <p>While I was reading the <code>HoneybadgerBFT</code> <a target="_blank" rel="noopener" href="https://dl.acm.org/doi/abs/10.1145/2976749.2978399">paper</a>, a question came to me is that "<strong>Reliable Broadcast (<code>RBC</code>) seems to implement the functions of a consensus algorithm already, why an extra phase of Asynchronous Binary Agreement (<code>ABA</code>) is needed</strong>"?</p>
+<p>In this blog, we will try to answer this question.
           <!--noindex-->
             <div class="post-button">
               <a class="btn" href="/2021/10/06/think-honeybadger/#more" rel="contents">
@@ -544,8 +544,8 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <p>The birth of blockchain brings a new option when designing a consensus algorithm, that the requests can be packaged as blocks and blocks can be linked with the hash values.<br>Almost all the newly born consensus algorithms, such as <code>Tendermint</code>, <code>HotStuff</code>, <code>Pala</code>, and <code>Streamlet</code>, adopt the blockchain structures.</p>
-<p>A question is that <strong>what benefits can the blockchain structure bring to the consensus design</strong>? Or in other words, <strong>what problem can the blockchain structures deal with</strong>? Besides, another relevant question is that <strong>how does the consensus (e.g., <code>PBFT</code>) without adopting the blockchain strucuture deal with the same problem?</strong><br>
+          <p>The birth of blockchain brings a new option when designing a consensus algorithm, that the requests can be packaged as blocks and blocks can be linked with the hash values. Almost all the newly born consensus algorithms, such as <code>Tendermint</code>, <code>HotStuff</code>, <code>Pala</code>, and <code>Streamlet</code>, adopt the blockchain structures.</p>
+<p>A question is that <strong>what benefits can the blockchain structure bring to the consensus design</strong>? Or in other words, <strong>what problem can the blockchain structures deal with</strong>? Besides, another relevant question is that <strong>how does the consensus (e.g., <code>PBFT</code>) without adopting the blockchain strucuture deal with the same problem?</strong>
           <!--noindex-->
             <div class="post-button">
               <a class="btn" href="/2021/09/30/blockchain-ds-function/#more" rel="contents">
@@ -626,10 +626,99 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <p>It seems that many readers ignore the checkpoint mechainsm described in the PBFT <a target="_blank" rel="noopener" href="https://pmg.csail.mit.edu/papers/osdi99.pdf">paper</a>. In this blog, I will share my thoughts about the checkpoint mechainsm.<br>
+          <p>It seems that many readers ignore the checkpoint mechainsm described in the PBFT <a target="_blank" rel="noopener" href="https://pmg.csail.mit.edu/papers/osdi99.pdf">paper</a>. In this blog, I will share my thoughts about the checkpoint mechainsm.
           <!--noindex-->
             <div class="post-button">
               <a class="btn" href="/2021/09/23/think-checkpoint-pbft/#more" rel="contents">
+                Read more &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2021/09/20/liveness-responsiveness-lock/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Seafooler">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Seafooler's Blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2021/09/20/liveness-responsiveness-lock/" class="post-title-link" itemprop="url">也谈PBFT/Tendermint/HotStuff中的活性问题、响应度问题和锁定问题</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2021-09-20 00:00:00" itemprop="dateCreated datePublished" datetime="2021-09-20T00:00:00+08:00">2021-09-20</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2022-01-05 21:49:24" itemprop="dateModified" datetime="2022-01-05T21:49:24+08:00">2022-01-05</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Distributed-theory/" itemprop="url" rel="index"><span itemprop="name">Distributed theory</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>在<code>HotStuff</code>的<code>PODC</code>版本<a target="_blank" rel="noopener" href="https://dl.acm.org/doi/10.1145/3293611.3331591">论文</a>和<code>Arxiv</code>版本<a target="_blank" rel="noopener" href="https://arxiv.org/abs/1803.05069">论文</a>中，多次将不同共识协议的活性(<code>liveness</code>)和响应度(<code>responsiveness</code>)进行比较。此外，一些博客和其他相关论文中也有关于<code>liveness</code>问题和<code>responsiveness</code>问题的叙述。其中涉及到两点叙述：</p>
+<blockquote>
+<ol type="1">
+<li><code>Tendermint</code>中在<code>leader</code>切换的时候需要等待一个最大的网络延迟<span class="math inline">\(\Delta\)</span>，导致<code>Tendermint</code>无法做到<code>optimistic responsiveness</code></li>
+<li>如果<code>Tendermint</code>在<code>leader</code>切换的时候不等待<span class="math inline">\(\Delta\)</span>，将导致<code>Tendermint</code>中无法进行有效共识，从而破坏协议的<code>liveness</code>。</li>
+</ol>
+</blockquote>
+<p>但笔者在看这两点叙述的时候，总感觉论文作者和博主没有将问题讲透，看得云里雾里的。可能大佬们觉得这两点叙述很容易理解，甚至是一些一点就该通的常识。</p>
+<p>为了真正弄懂以上两点叙述，笔者查阅了大量资料，并将自己的一些理解整理在这篇博客中。这篇博客需要读者对共识算法已经有了一定的理解。
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2021/09/20/liveness-responsiveness-lock/#more" rel="contents">
                 Read more &raquo;
               </a>
             </div>
@@ -707,7 +796,7 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <p>In the last two blogs, we derived the design of two-phase BFT consensuses. We picked two different routines, namely <a target="_blank" rel="noopener" href="https://seafooler.github.io/2021/09/08/design-bft-pbft/">PBFT</a> and <a target="_blank" rel="noopener" href="https://seafooler.github.io/2021/09/15/design-bft-tendermint/">Tendermint</a>.<br>In this blog, we try to unify two-phase consensus by a judgement model.<br>
+          <p>In the last two blogs, we derived the design of two-phase BFT consensuses. We picked two different routines, namely <a target="_blank" rel="noopener" href="https://seafooler.github.io/2021/09/08/design-bft-pbft/">PBFT</a> and <a target="_blank" rel="noopener" href="https://seafooler.github.io/2021/09/15/design-bft-tendermint/">Tendermint</a>. In this blog, we try to unify two-phase consensus by a judgement model.
           <!--noindex-->
             <div class="post-button">
               <a class="btn" href="/2021/09/18/unification-2pc/#more" rel="contents">
@@ -788,7 +877,7 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <p>As a sequel of <a target="_blank" rel="noopener" href="https://seafooler.github.io/2021/09/08/design-bft-pbft/">the last blog</a>, this blog picks the routine of <code>Tendermint</code> to derive a two-phase BFT consensus.<br>
+          <p>As a sequel of <a target="_blank" rel="noopener" href="https://seafooler.github.io/2021/09/08/design-bft-pbft/">the last blog</a>, this blog picks the routine of <code>Tendermint</code> to derive a two-phase BFT consensus.
           <!--noindex-->
             <div class="post-button">
               <a class="btn" href="/2021/09/15/design-bft-tendermint/#more" rel="contents">
@@ -869,8 +958,8 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <p>As for a Byzantine Fault Tolerance (BFT) consensus, there are mainly two design routines: <code>PBFT</code>-like and <code>Tendermint</code>-like. The former contains a complex <code>view-change</code> phase, while the latter includes a notion of <code>lock</code>. </p>
-<p>In this blog, we try to derive a two-phase BFT consensus, along the routine of <code>PBFT</code>.<br>
+          <p>As for a Byzantine Fault Tolerance (BFT) consensus, there are mainly two design routines: <code>PBFT</code>-like and <code>Tendermint</code>-like. The former contains a complex <code>view-change</code> phase, while the latter includes a notion of <code>lock</code>.</p>
+<p>In this blog, we try to derive a two-phase BFT consensus, along the routine of <code>PBFT</code>.
           <!--noindex-->
             <div class="post-button">
               <a class="btn" href="/2021/09/08/design-bft-pbft/#more" rel="contents">
@@ -893,91 +982,10 @@
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://example.com/2020/12/06/understanding-consistency/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="Seafooler">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Seafooler's Blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2020/12/06/understanding-consistency/" class="post-title-link" itemprop="url">对分布式系统中各种一致性的理解</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2020-12-06 00:00:00" itemprop="dateCreated datePublished" datetime="2020-12-06T00:00:00+08:00">2020-12-06</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2022-01-05 18:42:59" itemprop="dateModified" datetime="2022-01-05T18:42:59+08:00">2022-01-05</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">In</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/distributed-theory/" itemprop="url" rel="index"><span itemprop="name">distributed-theory</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>分布式系统中存在着各种“一致性”的概念，本篇博客主要对这些概念进行一个总结。<br>本篇博客没有太多原创的内容，主要是从自己的视角将一些博客和书籍中的知识进行汇总，留作日后的复习。<br>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2020/12/06/understanding-consistency/#more" rel="contents">
-                Read more &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
-    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><span class="space">&hellip;</span><a class="page-number" href="/page/4/">4</a><a class="extend next" rel="next" href="/page/2/"><i class="fa fa-angle-right" aria-label="Next page"></i></a>
+    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><span class="space">&hellip;</span><a class="page-number" href="/page/5/">5</a><a class="extend next" rel="next" href="/page/2/"><i class="fa fa-angle-right" aria-label="Next page"></i></a>
   </nav>
 
 
@@ -1043,7 +1051,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">33</span>
+          <span class="site-state-item-count">44</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
@@ -1056,7 +1064,7 @@
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">16</span>
+        <span class="site-state-item-count">17</span>
         <span class="site-state-item-name">tags</span></a>
       </div>
   </nav>

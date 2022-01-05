@@ -161,7 +161,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://example.com/2020/05/05/serialization-function/">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2021/01/24/fabric-source-code-analysis-7/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
@@ -175,7 +175,7 @@
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
-            <a href="/2020/05/05/serialization-function/" class="post-title-link" itemprop="url">谈谈序列化的作用</a>
+            <a href="/2021/01/24/fabric-source-code-analysis-7/" class="post-title-link" itemprop="url">Fabric中PBFT源码解读——状态同步</a>
         </h2>
 
         <div class="post-meta">
@@ -185,338 +185,14 @@
               </span>
               <span class="post-meta-item-text">Posted on</span>
 
-              <time title="Created: 2020-05-05 00:00:00" itemprop="dateCreated datePublished" datetime="2020-05-05T00:00:00+08:00">2020-05-05</time>
+              <time title="Created: 2021-01-24 00:00:00" itemprop="dateCreated datePublished" datetime="2021-01-24T00:00:00+08:00">2021-01-24</time>
             </span>
               <span class="post-meta-item">
                 <span class="post-meta-item-icon">
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2022-01-05 17:59:35" itemprop="dateModified" datetime="2022-01-05T17:59:35+08:00">2022-01-05</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">In</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/programming/" itemprop="url" rel="index"><span itemprop="name">programming</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>我们应该都用过各种序列化（serialization）的方法（如Python中的pickle.dumps），甚至自己也写过一些序列化的小工具，但可能很少深入思考过序列化的作用。本篇博客即对该问题进行探讨。<br>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2020/05/05/serialization-function/#more" rel="contents">
-                Read more &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://example.com/2020/04/29/relation-flp-cap/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="Seafooler">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Seafooler's Blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2020/04/29/relation-flp-cap/" class="post-title-link" itemprop="url">谈谈FLP和CAP的关系</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2020-04-29 00:00:00" itemprop="dateCreated datePublished" datetime="2020-04-29T00:00:00+08:00">2020-04-29</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2022-01-05 17:48:47" itemprop="dateModified" datetime="2022-01-05T17:48:47+08:00">2022-01-05</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">In</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/distributed-theory/" itemprop="url" rel="index"><span itemprop="name">distributed-theory</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>承接上一篇博客:<a target="_blank" rel="noopener" href="https://blog.csdn.net/u014633283/article/details/105720070">也谈分布式系统中的网络模型和故障模型</a>，本篇博客仍然想探讨一些分布式系统的理论知识。<br>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2020/04/29/relation-flp-cap/#more" rel="contents">
-                Read more &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://example.com/2020/04/23/distributed-system-models/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="Seafooler">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Seafooler's Blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2020/04/23/distributed-system-models/" class="post-title-link" itemprop="url">也谈分布式系统中的网络模型和故障模型</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2020-04-23 00:00:00" itemprop="dateCreated datePublished" datetime="2020-04-23T00:00:00+08:00">2020-04-23</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2022-01-05 18:03:37" itemprop="dateModified" datetime="2022-01-05T18:03:37+08:00">2022-01-05</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">In</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/distributed-theory/" itemprop="url" rel="index"><span itemprop="name">distributed-theory</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>分布式系统中的网络模型和故障模型是个老生常谈的问题了。然而这两个模型的界限和联系似乎并不清晰，本篇博客打算谈谈笔者对这两个模型的理解。<br>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2020/04/23/distributed-system-models/#more" rel="contents">
-                Read more &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://example.com/2020/03/10/bitcoin-protocol-txid/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="Seafooler">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Seafooler's Blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2020/03/10/bitcoin-protocol-txid/" class="post-title-link" itemprop="url">并不唯一的交易ID</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2020-03-10 00:00:00" itemprop="dateCreated datePublished" datetime="2020-03-10T00:00:00+08:00">2020-03-10</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2022-01-05 17:19:01" itemprop="dateModified" datetime="2022-01-05T17:19:01+08:00">2022-01-05</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">In</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Bitcoin-protocol/" itemprop="url" rel="index"><span itemprop="name">Bitcoin-protocol</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>我们知道，比特币中使用<code>交易ID</code> (<code>TxID</code>) 来作为交易在全网的唯一标识。在此语境下，绝大多数人都认为<code>TxID</code>一定是全网唯一的。<br>绝大多数情况是这样。但事实上，曾经两起出现过在不同区块中的交易的TxID相同的情况。本篇博客即来介绍这两起<code>TxID</code>碰撞的故事。<br>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2020/03/10/bitcoin-protocol-txid/#more" rel="contents">
-                Read more &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://example.com/2020/03/08/btcd-source-code-analysis-14/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="Seafooler">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Seafooler's Blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2020/03/08/btcd-source-code-analysis-14/" class="post-title-link" itemprop="url">btcd源码解析——交易创建(3)——构造解锁脚本</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2020-03-08 00:00:00" itemprop="dateCreated datePublished" datetime="2020-03-08T00:00:00+08:00">2020-03-08</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2022-01-05 17:04:51" itemprop="dateModified" datetime="2022-01-05T17:04:51+08:00">2022-01-05</time>
+                <time title="Modified: 2022-01-05 21:09:34" itemprop="dateModified" datetime="2022-01-05T21:09:34+08:00">2022-01-05</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -539,11 +215,10 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <p><a target="_blank" rel="noopener" href="https://blog.csdn.net/u014633283/article/details/104622344">上一篇博客</a>的最后，我们讲到<br><code>AddAllInputScripts</code>函数体中针对每一个非<code>witness</code>的<code>input</code>调用了<code>SignTxOutput</code>函数。该函数主要用来对当前<code>input</code>构造解锁脚本。<br>解锁脚本构造的最关键部分在于签名的构造，因而该函数中是用了<code>Sign</code>这个词。<br>此外，<code>SignTxOutput</code>函数名中虽然写的是<code>output</code>，但这个<code>output</code>是<code>UTXO</code>的意思，也就是当前交易的<code>input</code>。</p>
-<p><strong>在继续本篇博客的阅读之前，强烈建议读者先阅读关于签名机制的三篇博客<a target="_blank" rel="noopener" href="https://blog.csdn.net/u014633283/article/details/104676657">签名机制(1) —— 基础知识</a>, <a target="_blank" rel="noopener" href="https://blog.csdn.net/u014633283/article/details/104677139">签名机制(2) ——签名流程</a>和<a target="_blank" rel="noopener" href="https://blog.csdn.net/u014633283/article/details/104680712">签名机制(3) —— 源码分析</a>，其中介绍了各种签名哈希类型下<code>message</code>的内容。</strong><br>
+          <p>本篇博客是继续对<code>Hyperledger Fabric</code>中的<code>PBFT</code>代码进行解读，重点关注状态同步机制的实现。
           <!--noindex-->
             <div class="post-button">
-              <a class="btn" href="/2020/03/08/btcd-source-code-analysis-14/#more" rel="contents">
+              <a class="btn" href="/2021/01/24/fabric-source-code-analysis-7/#more" rel="contents">
                 Read more &raquo;
               </a>
             </div>
@@ -567,7 +242,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://example.com/2020/03/07/btcd-source-code-analysis-13/">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2021/01/23/fabric-source-code-analysis-6/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
@@ -581,7 +256,7 @@
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
-            <a href="/2020/03/07/btcd-source-code-analysis-13/" class="post-title-link" itemprop="url">btcd源码解析——签名机制(3)——源码分析</a>
+            <a href="/2021/01/23/fabric-source-code-analysis-6/" class="post-title-link" itemprop="url">Fabric中PBFT源码解读——Checkpoint机制</a>
         </h2>
 
         <div class="post-meta">
@@ -591,14 +266,14 @@
               </span>
               <span class="post-meta-item-text">Posted on</span>
 
-              <time title="Created: 2020-03-07 00:00:00" itemprop="dateCreated datePublished" datetime="2020-03-07T00:00:00+08:00">2020-03-07</time>
+              <time title="Created: 2021-01-23 00:00:00" itemprop="dateCreated datePublished" datetime="2021-01-23T00:00:00+08:00">2021-01-23</time>
             </span>
               <span class="post-meta-item">
                 <span class="post-meta-item-icon">
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2022-01-05 16:56:43" itemprop="dateModified" datetime="2022-01-05T16:56:43+08:00">2022-01-05</time>
+                <time title="Modified: 2022-01-05 21:09:38" itemprop="dateModified" datetime="2022-01-05T21:09:38+08:00">2022-01-05</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -621,10 +296,10 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <p>在开始本篇博客之前，我们首先回顾一下前两篇博客的内容<br><a target="_blank" rel="noopener" href="https://blog.csdn.net/u014633283/article/details/104676657">第一篇博客</a>介绍了比特币签名相关的基础知识，<a target="_blank" rel="noopener" href="https://blog.csdn.net/u014633283/article/details/104677139">第二篇博客</a>博客介绍了签名的基本原理。本篇博客将从<code>btcd</code>的源码层面分析签名的具体流程。<br>
+          <p>本篇博客是继续对<code>Hyperledger Fabric</code>中的<code>PBFT</code>代码进行解读，重点关注<code>checkpoint</code>机制的实现。
           <!--noindex-->
             <div class="post-button">
-              <a class="btn" href="/2020/03/07/btcd-source-code-analysis-13/#more" rel="contents">
+              <a class="btn" href="/2021/01/23/fabric-source-code-analysis-6/#more" rel="contents">
                 Read more &raquo;
               </a>
             </div>
@@ -648,7 +323,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://example.com/2020/03/06/btcd-source-code-analysis-12/">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2021/01/13/why-pbft-2f+1/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
@@ -662,7 +337,7 @@
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
-            <a href="/2020/03/06/btcd-source-code-analysis-12/" class="post-title-link" itemprop="url">btcd源码解析——签名机制(2)——签名流程</a>
+            <a href="/2021/01/13/why-pbft-2f+1/" class="post-title-link" itemprop="url">为什么PBFT协议中需要2f+1</a>
         </h2>
 
         <div class="post-meta">
@@ -672,14 +347,14 @@
               </span>
               <span class="post-meta-item-text">Posted on</span>
 
-              <time title="Created: 2020-03-06 00:00:00" itemprop="dateCreated datePublished" datetime="2020-03-06T00:00:00+08:00">2020-03-06</time>
+              <time title="Created: 2021-01-13 00:00:00" itemprop="dateCreated datePublished" datetime="2021-01-13T00:00:00+08:00">2021-01-13</time>
             </span>
               <span class="post-meta-item">
                 <span class="post-meta-item-icon">
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2022-01-05 16:45:48" itemprop="dateModified" datetime="2022-01-05T16:45:48+08:00">2022-01-05</time>
+                <time title="Modified: 2022-01-05 20:53:04" itemprop="dateModified" datetime="2022-01-05T20:53:04+08:00">2022-01-05</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -687,7 +362,7 @@
               </span>
               <span class="post-meta-item-text">In</span>
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Code-analysis/" itemprop="url" rel="index"><span itemprop="name">Code-analysis</span></a>
+                  <a href="/categories/Consensus/" itemprop="url" rel="index"><span itemprop="name">Consensus</span></a>
                 </span>
             </span>
 
@@ -702,10 +377,10 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <p>在前一篇<a target="_blank" rel="noopener" href="https://blog.csdn.net/u014633283/article/details/104676657">博客</a>中，我们介绍了比特币签名机制的基础知识。本篇博客我们将从原理层介绍签名流程。<a target="_blank" rel="noopener" href="https://blog.csdn.net/u014633283/article/details/104680712">下一篇博客</a>从<code>btcd</code>源码层面讲解签名流程。<br>
+          <p>本篇博客主要讨论关于<code>PBFT</code>的另一个问题，即：为什么<code>PBFT</code>协议中需要2f+1？
           <!--noindex-->
             <div class="post-button">
-              <a class="btn" href="/2020/03/06/btcd-source-code-analysis-12/#more" rel="contents">
+              <a class="btn" href="/2021/01/13/why-pbft-2f+1/#more" rel="contents">
                 Read more &raquo;
               </a>
             </div>
@@ -729,7 +404,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://example.com/2020/03/05/btcd-source-code-analysis-11/">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2021/01/12/why-pbft-commit/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
@@ -743,7 +418,7 @@
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
-            <a href="/2020/03/05/btcd-source-code-analysis-11/" class="post-title-link" itemprop="url">btcd源码解析——签名机制(1)——基础知识</a>
+            <a href="/2021/01/12/why-pbft-commit/" class="post-title-link" itemprop="url">为什么PBFT协议中需要Commit阶段</a>
         </h2>
 
         <div class="post-meta">
@@ -753,14 +428,14 @@
               </span>
               <span class="post-meta-item-text">Posted on</span>
 
-              <time title="Created: 2020-03-05 00:00:00" itemprop="dateCreated datePublished" datetime="2020-03-05T00:00:00+08:00">2020-03-05</time>
+              <time title="Created: 2021-01-12 00:00:00" itemprop="dateCreated datePublished" datetime="2021-01-12T00:00:00+08:00">2021-01-12</time>
             </span>
               <span class="post-meta-item">
                 <span class="post-meta-item-icon">
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2022-01-05 16:26:36" itemprop="dateModified" datetime="2022-01-05T16:26:36+08:00">2022-01-05</time>
+                <time title="Modified: 2022-01-05 20:49:31" itemprop="dateModified" datetime="2022-01-05T20:49:31+08:00">2022-01-05</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -768,7 +443,7 @@
               </span>
               <span class="post-meta-item-text">In</span>
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Code-analysis/" itemprop="url" rel="index"><span itemprop="name">Code-analysis</span></a>
+                  <a href="/categories/Consensus/" itemprop="url" rel="index"><span itemprop="name">Consensus</span></a>
                 </span>
             </span>
 
@@ -783,20 +458,10 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <p>在前面的比特币源码分析中，我们有意忽略了签名机制部分的介绍。<br>但比特币的签名机制远非我们想象的那么简单，正如这篇博客<a target="_blank" rel="noopener" href="https://curiosity-driven.org/bitcoin-contracts#kickstarter">Bitcoin contracts</a>所言：</p>
-<blockquote>
-<p>Bitcoin achieves high flexibility due to three features:</p>
-<ol>
-<li>scripts — unlocking funds in transactions is done using a simple scripting language,</li>
-<li>signature hash flags — indicate which parts of the transaction are signed,</li>
-<li>sequence numbers and lock time — mark transactions as not valid until specified time.</li>
-</ol>
-</blockquote>
-<p>换句话说，正是因为不同签名格式(<code>signature hash flags</code>)的存在，才使得比特币的编程功能更加灵活多变。<br>接下来的三篇博客即从原理和源码两个角度来分析比特币的签名机制。<br>本篇博客先介绍基础知识，<a target="_blank" rel="noopener" href="https://blog.csdn.net/u014633283/article/details/104677139">第二篇博客</a>介绍签名流程的基本原理，<a target="_blank" rel="noopener" href="https://blog.csdn.net/u014633283/article/details/104680712">第三篇博客</a>从<code>btcd</code>源码层面讲解签名流程。</p>
-<p>源码分析所针对的<code>btcd</code>版本为: ed77733ec07dfc8a513741138419b8d9d3de9d2d<br>
+          <p>本篇博客主要讨论关于<code>PBFT</code>的一个问题，即：为什么<code>PBFT</code>协议中需要<code>Commit</code>阶段？
           <!--noindex-->
             <div class="post-button">
-              <a class="btn" href="/2020/03/05/btcd-source-code-analysis-11/#more" rel="contents">
+              <a class="btn" href="/2021/01/12/why-pbft-commit/#more" rel="contents">
                 Read more &raquo;
               </a>
             </div>
@@ -820,7 +485,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://example.com/2020/03/02/btcd-source-code-analysis-10/">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2021/01/11/fabric-source-code-analysis-5/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
@@ -834,7 +499,7 @@
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
-            <a href="/2020/03/02/btcd-source-code-analysis-10/" class="post-title-link" itemprop="url">btcd源码解析——交易创建 (2)——input的创建</a>
+            <a href="/2021/01/11/fabric-source-code-analysis-5/" class="post-title-link" itemprop="url">Fabric中PBFT源码解读（5）</a>
         </h2>
 
         <div class="post-meta">
@@ -844,14 +509,14 @@
               </span>
               <span class="post-meta-item-text">Posted on</span>
 
-              <time title="Created: 2020-03-02 00:00:00" itemprop="dateCreated datePublished" datetime="2020-03-02T00:00:00+08:00">2020-03-02</time>
+              <time title="Created: 2021-01-11 00:00:00" itemprop="dateCreated datePublished" datetime="2021-01-11T00:00:00+08:00">2021-01-11</time>
             </span>
               <span class="post-meta-item">
                 <span class="post-meta-item-icon">
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2022-01-05 16:09:32" itemprop="dateModified" datetime="2022-01-05T16:09:32+08:00">2022-01-05</time>
+                <time title="Modified: 2022-01-05 21:09:43" itemprop="dateModified" datetime="2022-01-05T21:09:43+08:00">2022-01-05</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -874,10 +539,10 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <p>前一篇博客<a target="_blank" rel="noopener" href="https://blog.csdn.net/u014633283/article/details/104562196">btcd源码解析——交易创建</a>中的III.B节介绍了创建<code>output</code>的细节，本篇博客主要介绍<code>input</code>的创建细节。<br>
+          <p>本篇博客是<code>PBFT</code>代码解读的第五篇博客。
           <!--noindex-->
             <div class="post-button">
-              <a class="btn" href="/2020/03/02/btcd-source-code-analysis-10/#more" rel="contents">
+              <a class="btn" href="/2021/01/11/fabric-source-code-analysis-5/#more" rel="contents">
                 Read more &raquo;
               </a>
             </div>
@@ -901,7 +566,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://example.com/2020/02/28/btcd-source-code-analysis-9/">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2021/01/10/fabric-source-code-analysis-4/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
@@ -915,7 +580,7 @@
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
-            <a href="/2020/02/28/btcd-source-code-analysis-9/" class="post-title-link" itemprop="url">btcd源码解析——交易创建 (1)</a>
+            <a href="/2021/01/10/fabric-source-code-analysis-4/" class="post-title-link" itemprop="url">Fabric中PBFT源码解读（4）</a>
         </h2>
 
         <div class="post-meta">
@@ -925,14 +590,14 @@
               </span>
               <span class="post-meta-item-text">Posted on</span>
 
-              <time title="Created: 2020-02-28 00:00:00" itemprop="dateCreated datePublished" datetime="2020-02-28T00:00:00+08:00">2020-02-28</time>
+              <time title="Created: 2021-01-10 00:00:00" itemprop="dateCreated datePublished" datetime="2021-01-10T00:00:00+08:00">2021-01-10</time>
             </span>
               <span class="post-meta-item">
                 <span class="post-meta-item-icon">
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2022-01-05 15:59:51" itemprop="dateModified" datetime="2022-01-05T15:59:51+08:00">2022-01-05</time>
+                <time title="Modified: 2022-01-05 21:09:46" itemprop="dateModified" datetime="2022-01-05T21:09:46+08:00">2022-01-05</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -955,16 +620,334 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <p>从本节开始，我们从源码层面关注比特币交易的构建过程。<br>其中，我们尤其会关注比特币解锁脚本（为了使用<code>UTXO</code>）和新的锁定脚本（为了生成新的<code>UTXO</code>）的创建细节。我们相信通过跟踪两种脚本的创建过程，我们将对于比特币的交易细节理解得更为深入。</p>
-<p>新交易的创建会涉及到两个代码仓库（<code>btcd</code>和<code>btcwallet</code>）编译生成的三个可执行文件（<code>btcd</code>，<code>btcctl</code>，和<code>btcwallet</code>）。<br><code>btcd</code>和<code>btcwallet</code>代码版本号如下所示：</p>
-<ul>
-<li><code>btcd</code>版本：[git commit log]: ed77733ec07dfc8a513741138419b8d9d3de9d2d</li>
-<li><code>btcwallet</code>版本：[git commit log]: ae9416ad7623598121a7c8ad67a202c1be767155</li>
-</ul>
-<p>读者如果没有阅读过之前的这两篇博客<a target="_blank" rel="noopener" href="https://blog.csdn.net/u014633283/article/details/86568706">btcd源码解析</a>和<a target="_blank" rel="noopener" href="https://blog.csdn.net/u014633283/article/details/86590287">btcd源码解析——从“新区块的生成”开始</a>，<strong>强烈建议</strong>先阅读完再来阅读本篇博客。<br>
+          <p>本篇博客是<code>PBFT</code>代码解读的第四篇博客。
           <!--noindex-->
             <div class="post-button">
-              <a class="btn" href="/2020/02/28/btcd-source-code-analysis-9/#more" rel="contents">
+              <a class="btn" href="/2021/01/10/fabric-source-code-analysis-4/#more" rel="contents">
+                Read more &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2021/01/09/fabric-source-code-analysis-3/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Seafooler">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Seafooler's Blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2021/01/09/fabric-source-code-analysis-3/" class="post-title-link" itemprop="url">Fabric中PBFT源码解读（3）</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2021-01-09 00:00:00" itemprop="dateCreated datePublished" datetime="2021-01-09T00:00:00+08:00">2021-01-09</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2022-01-05 21:09:49" itemprop="dateModified" datetime="2022-01-05T21:09:49+08:00">2022-01-05</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Code-analysis/" itemprop="url" rel="index"><span itemprop="name">Code-analysis</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>本篇博客是<code>PBFT</code>代码解读的第三篇博客。
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2021/01/09/fabric-source-code-analysis-3/#more" rel="contents">
+                Read more &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2021/01/08/fabric-source-code-analysis-2/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Seafooler">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Seafooler's Blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2021/01/08/fabric-source-code-analysis-2/" class="post-title-link" itemprop="url">Fabric中PBFT源码解读（2）</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2021-01-08 00:00:00" itemprop="dateCreated datePublished" datetime="2021-01-08T00:00:00+08:00">2021-01-08</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2022-01-05 21:09:53" itemprop="dateModified" datetime="2022-01-05T21:09:53+08:00">2022-01-05</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Code-analysis/" itemprop="url" rel="index"><span itemprop="name">Code-analysis</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>本篇博客是<code>PBFT</code>代码解读的第二篇博客。
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2021/01/08/fabric-source-code-analysis-2/#more" rel="contents">
+                Read more &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2021/01/07/fabric-source-code-analysis-1/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Seafooler">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Seafooler's Blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2021/01/07/fabric-source-code-analysis-1/" class="post-title-link" itemprop="url">Fabric中PBFT源码解读（1）</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2021-01-07 00:00:00" itemprop="dateCreated datePublished" datetime="2021-01-07T00:00:00+08:00">2021-01-07</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2022-01-05 21:09:56" itemprop="dateModified" datetime="2022-01-05T21:09:56+08:00">2022-01-05</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Code-analysis/" itemprop="url" rel="index"><span itemprop="name">Code-analysis</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>笔者一直以来想学习一下<code>PBFT</code>的完整工程实践。但在网上搜了很多源码和博客，都没能找到一份比较独立且完整的<code>PBFT</code>实现。无奈之下，只能从<code>Hyperledger Fabric</code>的代码中学习其<code>PBFT</code>共识部分的代码。 因此，接下来的系列博客中，笔者将介绍在<code>Fabric</code>中是如何实现<code>PBFT</code>共识算法的。
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2021/01/07/fabric-source-code-analysis-1/#more" rel="contents">
+                Read more &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2020/12/06/understanding-consistency/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Seafooler">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Seafooler's Blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2020/12/06/understanding-consistency/" class="post-title-link" itemprop="url">对分布式系统中各种一致性的理解</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2020-12-06 00:00:00" itemprop="dateCreated datePublished" datetime="2020-12-06T00:00:00+08:00">2020-12-06</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2022-01-05 21:22:53" itemprop="dateModified" datetime="2022-01-05T21:22:53+08:00">2022-01-05</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Distributed-theory/" itemprop="url" rel="index"><span itemprop="name">Distributed theory</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>分布式系统中存在着各种“一致性”的概念，本篇博客主要对这些概念进行一个总结。 本篇博客没有太多原创的内容，主要是从自己的视角将一些博客和书籍中的知识进行汇总，留作日后的复习。
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2020/12/06/understanding-consistency/#more" rel="contents">
                 Read more &raquo;
               </a>
             </div>
@@ -987,7 +970,7 @@
 
   
   <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/"><i class="fa fa-angle-left" aria-label="Previous page"></i></a><a class="page-number" href="/">1</a><span class="page-number current">2</span><a class="page-number" href="/page/3/">3</a><a class="page-number" href="/page/4/">4</a><a class="extend next" rel="next" href="/page/3/"><i class="fa fa-angle-right" aria-label="Next page"></i></a>
+    <a class="extend prev" rel="prev" href="/"><i class="fa fa-angle-left" aria-label="Previous page"></i></a><a class="page-number" href="/">1</a><span class="page-number current">2</span><a class="page-number" href="/page/3/">3</a><span class="space">&hellip;</span><a class="page-number" href="/page/5/">5</a><a class="extend next" rel="next" href="/page/3/"><i class="fa fa-angle-right" aria-label="Next page"></i></a>
   </nav>
 
 
@@ -1053,7 +1036,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">33</span>
+          <span class="site-state-item-count">44</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
@@ -1066,7 +1049,7 @@
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">16</span>
+        <span class="site-state-item-count">17</span>
         <span class="site-state-item-name">tags</span></a>
       </div>
   </nav>

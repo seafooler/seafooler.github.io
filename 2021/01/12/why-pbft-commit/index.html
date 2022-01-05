@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-kelp.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-kelp.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-kelp.png">
+  <link rel="manifest" href="/images/manifest.json">
+  <meta name="msapplication-config" content="/images/browserconfig.xml">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":{"disqus":{"text":"Load Disqus","order":-1}}},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="本篇博客主要讨论关于PBFT的一个问题，即：为什么PBFT协议中需要Commit阶段？">
+<meta property="og:type" content="article">
+<meta property="og:title" content="为什么PBFT协议中需要Commit阶段">
+<meta property="og:url" content="http://example.com/2021/01/12/why-pbft-commit/index.html">
+<meta property="og:site_name" content="Seafooler&#39;s Blog">
+<meta property="og:description" content="本篇博客主要讨论关于PBFT的一个问题，即：为什么PBFT协议中需要Commit阶段？">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2021-01-11T16:00:00.000Z">
+<meta property="article:modified_time" content="2022-01-05T12:49:31.657Z">
+<meta property="article:author" content="Seafooler">
+<meta property="article:tag" content="Consensus">
+<meta property="article:tag" content="Blockchain">
+<meta property="article:tag" content="PBFT">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://example.com/2021/01/12/why-pbft-commit/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+
+  <title>为什么PBFT协议中需要Commit阶段 | Seafooler's Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Seafooler's Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>About</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2021/01/12/why-pbft-commit/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Seafooler">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Seafooler's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          为什么PBFT协议中需要Commit阶段
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2021-01-12 00:00:00" itemprop="dateCreated datePublished" datetime="2021-01-12T00:00:00+08:00">2021-01-12</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2022-01-05 20:49:31" itemprop="dateModified" datetime="2022-01-05T20:49:31+08:00">2022-01-05</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Consensus/" itemprop="url" rel="index"><span itemprop="name">Consensus</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>本篇博客主要讨论关于<code>PBFT</code>的一个问题，即：为什么<code>PBFT</code>协议中需要<code>Commit</code>阶段？ <span id="more"></span></p>
+<h2 id="i.-写在前面一个问题">I. 写在前面：一个问题</h2>
+<p>我们首先来思考一个问题：<strong>对于<code>BFT</code>类型的共识，每个正确节点在执行一条交易（客户端发出的执行请求）之前中需要满足什么样的条件？或者说它应该在何时执行一条交易？</strong></p>
+<p>笔者的理解是：它需要利用一个确切的机制/算法，去检查一种时机/条件。该算法保证满足了该时机/条件后，其他正确节点也会做出相应的执行操作，此时其便可执行该交易。这便暗含着一个要求，即：只要某个正确节点执行了一个交易，其他正确节点必须也对该交易进行执行。</p>
+<p>我们以<code>PBFT</code>中的场景为例，当编号为<code>n</code>的消息<code>m</code>在正确节点<code>i</code>中得到了执行，那么该消息在正确节点<code>j</code>中也必须得到执行，且执行编号也为<code>n</code>。更重要的是，即使节点<code>i</code>在执行了消息<code>m</code>之后发生了主节点的切换，节点j还是必须以<code>n</code>为编号执行消息<code>m</code>。</p>
+<p>有人可能会问：在后期，节点<code>j</code>执行了编号为<code>n</code>的消息<code>p</code>，并且在节点<code>i</code>也执行编号为<code>n</code>的消息<code>m'</code>（即对编号为<code>n</code>的消息进行覆盖执行），不也能保证所有节点的状态一致性嘛。但这里存在两个问题：</p>
+<ul>
+<li>如果真采用这种方式，那节点状态就永远得不到确认了，因为在后期永远存在被覆盖的可能性，这实际上就没有意义了；</li>
+<li><code>PBFT</code>中就没必要设计那么复杂的<code>View Change</code>机制了，每次换完主节点之后，丢弃之前的所有数据状态，重新开始不就行了吗？<code>PBFT</code>中复杂的<code>View Change</code>设计就是为了保证节点<code>i</code>中执行了的交易，即使在切换主节点之后也一定会被其他正确节点执行。</li>
+</ul>
+<p>引用<a target="_blank" rel="noopener" href="https://stackoverflow.com/questions/63002086/why-do-we-need-total-order-across-view-changes-in-consensus-protocols">StackOverflow</a>中的一个回答如下。简言之，该回答中表示：整个<code>PBFT</code>集群应该呈现出一种黑盒状态，其只要对<code>client</code>返回了<code>reply</code>，该<code>reply</code>就不应该再被否认/改写。该回答中还提到一个名词<code>durable access</code>，比较好地表达了该意思。</p>
+<blockquote>
+<p>The system appears to a client as a black box. The whole idea of this box is to provide reliable access to some service, thus, it should mask the failures of a particular replica. Otherwise, if you discard everything at each view change, clients will constantly lose their data. So basically, your solution simply contradicts the specification.</p>
+</blockquote>
+<h2 id="ii.-prepared数据作为可执行证明">II. Prepared数据作为可执行证明</h2>
+<p><code>PBFT</code>论文中提到“<code>Prepared</code>原语保证了在同一个<code>View</code>中，不同节点中编号<code>n</code>对应的消息是一致的。”这一点的具体证明可以参考<code>PBFT</code>论文以及本博客最后列出的参考文献。 也就是说，如果不考虑主节点的切换，<code>Preprepare</code>阶段+<code>Prepare</code>阶段就能达到共识的目的。</p>
+<p>因此，在不存在主节点切换时，我们可以将<code>Prepared</code>数据（包括对应的<code>Preprepare</code>消息和2f个<code>Prepare</code>消息）作为一条消息<code>m</code>的“可执行”证明。</p>
+<h2 id="iii.-假设不存在commit阶段">III. 假设不存在Commit阶段</h2>
+<p>我们假设集群中共有10个节点，节点<code>A</code>到节点<code>J</code>，其中节点<code>A</code>到节点<code>G</code>是诚实节点，节点<code>H</code>、<code>I</code>、<code>J</code>是恶意节点。 假设不存在<code>Commit</code>阶段，节点<code>A</code>在达到<code>Prepared</code>状态后便执行了编号<code>n</code>对应的消息<code>m</code>，但此时节点<code>B</code>到节点<code>G</code>都没有达到<code>Prepared</code>状态。同样在此时，网络开始执行主节点切换。若不采用任何机制，新的主节点可能不知道编号<code>n</code>已经对应了消息<code>m</code>（或者新的主节点是恶意节点，假装不知道编号<code>n</code>已经对应了消息<code>m</code>）。于是，新的主节点发起对应于编号<code>n</code>的消息<code>m'</code>。节点<code>B</code>到节点<code>G</code>将针对新消息<code>m'</code>进行共识，从而得到与节点<code>A</code>中不一样的执行结果。</p>
+<p>有同学可能会有以下几点疑问：</p>
+<ul>
+<li>节点<code>A</code>不是有了<code>Prepared</code>数据了嘛。它可以直接把这份<code>Prepared</code>数据发送给其他节点，证明编号<code>n</code>对应着消息<code>m</code>。不就可以避免不一致了吗？ <strong>答：</strong>由于<code>PBFT</code>是弱同步网络，节点<code>A</code>的消息不保证能及时发送到其他节点。可能等其他节点收到节点<code>A</code>的<code>Prepared</code>数据之前，已经完成了编号<code>n</code>对应消息<code>m'</code>的共识了。</li>
+<li>接着上一条，那就再定义一个机制嘛。即使其他节点达成了编号<code>n</code>对应消息<code>m'</code>的共识，如果它们又收到节点<code>A</code>的<code>Prepared</code>消息，那就对之前的共识进行回滚，重新采用节点<code>A</code>的<code>Prepared</code>消息作为共识。 <strong>答：</strong>这不就和第1小节中的理解矛盾了嘛。其他节点已经达成了共识，却又在后期进行改写。并且在未改写之前，整个集群中的节点出现了两种状态，即分别执行了(<code>n</code>, <code>m</code>)和(<code>n</code>, <code>m'</code>)。</li>
+<li>既然在主节点切换之前，节点<code>A</code>已经达到了<code>Prepared</code>状态了，说明其他至少6个节点已经发出了编号<code>n</code>对应消息<code>m</code>的<code>Prepare</code>消息或<code>PrePrepare</code>消息。那么其他节点在主节点切换后，对编号<code>n</code>对应两种消息(<code>m</code>和<code>m'</code>)的情形进行特殊处理不就行了吗？比如说采用<code>View</code>编号小的消息<code>m</code>. <strong>答：</strong>这里有个问题：如果上一个<code>View</code>中的主节点是恶意节点，那么他发送的消息将一直影响着整个集群（如果采用<code>View</code>编号小的消息<code>m</code>，恶意主节点的消息将一直有效并废弃新主节点中的对应消息），使得在新<code>View</code>中也迟迟无法达成共识。这便失去了主节点切换的意义了：主节点切换就是为了解决<strong>当前主节点是恶意节点而阻塞共识</strong>的情况。</li>
+</ul>
+<h2 id="iv.-commit阶段如何解决上述问题">IV. Commit阶段如何解决上述问题</h2>
+<p>通过以上三小节的分析，我们可以发现，<code>BFT</code>共识算法中最难的问题之一就是：如何在主节点切换后，还能保证消息执行的一致性。换句话说：若在<code>View v</code>中节点<code>i</code>以编号<code>n</code>执行了消息<code>m</code>，那么在<code>View v+1</code>中节点<code>j</code>也必须以编号<code>n</code>执行消息<code>m</code>。 下面，我们来看看<code>Commit</code>阶段是如何解决该问题的（准确来说是配合<code>View Change</code>来解决该问题）。</p>
+<p>一方面，<code>PBFT</code>中要求节点<code>i</code>只有接收到了2f+1个<code>Commit</code>消息后，才算是达到了<code>Committed</code>状态，也才能执行对应的消息<code>m</code>。这保证了: 在此时，<code>PBFT</code>集群中至少有2f+1个节点到达了消息<code>m</code>对应的<code>Prepared</code>状态，拥有了<code>Prepared</code>数据。</p>
+<p>另一方面，<code>PBFT</code>中要求节点在发出的<code>VIEW-CHANGE</code>消息中携带<code>Prepared</code>数据，且在新主节点发出的<code>NEW-VIEW</code>消息中至少携带2f+1个<code>VIEW-CHANGE</code>消息。结合上一段中提到的2f+1个节点拥有了<code>Prepared</code>数据，可以得出：<code>NEW-VIEW</code>消息中至少包含f+1个<code>Prepared</code>数据。且又由于恶意节点最多f个，因此这f+1个<code>Prepared</code>数据保证了至少一个是从诚实节点发出的。</p>
+<p>也就是说：<code>PBFT</code>通过<code>Commit</code>和<code>View Change</code>的机制，强制要求新主节点在<code>NEW-VIEW</code>消息中包含所有在上一轮中已经被<code>Committed</code>了的消息对应的<code>Prepared</code>数据。</p>
+<p>这里，读者可能会有几个疑惑：</p>
+<ul>
+<li>为什么一定要是包含<code>Prepared</code>数据呢？包含<code>Prepare</code>数据不行吗？只要表明了编号<code>n</code>对应于消息<code>m</code>就行了啊。 答：包含<code>Prepare</code>数据不行，因为<code>Prepare</code>消息可能是错误的（准确来说，由于恶意主节点的误导，诚实节点发出了错误信息）。其实这与另外一个问题是等价的，即：<strong>节点i在到达<code>Prepared</code>状态后立即执行消息<code>m</code>，并在发出的<code>VIEW-CHANGE</code>消息中携带<code>Prepare</code>消息（注意是<code>Prepare</code>消息，不是<code>Prepared</code>数据）。这保证了<code>NEW-VIEW</code>消息中至少包含f+1个<code>Prepare</code>消息，且至少一条是从诚实节点发出的。</strong> 但诚实节点发出的<code>Prepare</code>消息不一定是正确的。具体而言，假设一共有4个节点（<code>A</code>、<code>B</code>、<code>C</code>和<code>D</code>，其中<code>D</code>是恶意节点），在<code>View v</code>中主节点是<code>D</code>，其向<code>A</code>和<code>B</code>发送了<code>a=1</code>的消息，而向<code>C</code>发送了<code>a=2</code>的消息。节点<code>A</code>在收到<code>B</code>的<code>Prepare</code>消息后到达了<code>Prepared</code>状态，此时发生了主节点切换。切换过程中的<code>NEW-VIEW</code>消息中包含了2条<code>Prepare</code>数据，一条是<code>C</code>发出的，一条是<code>D</code>发出的。也就是说在新<code>View</code>中，集群将对<code>a=2</code>进行共识。这就是我们在上一段所说的：<code>NEW-VIEW</code>消息中确实至少包含了一条诚实节点发出的<code>Prepare</code>消息，但由于恶意主节点的误导，这个<code>Prepare</code>消息本身就是错误的。 那么如果<code>NEW-VIEW</code>消息中包含的至少一条诚实节点发出的消息是<code>Prepared</code>数据，会有什么不同呢？由第2节的分析可知，<code>Prepared</code>数据是经历过“简单共识”过的，也就不会受到恶意主节点的误导，从而保证了在<code>View v</code>中执行了的消息也一定还是会在<code>View v+1</code>中执行。</li>
+<li>既然<code>Prepared</code>数据是经过共识，其便是无法伪造的，为啥需要<code>NEW-VIEW</code>消息中至少携带2f+1个<code>VIEW-CHANGE</code>消息（从而至少包含f+1个<code>Prepared</code>数据）？反正<code>Prepared</code>无法伪造，有一个不就行了吗？ 答：<code>Prepared</code>数据虽然无法伪造，但恶意节点可能在发送<code>VIEW-CHANGE</code>消息时故意遗漏某个消息<code>m</code>对应的<code>Prepared</code>数据。为处理这种情况，<code>PBFT</code>要求<code>NEW-VIEW</code>中至少包含2f+1条<code>VIEW-CHANGE</code>消息。</li>
+</ul>
+<p>综上，<code>Commit</code>阶段主要是用来与<code>View Change</code>机制进行配合，从而保证在上一个<code>View</code>中以编号<code>n</code>执行了的消息/交易<code>m</code>，在新的<code>View</code>中也会以相同的编号<code>n</code>执行。引用论文中的一句话来说便是：</p>
+<blockquote>
+<p>The prepare and commit phases are used to ensure that requests that commit are totally ordered across views.</p>
+</blockquote>
+<h2 id="参考文献">参考文献</h2>
+<ol type="1">
+<li><a target="_blank" rel="noopener" href="https://stackoverflow.com/questions/51125238/pbft-why-cant-the-replicas-perform-the-request-after-2-3-have-prepared-why-do">PBFT: Why cant the replicas perform the request after 2/3 have prepared? why do we need commit phase?</a></li>
+<li><a target="_blank" rel="noopener" href="https://cs.stackexchange.com/questions/54152/why-is-the-commit-phase-in-pbft-necessary">Why is the commit phase in PBFT necessary?</a></li>
+<li><a target="_blank" rel="noopener" href="http://yangzhe.me/2019/11/25/pbft/">实用拜占庭容错算法（PBFT）</a></li>
+<li><a target="_blank" rel="noopener" href="https://stackoverflow.com/questions/63002086/why-do-we-need-total-order-across-view-changes-in-consensus-protocols">Why do we need total order across view changes in consensus protocols?</a></li>
+<li><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/39113079">为什么pbft需要三个阶段？</a></li>
+</ol>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Consensus/" rel="tag"># Consensus</a>
+              <a href="/tags/Blockchain/" rel="tag"># Blockchain</a>
+              <a href="/tags/PBFT/" rel="tag"># PBFT</a>
+          </div>
+
+        
+  <div class="post-widgets">
+    <div class="wp_rating">
+      <div id="wpac-rating"></div>
+    </div>
+  </div>
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/01/11/fabric-source-code-analysis-5/" rel="prev" title="Fabric中PBFT源码解读（5）">
+      <i class="fa fa-chevron-left"></i> Fabric中PBFT源码解读（5）
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/01/13/why-pbft-2f+1/" rel="next" title="为什么PBFT协议中需要2f+1">
+      为什么PBFT协议中需要2f+1 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#i.-%E5%86%99%E5%9C%A8%E5%89%8D%E9%9D%A2%E4%B8%80%E4%B8%AA%E9%97%AE%E9%A2%98"><span class="nav-number">1.</span> <span class="nav-text">I. 写在前面：一个问题</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ii.-prepared%E6%95%B0%E6%8D%AE%E4%BD%9C%E4%B8%BA%E5%8F%AF%E6%89%A7%E8%A1%8C%E8%AF%81%E6%98%8E"><span class="nav-number">2.</span> <span class="nav-text">II. Prepared数据作为可执行证明</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#iii.-%E5%81%87%E8%AE%BE%E4%B8%8D%E5%AD%98%E5%9C%A8commit%E9%98%B6%E6%AE%B5"><span class="nav-number">3.</span> <span class="nav-text">III. 假设不存在Commit阶段</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#iv.-commit%E9%98%B6%E6%AE%B5%E5%A6%82%E4%BD%95%E8%A7%A3%E5%86%B3%E4%B8%8A%E8%BF%B0%E9%97%AE%E9%A2%98"><span class="nav-number">4.</span> <span class="nav-text">IV. Commit阶段如何解决上述问题</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%8C%AE"><span class="nav-number">5.</span> <span class="nav-text">参考文献</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Seafooler</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">44</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">17</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="mailto:seafooler@gmail.com" title="E-Mail → mailto:seafooler@gmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Seafooler</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+  <script>
+  if (CONFIG.page.isPost) {
+    wpac_init = window.wpac_init || [];
+    wpac_init.push({
+      widget: 'Rating',
+      id    : ,
+      el    : 'wpac-rating',
+      color : 'fc6423'
+    });
+    (function() {
+      if ('WIDGETPACK_LOADED' in window) return;
+      WIDGETPACK_LOADED = true;
+      var mc = document.createElement('script');
+      mc.type = 'text/javascript';
+      mc.async = true;
+      mc.src = '//embed.widgetpack.com/widget.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(mc, s.nextSibling);
+    })();
+  }
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+
+</body>
+</html>

@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-kelp.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-kelp.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-kelp.png">
+  <link rel="manifest" href="/images/manifest.json">
+  <meta name="msapplication-config" content="/images/browserconfig.xml">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":{"disqus":{"text":"Load Disqus","order":-1}}},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="本篇博客是PBFT代码解读的第三篇博客。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Fabric中PBFT源码解读（3）">
+<meta property="og:url" content="http://example.com/2021/01/09/fabric-source-code-analysis-3/index.html">
+<meta property="og:site_name" content="Seafooler&#39;s Blog">
+<meta property="og:description" content="本篇博客是PBFT代码解读的第三篇博客。">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2021-01-08T16:00:00.000Z">
+<meta property="article:modified_time" content="2022-01-05T13:09:49.760Z">
+<meta property="article:author" content="Seafooler">
+<meta property="article:tag" content="Blockchain">
+<meta property="article:tag" content="PBFT">
+<meta property="article:tag" content="Fabric">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://example.com/2021/01/09/fabric-source-code-analysis-3/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+
+  <title>Fabric中PBFT源码解读（3） | Seafooler's Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Seafooler's Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>About</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2021/01/09/fabric-source-code-analysis-3/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Seafooler">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Seafooler's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Fabric中PBFT源码解读（3）
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2021-01-09 00:00:00" itemprop="dateCreated datePublished" datetime="2021-01-09T00:00:00+08:00">2021-01-09</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2022-01-05 21:09:49" itemprop="dateModified" datetime="2022-01-05T21:09:49+08:00">2022-01-05</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Code-analysis/" itemprop="url" rel="index"><span itemprop="name">Code-analysis</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>本篇博客是<code>PBFT</code>代码解读的第三篇博客。 <span id="more"></span></p>
+<h2 id="v.-preprepare消息的接收以及prepare消息的发送">V. <code>Preprepare</code>消息的接收以及<code>Prepare</code>消息的发送</h2>
+<p>本系列的<a target="_blank" rel="noopener" href="https://blog.csdn.net/u014633283/article/details/112307024">第一篇博客</a>介绍了源代码的获取和测试用例的选择，<a target="_blank" rel="noopener" href="https://blog.csdn.net/u014633283/article/details/112308084">第二篇博客</a>介绍了<code>Primary</code>节点对<code>repBatch</code>的处理，以及对<code>PrePrepare</code>消息的发送。强烈建议读者先阅读上述两篇博客，再来阅读当前这篇。</p>
+<p>为方便读者查阅，本系列博客的链接整理如下：</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/u014633283/article/details/112307024">Fabric中PBFT源码解读 （1）</a></li>
+<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/u014633283/article/details/112308084">Fabric中PBFT源码解读 （2）</a></li>
+<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/u014633283/article/details/112344708">Fabric中PBFT源码解读 （3）</a></li>
+<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/u014633283/article/details/112346508">Fabric中PBFT源码解读 （4）</a></li>
+<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/u014633283/article/details/112364913">Fabric中PBFT源码解读 （5）</a></li>
+</ul>
+<p>IV.B小节介绍了<code>节点0</code>中<code>Preprepare</code>消息的发送过程，本小节介绍其他节点（以<code>节点1</code>为例）接收<code>Preprepare</code>消息的过程和发送<code>Prepare</code>消息的过程。 由IV.B小节的最后介绍可知，<code>节点0</code>的<code>Preprepare</code>消息最终发送到了<code>节点1</code>的<code>events</code>通道中。 此外，IV.B小节中提到每个节点会启动一个协程运行<code>eventloop</code>函数。为唤起读者的记忆，<code>eventLoop</code>函数的代码再次摘录如下。 <figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// [pbft-core_mock_test.go] makePBFTNetwork -&gt; [events.go] Start -&gt; eventLoop</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(em *managerImpl)</span> <span class="title">eventLoop</span><span class="params">()</span></span> &#123;</span><br><span class="line">	<span class="keyword">for</span> &#123;</span><br><span class="line">		<span class="keyword">select</span> &#123;</span><br><span class="line">		<span class="keyword">case</span> next := &lt;-em.events:</span><br><span class="line">			em.Inject(next)</span><br><span class="line">	    ...</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure> <code>eventLoop</code>函数进一步调用<code>Inject</code>函数、<code>SendEvent</code>函数、<code>pbftCore.ProcessEvent</code>函数。以上都和<code>节点0</code>接收<code>reqBatch</code>消息时的流程相同，以下从<code>pbftCore.ProcessEvent</code>函数开始介绍。 <figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// [pbft-core.go] ProcessEvent</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(instance *pbftCore)</span> <span class="title">ProcessEvent</span><span class="params">(e events.Event)</span> <span class="title">events</span>.<span class="title">Event</span></span> &#123;</span><br><span class="line">    ...</span><br><span class="line">    <span class="keyword">switch</span> et := e.(<span class="keyword">type</span>) &#123;</span><br><span class="line">    ...</span><br><span class="line">    <span class="keyword">case</span> *PrePrepare:</span><br><span class="line">		err = instance.recvPrePrepare(et)</span><br><span class="line">    ...</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// [pbft-core.go] ProcessEvent -&gt; recvPrePrepare</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(instance *pbftCore)</span> <span class="title">recvPrePrepare</span><span class="params">(preprep *PrePrepare)</span> <span class="title">error</span></span> &#123;</span><br><span class="line">    ...</span><br><span class="line">    <span class="keyword">if</span> !instance.inWV(preprep.View, preprep.SequenceNumber) &#123;   <span class="comment">// L715</span></span><br><span class="line">        ...</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">nil</span></span><br><span class="line">    &#125;</span><br><span class="line">    ...</span><br><span class="line">    cert := instance.getCert(preprep.View, preprep.SequenceNumber) <span class="comment">// L732</span></span><br><span class="line">    ...</span><br><span class="line">    <span class="keyword">if</span> instance.primary(instance.view) != instance.id &amp;&amp; instance.prePrepared(preprep.BatchDigest, preprep.View, preprep.SequenceNumber) &amp;&amp; !cert.sentPrepare &#123;             <span class="comment">// L758</span></span><br><span class="line">		...</span><br><span class="line">		cert.sentPrepare = <span class="literal">true</span>                         <span class="comment">// L766</span></span><br><span class="line">		...</span><br><span class="line">	&#125;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p><code>ProcessEvent</code>函数中的<code>switch</code>判断后进入<code>PrePrepare case</code>，继而调用<code>recvPrePrepare</code>函数。<code>recvPrePrepare</code>函数主要保存<code>preprepare</code>消息，并发送<code>prepare</code>消息。 <code>recvPrePrepare</code>函数首先做了一些检查，这里挑选了一个比较有意思的：L715行检查收到的<code>preprep</code>消息是否是当前<code>View</code>中，且<code>SequenceNumber</code>在一定的区间范围内。 L758行的判断语句比较长，主要包括了三部分：</p>
+<ol type="1">
+<li>判断当前节点是否是<code>Primary</code>。<code>PBFT</code>的<code>Prepare</code>阶段不需要<code>Primary</code>节点发送<code>Prepare</code>消息。</li>
+<li>判断当前是否已经到达了<code>preprepared</code>的状态。<code>OSDI‘99</code>的论文中并未定义<code>preprepared</code>的状态原语，这里是代码实现中的额外定义。关于<code>preprepared</code>状态的检查在后面再进行介绍。</li>
+<li>判断是否已经发送过了<code>prepare</code>消息了。<code>sentPrepare</code>是一个<code>bool</code>类型的变量，其在L766行赋值为<code>true</code>。</li>
+</ol>
+<p>以下介绍对<code>preprepared</code>状态的检查。<code>prePrepared</code>函数定义如下： <figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// [pbft-core.go] ProcessEvent -&gt; recvPrePrepare -&gt; prePrepared</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(instance *pbftCore)</span> <span class="title">prePrepared</span><span class="params">(digest <span class="keyword">string</span>, v <span class="keyword">uint64</span>, n <span class="keyword">uint64</span>)</span> <span class="title">bool</span></span> &#123;</span><br><span class="line">    ...</span><br><span class="line">    cert := instance.certStore[msgID&#123;v, n&#125;]                    <span class="comment">// L483</span></span><br><span class="line">    <span class="keyword">if</span> cert != <span class="literal">nil</span> &#123;</span><br><span class="line">		p := cert.prePrepare</span><br><span class="line">		<span class="keyword">if</span> p != <span class="literal">nil</span> &amp;&amp; p.View == v &amp;&amp; p.SequenceNumber == n &amp;&amp; p.BatchDigest == digest &#123;                                    <span class="comment">// L486</span></span><br><span class="line">			<span class="keyword">return</span> <span class="literal">true</span></span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure> <code>prePrepared</code>函数中主要对<code>instance</code>的字典类型字段<code>certStore</code>进行了查找，查找该字典中是否已经存储了相应的<code>prePrepare</code>内容（L483行），并且查询得到的<code>prePrepare</code>内容与参数中的<code>digest</code>，<code>v</code>，<code>n</code>保持一致（L486行）。 其中L483行是读<code>certStore</code>字段，那么在此之前应该对<code>certStore</code>字段进行了写操作。该写操作发生在<code>recvPrePrepare</code>函数的L734行，相关代码如下所示。 <figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// [pbft-core.go] recvPrePrepare</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(instance *pbftCore)</span> <span class="title">recvPrePrepare</span><span class="params">(preprep *PrePrepare)</span> <span class="title">error</span></span> &#123;</span><br><span class="line">    ...</span><br><span class="line">    cert := instance.getCert(preprep.View, preprep.SequenceNumber)  <span class="comment">// L732</span></span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// [pbft-core.go] recvPrePrepare -&gt; getCert</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(instance *pbftCore)</span> <span class="title">getCert</span><span class="params">(v <span class="keyword">uint64</span>, n <span class="keyword">uint64</span>)</span> <span class="params">(cert *msgCert)</span></span> &#123;</span><br><span class="line">	idx := msgID&#123;v, n&#125;</span><br><span class="line">	cert, ok := instance.certStore[idx]</span><br><span class="line">	<span class="keyword">if</span> ok &#123;</span><br><span class="line">		<span class="keyword">return</span></span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	cert = &amp;msgCert&#123;&#125;</span><br><span class="line">	instance.certStore[idx] = cert</span><br><span class="line">	<span class="keyword">return</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure> 容易看到<code>recvPrePrepare</code>函数的L732行调用了<code>getCert</code>函数，后者首先查看<code>certStore</code>中是否已经保存了相应的<code>idx</code>，如果没有，则生成一个<code>idx</code>并存储在<code>certStore</code>中。 回到<code>recvPrePrepare</code>函数的L758行，相关代码如下所示。当第一次收到<code>preprepare</code>消息时，该判断语句值为<code>true</code>。首先在L760行定义了代表<code>prepare</code>消息的<code>prep</code>变量。该变量将在L768行和L769行分别发送给自己和其他节点。L769行构建了代表<code>prepare</code>消息的<code>Message_Prepare</code>变量，并通过<code>innerBroadcast</code>函数发送出去。<code>innerBroadcast</code>函数的调用过程和IV.B小节中的类似。</p>
+<p>这里的代码实现和<code>OSDI‘99</code>论文中的描述有些出入，<code>OSDI’99</code>论文中<code>prepare</code>消息不发送给自己；相应地，后面<code>prepare</code>消息的计数也就不包括自己的。这里的代码实现中，L768行将<code>prepare</code>消息发给了自己；并且，后面的<code>prepare</code>消息的计数也包括了自己的。 <figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// [pbft-core.go] ProcessEvent -&gt; recvPrePrepare</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(instance *pbftCore)</span> <span class="title">recvPrePrepare</span><span class="params">(preprep *PrePrepare)</span> <span class="title">error</span></span> &#123;</span><br><span class="line">    ...</span><br><span class="line">    <span class="keyword">if</span> instance.primary(instance.view) != instance.id &amp;&amp; instance.prePrepared(preprep.BatchDigest, preprep.View, preprep.SequenceNumber) &amp;&amp; !cert.sentPrepare &#123;             <span class="comment">// L758</span></span><br><span class="line">		...</span><br><span class="line">		prep := &amp;Prepare&#123;                               <span class="comment">// L760</span></span><br><span class="line">			...</span><br><span class="line">		&#125;</span><br><span class="line">		...</span><br><span class="line">		instance.recvPrepare(prep)                      <span class="comment">// L768</span></span><br><span class="line">		<span class="keyword">return</span> instance.innerBroadcast(&amp;Message&#123;Payload: &amp;Message_Prepare&#123;Prepare: prep&#125;&#125;)                       <span class="comment">// L769</span></span><br><span class="line">	&#125;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure> 此外，有个疑惑是L769行不是实现了<code>prepare</code>消息的广播吗？广播不就已经包括了当前节点（即<code>节点0</code>）了吗？为什么还要使用L768行给自己发送一次呢。这是因为<code>innerBroadcast</code>的代码实现中去除了对当前节点的消息发送。IV.B小节已经介绍了<code>innerBroadcast</code>函数中对其他函数的调用链路，即<code>innerBroadcast</code>-&gt;<code>simpleConsumer.broadcast</code>-&gt;<code>Broadcast</code>-&gt;<code>broadcastFilter</code>-&gt;<code>internalQueueMessage</code>，<code>internalQueueMessage</code>函数中的消息通过<code>net.msgs</code>通道被<code>testnet.process</code>函数读取。<code>process</code>函数进一步调用<code>processMessageFromChannel</code>，<code>deliverFilter</code>。也就是说，<code>prepare</code>消息的广播是通过<code>deliverFilter</code>函数完成的。<code>deliverFilter</code>函数的相关代码摘录如下： <figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// [mock_network_test.go]</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(net *testnet)</span> <span class="title">deliverFilter</span><span class="params">(msg taggedMsg)</span></span> &#123;</span><br><span class="line">    ...</span><br><span class="line">    <span class="keyword">if</span> msg.dst == <span class="number">-1</span> &#123;</span><br><span class="line">        ...</span><br><span class="line">        <span class="keyword">for</span> id, ep := <span class="keyword">range</span> net.endpoints &#123;</span><br><span class="line">            ...</span><br><span class="line">            lid := id</span><br><span class="line">            ...</span><br><span class="line">            <span class="keyword">go</span> <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</span><br><span class="line">                ...</span><br><span class="line">                <span class="keyword">if</span> msg.src == lid &#123;</span><br><span class="line">                    ...</span><br><span class="line">                    <span class="keyword">return</span></span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure> 从代码中容易发现，当消息的发送着<code>msg.src</code>和消息的接受者<code>lid</code>相同时，直接从协程中返回。</p>
+<h2 id="vi.-prepare消息的接收以及commit消息的发送">VI. <code>Prepare</code>消息的接收以及<code>Commit</code>消息的发送</h2>
+<p>第V节介绍了节点1中对<code>Prepare</code>消息的发送，本节介绍节点（以<code>节点2</code>为例）对<code>Prepare</code>的接收，基于接收到的<code>Prepare</code>消息判断是否进入了<code>Prepared</code>状态，并决定是否发送<code>Commit</code>消息。 结合IV.B小节和第V节可知，<code>节点1</code>中的<code>Prepare</code>消息最终是发送到了<code>节点2</code>的<code>events</code>通道中。 此外，IV.B小节中提到每个节点会启动一个协程运行<code>eventloop</code>函数。为唤起读者的记忆，<code>eventLoop</code>函数的代码再次摘录如下。 <figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// [pbft-core_mock_test.go] makePBFTNetwork -&gt; [events.go] Start -&gt; eventLoop</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(em *managerImpl)</span> <span class="title">eventLoop</span><span class="params">()</span></span> &#123;</span><br><span class="line">	<span class="keyword">for</span> &#123;</span><br><span class="line">		<span class="keyword">select</span> &#123;</span><br><span class="line">		<span class="keyword">case</span> next := &lt;-em.events:</span><br><span class="line">			em.Inject(next)</span><br><span class="line">	    ...</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure> <code>eventLoop</code>函数进一步调用<code>Inject</code>函数、<code>SendEvent</code>函数、<code>pbftCore.ProcessEvent</code>函数。以上都和<code>节点0</code>接收<code>reqBatch</code>消息（<code>节点1</code>接收<code>PrePrepare</code>消息）时的流程相同，以下从<code>pbftCore.ProcessEvent</code>函数开始介绍。 <figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// [pbft-core.go] ProcessEvent</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(instance *pbftCore)</span> <span class="title">ProcessEvent</span><span class="params">(e events.Event)</span> <span class="title">events</span>.<span class="title">Event</span></span> &#123;</span><br><span class="line">    ...</span><br><span class="line">    <span class="keyword">switch</span> et := e.(<span class="keyword">type</span>) &#123;</span><br><span class="line">    ...</span><br><span class="line">    <span class="keyword">case</span> *Prepare:                                      <span class="comment">// L344</span></span><br><span class="line">		err = instance.recvPrepare(et)</span><br><span class="line">    ...</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure> 此时的<code>ProcessEvent</code>函数中<code>switch</code>选择为<code>Prepare case</code>，并调用<code>recvPrepare</code>函数，对应于L344行代码。<code>recvPrepare</code>函数和第V节中介绍的<code>recvPrePrepare</code>函数很类似，关键代码摘录如下： <figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// [pbft-core.go] ProcessEvent -&gt; recvPrepare</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(instance *pbftCore)</span> <span class="title">recvPrepare</span><span class="params">(prep *Prepare)</span> <span class="title">error</span></span> &#123;</span><br><span class="line">    ...</span><br><span class="line">    <span class="keyword">if</span> instance.primary(prep.View) == prep.ReplicaId &#123;          <span class="comment">// L779</span></span><br><span class="line">		...</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">nil</span></span><br><span class="line">	&#125;</span><br><span class="line">    ...</span><br><span class="line">    cert := instance.getCert(prep.View, prep.SequenceNumber)    <span class="comment">// L794</span></span><br><span class="line">    ...</span><br><span class="line">    cert.prepare = <span class="built_in">append</span>(cert.prepare, prep)                 <span class="comment">// L802</span></span><br><span class="line">    ...</span><br><span class="line">    <span class="keyword">return</span> instance.maybeSendCommit(prep.BatchDigest, prep.View, prep.SequenceNumber)                                        <span class="comment">// L805</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure> <code>recvPrepare</code>函数首先在L779行做了一次判断：若<code>prepare</code>消息的发送方是<code>Primary</code>，则直接返回。这和<code>OSDI'99</code>论文中是保持一致的，即不需要也不考虑<code>Primary</code>发送的<code>prepare</code>消息。L794行和L802行将新收到的<code>prepare</code>消息存储到<code>cert.prepare</code>字段中。然后便是在L805行调用<code>maybeSendCommit</code>函数。相关代码如下所示： <figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// [pbft-core.go] ProcessEvent -&gt; recvPrepare -&gt; maybeSendCommit</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(instance *pbftCore)</span> <span class="title">maybeSendCommit</span><span class="params">(digest <span class="keyword">string</span>, v <span class="keyword">uint64</span>, n <span class="keyword">uint64</span>)</span> <span class="title">error</span></span> &#123;</span><br><span class="line">    cert := instance.getCert(v, n)</span><br><span class="line">    <span class="keyword">if</span> instance.prepared(digest, v, n) &amp;&amp; !cert.sentCommit &#123;    <span class="comment">// L811</span></span><br><span class="line">        ...</span><br><span class="line">        commit := &amp;Commit&#123;</span><br><span class="line">            ...</span><br><span class="line">        &#125;</span><br><span class="line">        cert.sentCommit = <span class="literal">true</span></span><br><span class="line">        instance.recvCommit(commit)</span><br><span class="line">        <span class="keyword">return</span> instance.innerBroadcast(&amp;Message&#123;&amp;Message_Commit&#123;commit&#125;&#125;)</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">nil</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure> 容易发现，<code>maybeSendCommit</code>函数和<code>recvPrePrepare</code>函数很类似，最大的不同就是L811行中<code>prepared</code>原语的判断。该<code>prepared</code>原语在<code>OSDI'99</code>论文中也有定义。<code>prepared</code>函数的代码实现如下： <figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// [pbft-core.go] ProcessEvent -&gt; recvPrepare -&gt; maybeSendCommit -&gt; prepared</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(instance *pbftCore)</span> <span class="title">prepared</span><span class="params">(digest <span class="keyword">string</span>, v <span class="keyword">uint64</span>, n <span class="keyword">uint64</span>)</span> <span class="title">bool</span></span> &#123;</span><br><span class="line">    ...</span><br><span class="line">    quorum := <span class="number">0</span>                                              <span class="comment">// L504</span></span><br><span class="line">    cert := instance.certStore[msgID&#123;v, n&#125;]</span><br><span class="line">    ...</span><br><span class="line">    <span class="keyword">for</span> _, p := <span class="keyword">range</span> cert.prepare &#123;</span><br><span class="line">        <span class="keyword">if</span> p.View == v &amp;&amp; p.SequenceNumber == n &amp;&amp; p.BatchDigest == digest &#123;</span><br><span class="line">            quorum++</span><br><span class="line">        &#125;</span><br><span class="line">	&#125;                                                       <span class="comment">// L514</span></span><br><span class="line">    ...</span><br><span class="line">    <span class="keyword">return</span> quorum &gt;= instance.intersectionQuorum()<span class="number">-1</span>            <span class="comment">// L519</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// [pbft-core.go] ProcessEvent -&gt; recvPrepare -&gt; maybeSendCommit -&gt; prepared -&gt; intersectionQuorum</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(instance *pbftCore)</span> <span class="title">intersectionQuorum</span><span class="params">()</span> <span class="title">int</span></span> &#123;</span><br><span class="line">	<span class="keyword">return</span> (instance.N + instance.f + <span class="number">2</span>) / <span class="number">2</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure> <code>prepared</code>函数的实现还是比较容易理解的，首先在L504行到L514行对收到的<code>prepare</code>消息进行计数，计数值为<code>quorum</code>。然后将<code>quorum</code>值与<code>intersectionQuorum-1</code>值进行比较（L519行）。<code>intersectionQuorum</code>值的计算由<code>intersectionQuorum</code>函数完成。当N&gt;3f+1时，<code>intersectionQuorum-1</code>值为2f。这里需要特别强调，<code>prepared</code>状态的判断只需要<code>prepare</code>消息数量达到2f即可；作为对比，下一小节中<code>committed</code>状态的判断需要<code>commit</code>消息数量达到2f+1.</p>
+<p>回到<code>maybeSendCommit</code>函数的L811行，当<code>节点2</code>的<code>prepare</code>计数超过<code>quorum</code>值时，标记当前节点进入<code>prepared</code>状态，从而开始广播<code>commit</code>消息。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Blockchain/" rel="tag"># Blockchain</a>
+              <a href="/tags/PBFT/" rel="tag"># PBFT</a>
+              <a href="/tags/Fabric/" rel="tag"># Fabric</a>
+          </div>
+
+        
+  <div class="post-widgets">
+    <div class="wp_rating">
+      <div id="wpac-rating"></div>
+    </div>
+  </div>
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/01/08/fabric-source-code-analysis-2/" rel="prev" title="Fabric中PBFT源码解读（2）">
+      <i class="fa fa-chevron-left"></i> Fabric中PBFT源码解读（2）
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/01/10/fabric-source-code-analysis-4/" rel="next" title="Fabric中PBFT源码解读（4）">
+      Fabric中PBFT源码解读（4） <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#v.-preprepare%E6%B6%88%E6%81%AF%E7%9A%84%E6%8E%A5%E6%94%B6%E4%BB%A5%E5%8F%8Aprepare%E6%B6%88%E6%81%AF%E7%9A%84%E5%8F%91%E9%80%81"><span class="nav-number">1.</span> <span class="nav-text">V. Preprepare消息的接收以及Prepare消息的发送</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#vi.-prepare%E6%B6%88%E6%81%AF%E7%9A%84%E6%8E%A5%E6%94%B6%E4%BB%A5%E5%8F%8Acommit%E6%B6%88%E6%81%AF%E7%9A%84%E5%8F%91%E9%80%81"><span class="nav-number">2.</span> <span class="nav-text">VI. Prepare消息的接收以及Commit消息的发送</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Seafooler</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">44</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">17</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="mailto:seafooler@gmail.com" title="E-Mail → mailto:seafooler@gmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Seafooler</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+  <script>
+  if (CONFIG.page.isPost) {
+    wpac_init = window.wpac_init || [];
+    wpac_init.push({
+      widget: 'Rating',
+      id    : ,
+      el    : 'wpac-rating',
+      color : 'fc6423'
+    });
+    (function() {
+      if ('WIDGETPACK_LOADED' in window) return;
+      WIDGETPACK_LOADED = true;
+      var mc = document.createElement('script');
+      mc.type = 'text/javascript';
+      mc.async = true;
+      mc.src = '//embed.widgetpack.com/widget.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(mc, s.nextSibling);
+    })();
+  }
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+
+</body>
+</html>
