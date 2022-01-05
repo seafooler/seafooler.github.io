@@ -298,7 +298,7 @@
 
       
           <p>Inspired by the blockchain data structures, lots of streamlined BFT (Byzantine Fault Tolerant) consensus algorithms have been proposed recently, including <code>Tendermint</code>[1], <code>Pili</code>[2], <code>Pala</code>[3], <code>HotStuff</code>[4], and <code>Streamlet</code>[5]. Among them, two extremely-simple ones are quite similar and even born from the same research group (i.e., <a target="_blank" rel="noopener" href="http://elaineshi.com/">Prof. Elaine Shi</a>). <code>Streamlet</code> is claimed to be an improved variant of <code>Pala</code>, which seems to be simpler.</p>
-<p>In this blog, we try to make a comparison between <code>Pala</code> and <code>Streamlet</code>. Note that we only consider the <strong>basic</strong> <code>Pala</code>, which takes a democracy-favoring proposer rotation approach, similar to <code>Streamlet</code>. Furthermore, we want to figure out how can <code>Streamlet</code> simplify the consensus and are the improvements made at any costs?
+<p>In this blog, we try to make a comparison between <code>Pala</code> and <code>Streamlet</code>. Note that we only consider the <strong>basic</strong> <code>Pala</code>, which takes a democracy-favoring proposer rotation approach, similar to <code>Streamlet</code>.<br>Furthermore, we want to figure out how can <code>Streamlet</code> simplify the consensus and are the improvements made at any costs?<br>
           <!--noindex-->
             <div class="post-button">
               <a class="btn" href="/2021/10/26/comp-pala-streamlet/#more" rel="contents">
@@ -381,7 +381,7 @@
       
           <p>In recent years, more and more blockchain systems are proposed to improve the system performance. One of the significant directions taken by these works is to parallelize the block creation and dissemination, with OHIE [1] and Occam [2] as representatives.</p>
 <p>In this blog, we try to raise a model to unify these new blockchain systems. Also, we are surprised to find that this model can even unify a class of asynchronous blockchain systems, such as HoneybadgerBFT [3].</p>
-<p>At the end of this blog, we further propose a simpler blockchain system under this model.
+<p>At the end of this blog, we further propose a simpler blockchain system under this model.<br>
           <!--noindex-->
             <div class="post-button">
               <a class="btn" href="/2021/10/15/unification-parallel-block/#more" rel="contents">
@@ -462,8 +462,8 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <p>While I was reading the <code>HoneybadgerBFT</code> <a target="_blank" rel="noopener" href="https://dl.acm.org/doi/abs/10.1145/2976749.2978399">paper</a>, a question came to me is that "<strong>Reliable Broadcast (<code>RBC</code>) seems to implement the functions of a consensus algorithm already, why an extra phase of Asynchronous Binary Agreement (<code>ABA</code>) is needed</strong>"?</p>
-<p>In this blog, we will try to answer this question.
+          <p>While I was reading the <code>HoneybadgerBFT</code> <a target="_blank" rel="noopener" href="https://dl.acm.org/doi/abs/10.1145/2976749.2978399">paper</a>, a question came to me is that “<strong>Reliable Broadcast (<code>RBC</code>) seems to implement the functions of a consensus algorithm already, why an extra phase of Asynchronous Binary Agreement (<code>ABA</code>) is needed</strong>“?</p>
+<p>In this blog, we will try to answer this question.<br>
           <!--noindex-->
             <div class="post-button">
               <a class="btn" href="/2021/10/06/think-honeybadger/#more" rel="contents">
@@ -544,8 +544,8 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <p>The birth of blockchain brings a new option when designing a consensus algorithm, that the requests can be packaged as blocks and blocks can be linked with the hash values. Almost all the newly born consensus algorithms, such as <code>Tendermint</code>, <code>HotStuff</code>, <code>Pala</code>, and <code>Streamlet</code>, adopt the blockchain structures.</p>
-<p>A question is that <strong>what benefits can the blockchain structure bring to the consensus design</strong>? Or in other words, <strong>what problem can the blockchain structures deal with</strong>? Besides, another relevant question is that <strong>how does the consensus (e.g., <code>PBFT</code>) without adopting the blockchain strucuture deal with the same problem?</strong>
+          <p>The birth of blockchain brings a new option when designing a consensus algorithm, that the requests can be packaged as blocks and blocks can be linked with the hash values.<br>Almost all the newly born consensus algorithms, such as <code>Tendermint</code>, <code>HotStuff</code>, <code>Pala</code>, and <code>Streamlet</code>, adopt the blockchain structures.</p>
+<p>A question is that <strong>what benefits can the blockchain structure bring to the consensus design</strong>? Or in other words, <strong>what problem can the blockchain structures deal with</strong>? Besides, another relevant question is that <strong>how does the consensus (e.g., <code>PBFT</code>) without adopting the blockchain strucuture deal with the same problem?</strong><br>
           <!--noindex-->
             <div class="post-button">
               <a class="btn" href="/2021/09/30/blockchain-ds-function/#more" rel="contents">
@@ -626,7 +626,7 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <p>It seems that many readers ignore the checkpoint mechainsm described in the PBFT <a target="_blank" rel="noopener" href="https://pmg.csail.mit.edu/papers/osdi99.pdf">paper</a>. In this blog, I will share my thoughts about the checkpoint mechainsm.
+          <p>It seems that many readers ignore the checkpoint mechainsm described in the PBFT <a target="_blank" rel="noopener" href="https://pmg.csail.mit.edu/papers/osdi99.pdf">paper</a>. In this blog, I will share my thoughts about the checkpoint mechainsm.<br>
           <!--noindex-->
             <div class="post-button">
               <a class="btn" href="/2021/09/23/think-checkpoint-pbft/#more" rel="contents">
@@ -707,7 +707,7 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <p>In the last two blogs, we derived the design of two-phase BFT consensuses. We picked two different routines, namely <a target="_blank" rel="noopener" href="https://seafooler.github.io/2021/09/08/design-bft-pbft/">PBFT</a> and <a target="_blank" rel="noopener" href="https://seafooler.github.io/2021/09/15/design-bft-tendermint/">Tendermint</a>. In this blog, we try to unify two-phase consensus by a judgement model.
+          <p>In the last two blogs, we derived the design of two-phase BFT consensuses. We picked two different routines, namely <a target="_blank" rel="noopener" href="https://seafooler.github.io/2021/09/08/design-bft-pbft/">PBFT</a> and <a target="_blank" rel="noopener" href="https://seafooler.github.io/2021/09/15/design-bft-tendermint/">Tendermint</a>.<br>In this blog, we try to unify two-phase consensus by a judgement model.<br>
           <!--noindex-->
             <div class="post-button">
               <a class="btn" href="/2021/09/18/unification-2pc/#more" rel="contents">
@@ -788,7 +788,7 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <p>As a sequel of <a target="_blank" rel="noopener" href="https://seafooler.github.io/2021/09/08/design-bft-pbft/">the last blog</a>, this blog picks the routine of <code>Tendermint</code> to derive a two-phase BFT consensus.
+          <p>As a sequel of <a target="_blank" rel="noopener" href="https://seafooler.github.io/2021/09/08/design-bft-pbft/">the last blog</a>, this blog picks the routine of <code>Tendermint</code> to derive a two-phase BFT consensus.<br>
           <!--noindex-->
             <div class="post-button">
               <a class="btn" href="/2021/09/15/design-bft-tendermint/#more" rel="contents">
@@ -869,8 +869,8 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <p>As for a Byzantine Fault Tolerance (BFT) consensus, there are mainly two design routines: <code>PBFT</code>-like and <code>Tendermint</code>-like. The former contains a complex <code>view-change</code> phase, while the latter includes a notion of <code>lock</code>.</p>
-<p>In this blog, we try to derive a two-phase BFT consensus, along the routine of <code>PBFT</code>.
+          <p>As for a Byzantine Fault Tolerance (BFT) consensus, there are mainly two design routines: <code>PBFT</code>-like and <code>Tendermint</code>-like. The former contains a complex <code>view-change</code> phase, while the latter includes a notion of <code>lock</code>. </p>
+<p>In this blog, we try to derive a two-phase BFT consensus, along the routine of <code>PBFT</code>.<br>
           <!--noindex-->
             <div class="post-button">
               <a class="btn" href="/2021/09/08/design-bft-pbft/#more" rel="contents">
@@ -951,7 +951,7 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <p>分布式系统中存在着各种“一致性”的概念，本篇博客主要对这些概念进行一个总结。 本篇博客没有太多原创的内容，主要是从自己的视角将一些博客和书籍中的知识进行汇总，留作日后的复习。
+          <p>分布式系统中存在着各种“一致性”的概念，本篇博客主要对这些概念进行一个总结。<br>本篇博客没有太多原创的内容，主要是从自己的视角将一些博客和书籍中的知识进行汇总，留作日后的复习。<br>
           <!--noindex-->
             <div class="post-button">
               <a class="btn" href="/2020/12/06/understanding-consistency/#more" rel="contents">
