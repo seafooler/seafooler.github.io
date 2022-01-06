@@ -29,10 +29,10 @@
 <meta property="og:description" content="我们从“新区块的生成“开始我们的btcd源码之旅。">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2019-01-21T16:00:00.000Z">
-<meta property="article:modified_time" content="2022-01-05T13:10:07.911Z">
+<meta property="article:modified_time" content="2022-01-06T04:07:06.758Z">
 <meta property="article:author" content="Seafooler">
-<meta property="article:tag" content="Bitcoin">
 <meta property="article:tag" content="Blockchain">
+<meta property="article:tag" content="Bitcoin">
 <meta name="twitter:card" content="summary">
 
 <link rel="canonical" href="http://example.com/2019/01/22/btcd-source-code-analysis-1/">
@@ -198,7 +198,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2022-01-05 21:10:07" itemprop="dateModified" datetime="2022-01-05T21:10:07+08:00">2022-01-05</time>
+                <time title="Modified: 2022-01-06 12:07:06" itemprop="dateModified" datetime="2022-01-06T12:07:06+08:00">2022-01-06</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -206,7 +206,7 @@
               </span>
               <span class="post-meta-item-text">In</span>
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Code-analysis/" itemprop="url" rel="index"><span itemprop="name">Code-analysis</span></a>
+                  <a href="/categories/Code-analysis/" itemprop="url" rel="index"><span itemprop="name">Code analysis</span></a>
                 </span>
             </span>
 
@@ -266,7 +266,7 @@
 <figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// walletMain[btcwallet.go] -&gt; startRPCServers[rpcserver.go] -&gt; NewServe[server.go] -&gt; postClientRPC[server.go] -&gt; handlerClosure[server.go] -&gt; lazyApplyHandler[methods.go] -&gt; RawRequest[rawrequest.go] -&gt; Receive[rawrequest.go]</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(r FutureRawResult)</span> <span class="title">Receive</span><span class="params">()</span> <span class="params">(json.RawMessage, error)</span></span> &#123;</span><br><span class="line">    <span class="keyword">return</span> receiveFuture(r)           <span class="comment">// L21</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>该函数也只是对<code>receiveFuture</code>函数进行了一层封装，<code>receiveFuture</code>函数的实现如下所示： <figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// walletMain[btcwallet.go] -&gt; startRPCServers[rpcserver.go] -&gt; NewServe[server.go] -&gt; postClientRPC[server.go] -&gt; handlerClosure[server.go] -&gt; lazyApplyHandler[methods.go] -&gt; RawRequest[rawrequest.go] -&gt; Receive[rawrequest.go] -&gt; receiveFuture[infrastructure.go]</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">receiveFuture</span><span class="params">(f <span class="keyword">chan</span> *response)</span> <span class="params">([]<span class="keyword">byte</span>, error)</span></span> &#123;</span><br><span class="line">    r := &lt;-f                <span class="comment">// L797</span></span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure> L797行形成了<code>chan</code>的阻塞，该阻塞将在III.B节的<code>wsInHandler</code>函数中被激活。</p>
 <h3 id="b.-作为客户端的btcwallet">B. 作为客户端的btcwallet</h3>
-<p>为避免这一篇博客过长，III.B节的内容将放在下一篇<a target="_blank" rel="noopener" href="https://blog.csdn.net/u014633283/article/details/86600308">博客</a>中。</p>
+<p>为避免这一篇博客过长，III.B节的内容将放在下一篇<a target="_blank" rel="noopener" href="https://seafooler.github.io/2019/01/23/btcd-source-code-analysis-2/">博客</a>中。</p>
 
     </div>
 
@@ -276,8 +276,8 @@
 
       <footer class="post-footer">
           <div class="post-tags">
-              <a href="/tags/Bitcoin/" rel="tag"># Bitcoin</a>
               <a href="/tags/Blockchain/" rel="tag"># Blockchain</a>
+              <a href="/tags/Bitcoin/" rel="tag"># Bitcoin</a>
           </div>
 
         
@@ -370,20 +370,20 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">44</span>
+          <span class="site-state-item-count">45</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
             <a href="/categories/">
           
-        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-count">7</span>
         <span class="site-state-item-name">categories</span></a>
       </div>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">17</span>
+        <span class="site-state-item-count">19</span>
         <span class="site-state-item-name">tags</span></a>
       </div>
   </nav>

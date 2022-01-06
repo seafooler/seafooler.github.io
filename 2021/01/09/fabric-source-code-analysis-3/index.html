@@ -29,7 +29,7 @@
 <meta property="og:description" content="本篇博客是PBFT代码解读的第三篇博客。">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2021-01-08T16:00:00.000Z">
-<meta property="article:modified_time" content="2022-01-05T13:09:49.760Z">
+<meta property="article:modified_time" content="2022-01-06T05:36:15.810Z">
 <meta property="article:author" content="Seafooler">
 <meta property="article:tag" content="Blockchain">
 <meta property="article:tag" content="PBFT">
@@ -199,7 +199,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2022-01-05 21:09:49" itemprop="dateModified" datetime="2022-01-05T21:09:49+08:00">2022-01-05</time>
+                <time title="Modified: 2022-01-06 13:36:15" itemprop="dateModified" datetime="2022-01-06T13:36:15+08:00">2022-01-06</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -207,7 +207,7 @@
               </span>
               <span class="post-meta-item-text">In</span>
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Code-analysis/" itemprop="url" rel="index"><span itemprop="name">Code-analysis</span></a>
+                  <a href="/categories/Code-analysis/" itemprop="url" rel="index"><span itemprop="name">Code analysis</span></a>
                 </span>
             </span>
 
@@ -224,14 +224,14 @@
       
         <p>本篇博客是<code>PBFT</code>代码解读的第三篇博客。 <span id="more"></span></p>
 <h2 id="v.-preprepare消息的接收以及prepare消息的发送">V. <code>Preprepare</code>消息的接收以及<code>Prepare</code>消息的发送</h2>
-<p>本系列的<a target="_blank" rel="noopener" href="https://blog.csdn.net/u014633283/article/details/112307024">第一篇博客</a>介绍了源代码的获取和测试用例的选择，<a target="_blank" rel="noopener" href="https://blog.csdn.net/u014633283/article/details/112308084">第二篇博客</a>介绍了<code>Primary</code>节点对<code>repBatch</code>的处理，以及对<code>PrePrepare</code>消息的发送。强烈建议读者先阅读上述两篇博客，再来阅读当前这篇。</p>
+<p>本系列的<a target="_blank" rel="noopener" href="https://seafooler.github.io/2021/01/07/fabric-source-code-analysis-1/">第一篇博客</a>介绍了源代码的获取和测试用例的选择，<a target="_blank" rel="noopener" href="https://seafooler.github.io/2021/01/08/fabric-source-code-analysis-2/">第二篇博客</a>介绍了<code>Primary</code>节点对<code>repBatch</code>的处理，以及对<code>PrePrepare</code>消息的发送。强烈建议读者先阅读上述两篇博客，再来阅读当前这篇。</p>
 <p>为方便读者查阅，本系列博客的链接整理如下：</p>
 <ul>
-<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/u014633283/article/details/112307024">Fabric中PBFT源码解读 （1）</a></li>
-<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/u014633283/article/details/112308084">Fabric中PBFT源码解读 （2）</a></li>
-<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/u014633283/article/details/112344708">Fabric中PBFT源码解读 （3）</a></li>
-<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/u014633283/article/details/112346508">Fabric中PBFT源码解读 （4）</a></li>
-<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/u014633283/article/details/112364913">Fabric中PBFT源码解读 （5）</a></li>
+<li><a target="_blank" rel="noopener" href="https://seafooler.github.io/2021/01/07/fabric-source-code-analysis-1/">Fabric中PBFT源码解读（1）</a></li>
+<li><a target="_blank" rel="noopener" href="https://seafooler.github.io/2021/01/08/fabric-source-code-analysis-2/">Fabric中PBFT源码解读（2）</a></li>
+<li><a target="_blank" rel="noopener" href="https://seafooler.github.io/2021/01/09/fabric-source-code-analysis-3/">Fabric中PBFT源码解读（3）</a></li>
+<li><a target="_blank" rel="noopener" href="https://seafooler.github.io/2021/01/10/fabric-source-code-analysis-4/">Fabric中PBFT源码解读（4）</a></li>
+<li><a target="_blank" rel="noopener" href="https://seafooler.github.io/2021/01/11/fabric-source-code-analysis-5/">Fabric中PBFT源码解读（5）</a></li>
 </ul>
 <p>IV.B小节介绍了<code>节点0</code>中<code>Preprepare</code>消息的发送过程，本小节介绍其他节点（以<code>节点1</code>为例）接收<code>Preprepare</code>消息的过程和发送<code>Prepare</code>消息的过程。 由IV.B小节的最后介绍可知，<code>节点0</code>的<code>Preprepare</code>消息最终发送到了<code>节点1</code>的<code>events</code>通道中。 此外，IV.B小节中提到每个节点会启动一个协程运行<code>eventloop</code>函数。为唤起读者的记忆，<code>eventLoop</code>函数的代码再次摘录如下。 <figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// [pbft-core_mock_test.go] makePBFTNetwork -&gt; [events.go] Start -&gt; eventLoop</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(em *managerImpl)</span> <span class="title">eventLoop</span><span class="params">()</span></span> &#123;</span><br><span class="line">	<span class="keyword">for</span> &#123;</span><br><span class="line">		<span class="keyword">select</span> &#123;</span><br><span class="line">		<span class="keyword">case</span> next := &lt;-em.events:</span><br><span class="line">			em.Inject(next)</span><br><span class="line">	    ...</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure> <code>eventLoop</code>函数进一步调用<code>Inject</code>函数、<code>SendEvent</code>函数、<code>pbftCore.ProcessEvent</code>函数。以上都和<code>节点0</code>接收<code>reqBatch</code>消息时的流程相同，以下从<code>pbftCore.ProcessEvent</code>函数开始介绍。 <figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// [pbft-core.go] ProcessEvent</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(instance *pbftCore)</span> <span class="title">ProcessEvent</span><span class="params">(e events.Event)</span> <span class="title">events</span>.<span class="title">Event</span></span> &#123;</span><br><span class="line">    ...</span><br><span class="line">    <span class="keyword">switch</span> et := e.(<span class="keyword">type</span>) &#123;</span><br><span class="line">    ...</span><br><span class="line">    <span class="keyword">case</span> *PrePrepare:</span><br><span class="line">		err = instance.recvPrePrepare(et)</span><br><span class="line">    ...</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// [pbft-core.go] ProcessEvent -&gt; recvPrePrepare</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(instance *pbftCore)</span> <span class="title">recvPrePrepare</span><span class="params">(preprep *PrePrepare)</span> <span class="title">error</span></span> &#123;</span><br><span class="line">    ...</span><br><span class="line">    <span class="keyword">if</span> !instance.inWV(preprep.View, preprep.SequenceNumber) &#123;   <span class="comment">// L715</span></span><br><span class="line">        ...</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">nil</span></span><br><span class="line">    &#125;</span><br><span class="line">    ...</span><br><span class="line">    cert := instance.getCert(preprep.View, preprep.SequenceNumber) <span class="comment">// L732</span></span><br><span class="line">    ...</span><br><span class="line">    <span class="keyword">if</span> instance.primary(instance.view) != instance.id &amp;&amp; instance.prePrepared(preprep.BatchDigest, preprep.View, preprep.SequenceNumber) &amp;&amp; !cert.sentPrepare &#123;             <span class="comment">// L758</span></span><br><span class="line">		...</span><br><span class="line">		cert.sentPrepare = <span class="literal">true</span>                         <span class="comment">// L766</span></span><br><span class="line">		...</span><br><span class="line">	&#125;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
 <p><code>ProcessEvent</code>函数中的<code>switch</code>判断后进入<code>PrePrepare case</code>，继而调用<code>recvPrePrepare</code>函数。<code>recvPrePrepare</code>函数主要保存<code>preprepare</code>消息，并发送<code>prepare</code>消息。 <code>recvPrePrepare</code>函数首先做了一些检查，这里挑选了一个比较有意思的：L715行检查收到的<code>preprep</code>消息是否是当前<code>View</code>中，且<code>SequenceNumber</code>在一定的区间范围内。 L758行的判断语句比较长，主要包括了三部分：</p>
@@ -349,20 +349,20 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">44</span>
+          <span class="site-state-item-count">45</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
             <a href="/categories/">
           
-        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-count">7</span>
         <span class="site-state-item-name">categories</span></a>
       </div>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">17</span>
+        <span class="site-state-item-count">19</span>
         <span class="site-state-item-name">tags</span></a>
       </div>
   </nav>

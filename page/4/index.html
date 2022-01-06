@@ -161,6 +161,93 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2020/02/28/btcd-source-code-analysis-9/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Seafooler">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Seafooler's Blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2020/02/28/btcd-source-code-analysis-9/" class="post-title-link" itemprop="url">btcd源码解析——交易创建 (1)</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2020-02-28 00:00:00" itemprop="dateCreated datePublished" datetime="2020-02-28T00:00:00+08:00">2020-02-28</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2022-01-06 13:43:38" itemprop="dateModified" datetime="2022-01-06T13:43:38+08:00">2022-01-06</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Code-analysis/" itemprop="url" rel="index"><span itemprop="name">Code analysis</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>从本节开始，我们从源码层面关注比特币交易的构建过程。 其中，我们尤其会关注比特币解锁脚本（为了使用<code>UTXO</code>）和新的锁定脚本（为了生成新的<code>UTXO</code>）的创建细节。我们相信通过跟踪两种脚本的创建过程，我们将对于比特币的交易细节理解得更为深入。</p>
+<p>新交易的创建会涉及到两个代码仓库（<code>btcd</code>和<code>btcwallet</code>）编译生成的三个可执行文件（<code>btcd</code>，<code>btcctl</code>，和<code>btcwallet</code>）。 <code>btcd</code>和<code>btcwallet</code>代码版本号如下所示：</p>
+<ul>
+<li><code>btcd</code>版本：[git commit log]: ed77733ec07dfc8a513741138419b8d9d3de9d2d</li>
+<li><code>btcwallet</code>版本：[git commit log]: ae9416ad7623598121a7c8ad67a202c1be767155</li>
+</ul>
+<p>读者如果没有阅读过之前的这两篇博客<a target="_blank" rel="noopener" href="https://seafooler.github.io/2019/01/21/btcd-source-code-analysis-0/">btcd源码解析</a>和<a target="_blank" rel="noopener" href="https://seafooler.github.io/2019/01/22/btcd-source-code-analysis-1/">btcd源码解析——从“新区块的生成”开始</a>，<strong>强烈建议</strong>先阅读完再来阅读本篇博客。
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2020/02/28/btcd-source-code-analysis-9/#more" rel="contents">
+                Read more &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
     <link itemprop="mainEntityOfPage" href="http://example.com/2019/08/05/btcd-source-code-analysis-8/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -192,7 +279,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2022-01-05 21:10:49" itemprop="dateModified" datetime="2022-01-05T21:10:49+08:00">2022-01-05</time>
+                <time title="Modified: 2022-01-06 12:29:44" itemprop="dateModified" datetime="2022-01-06T12:29:44+08:00">2022-01-06</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -200,7 +287,7 @@
               </span>
               <span class="post-meta-item-text">In</span>
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Code-analysis/" itemprop="url" rel="index"><span itemprop="name">Code-analysis</span></a>
+                  <a href="/categories/Code-analysis/" itemprop="url" rel="index"><span itemprop="name">Code analysis</span></a>
                 </span>
             </span>
 
@@ -215,7 +302,7 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <p>前两篇博客<a target="_blank" rel="noopener" href="https://blog.csdn.net/u014633283/article/details/97101031">headersFirstMode模式</a>和<a target="_blank" rel="noopener" href="https://blog.csdn.net/u014633283/article/details/97681958">非headersFirstMode模式</a>主要介绍了区块数据同步过程中两个节点如何交互。但我们当时遗留下一个问题：在<code>peer A</code>接收到区块数据之后，是如何将这个区块存储到本地的。回忆我们在<a target="_blank" rel="noopener" href="https://blog.csdn.net/u014633283/article/details/97101031">headersFirstMode模式</a>的I.F小节最后提到的</p>
+          <p>前两篇博客<a target="_blank" rel="noopener" href="https://seafooler.github.io/2019/07/25/btcd-source-code-analysis-6/">headersFirstMode模式</a>和<a target="_blank" rel="noopener" href="https://seafooler.github.io/2019/07/29/btcd-source-code-analysis-7/">非headersFirstMode模式</a>主要介绍了区块数据同步过程中两个节点如何交互。但我们当时遗留下一个问题：在<code>peer A</code>接收到区块数据之后，是如何将这个区块存储到本地的。回忆我们在<a target="_blank" rel="noopener" href="https://seafooler.github.io/2019/07/25/btcd-source-code-analysis-6/">headersFirstMode模式</a>的I.F小节最后提到的</p>
 <blockquote>
 <p>由于block的数据存储过程比较复杂，我们在后面会再写一篇博客介绍：从P2P连接中接收到的block数据是如何存储的</p>
 </blockquote>
@@ -277,7 +364,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2022-01-05 21:10:45" itemprop="dateModified" datetime="2022-01-05T21:10:45+08:00">2022-01-05</time>
+                <time title="Modified: 2022-01-06 12:21:24" itemprop="dateModified" datetime="2022-01-06T12:21:24+08:00">2022-01-06</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -285,7 +372,7 @@
               </span>
               <span class="post-meta-item-text">In</span>
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Code-analysis/" itemprop="url" rel="index"><span itemprop="name">Code-analysis</span></a>
+                  <a href="/categories/Code-analysis/" itemprop="url" rel="index"><span itemprop="name">Code analysis</span></a>
                 </span>
             </span>
 
@@ -300,7 +387,7 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <p>上一篇博客<a target="_blank" rel="noopener" href="https://blog.csdn.net/u014633283/article/details/97101031">btcd源码解析——peer节点之间的区块数据同步(2)——headersFirstMode模式</a>介绍了<code>headersFirstMode</code>模式下，<code>peer</code>节点之间的数据同步过程。本篇博客将介绍<code>非headersFirstMode</code>模式下的数据同步过程。 因为本篇博客中的许多函数都已经在上一篇博客中进行了讲解，且在此不会过多赘述，强烈建议读者在阅读完上一篇博客之后再来阅读本篇博客。
+          <p>上一篇博客<a target="_blank" rel="noopener" href="https://seafooler.github.io/2019/07/25/btcd-source-code-analysis-6/">btcd源码解析——peer节点之间的区块数据同步(2)——headersFirstMode模式</a>介绍了<code>headersFirstMode</code>模式下，<code>peer</code>节点之间的数据同步过程。本篇博客将介绍<code>非headersFirstMode</code>模式下的数据同步过程。 因为本篇博客中的许多函数都已经在上一篇博客中进行了讲解，且在此不会过多赘述，强烈建议读者在阅读完上一篇博客之后再来阅读本篇博客。
           <!--noindex-->
             <div class="post-button">
               <a class="btn" href="/2019/07/29/btcd-source-code-analysis-7/#more" rel="contents">
@@ -358,7 +445,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2022-01-05 21:10:41" itemprop="dateModified" datetime="2022-01-05T21:10:41+08:00">2022-01-05</time>
+                <time title="Modified: 2022-01-06 12:17:14" itemprop="dateModified" datetime="2022-01-06T12:17:14+08:00">2022-01-06</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -366,7 +453,7 @@
               </span>
               <span class="post-meta-item-text">In</span>
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Code-analysis/" itemprop="url" rel="index"><span itemprop="name">Code-analysis</span></a>
+                  <a href="/categories/Code-analysis/" itemprop="url" rel="index"><span itemprop="name">Code analysis</span></a>
                 </span>
             </span>
 
@@ -381,7 +468,7 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <p>上一篇博客<a target="_blank" rel="noopener" href="https://blog.csdn.net/u014633283/article/details/97039551">btcd源码解析——peer节点之间的区块数据同步 (1)</a>中，我们介绍了peer A是如何发起数据同步的请求的，当时讲到存在两种模式：<code>headersFirstMode</code>模式和<code>非headersFirstMode</code>模式。本篇博客，我们将介绍<code>headersFirstMode</code>模式下数据同步的细节。
+          <p>上一篇博客<a target="_blank" rel="noopener" href="https://seafooler.github.io/2019/07/24/btcd-source-code-analysis-5/">btcd源码解析——peer节点之间的区块数据同步 (1)</a>中，我们介绍了peer A是如何发起数据同步的请求的，当时讲到存在两种模式：<code>headersFirstMode</code>模式和<code>非headersFirstMode</code>模式。本篇博客，我们将介绍<code>headersFirstMode</code>模式下数据同步的细节。
           <!--noindex-->
             <div class="post-button">
               <a class="btn" href="/2019/07/25/btcd-source-code-analysis-6/#more" rel="contents">
@@ -439,7 +526,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2022-01-05 21:10:38" itemprop="dateModified" datetime="2022-01-05T21:10:38+08:00">2022-01-05</time>
+                <time title="Modified: 2022-01-06 12:14:02" itemprop="dateModified" datetime="2022-01-06T12:14:02+08:00">2022-01-06</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -447,7 +534,7 @@
               </span>
               <span class="post-meta-item-text">In</span>
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Code-analysis/" itemprop="url" rel="index"><span itemprop="name">Code-analysis</span></a>
+                  <a href="/categories/Code-analysis/" itemprop="url" rel="index"><span itemprop="name">Code analysis</span></a>
                 </span>
             </span>
 
@@ -527,7 +614,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2022-01-05 21:10:34" itemprop="dateModified" datetime="2022-01-05T21:10:34+08:00">2022-01-05</time>
+                <time title="Modified: 2022-01-06 12:11:19" itemprop="dateModified" datetime="2022-01-06T12:11:19+08:00">2022-01-06</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -535,7 +622,7 @@
               </span>
               <span class="post-meta-item-text">In</span>
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Code-analysis/" itemprop="url" rel="index"><span itemprop="name">Code-analysis</span></a>
+                  <a href="/categories/Code-analysis/" itemprop="url" rel="index"><span itemprop="name">Code analysis</span></a>
                 </span>
             </span>
 
@@ -550,7 +637,7 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <p>我们接着上一篇<a target="_blank" rel="noopener" href="https://blog.csdn.net/u014633283/article/details/96713093">博客</a>，继续讲解<code>P2P</code><strong>主动连接的管理</strong>和<strong>被动接受连接</strong>的过程。
+          <p>我们接着上一篇<a target="_blank" rel="noopener" href="https://seafooler.github.io/2019/07/21/btcd-source-code-analysis-3/">博客</a>，继续讲解<code>P2P</code><strong>主动连接的管理</strong>和<strong>被动接受连接</strong>的过程。
           <!--noindex-->
             <div class="post-button">
               <a class="btn" href="/2019/07/22/btcd-source-code-analysis-4/#more" rel="contents">
@@ -608,7 +695,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2022-01-05 21:10:30" itemprop="dateModified" datetime="2022-01-05T21:10:30+08:00">2022-01-05</time>
+                <time title="Modified: 2022-01-06 11:35:40" itemprop="dateModified" datetime="2022-01-06T11:35:40+08:00">2022-01-06</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -616,7 +703,7 @@
               </span>
               <span class="post-meta-item-text">In</span>
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Code-analysis/" itemprop="url" rel="index"><span itemprop="name">Code-analysis</span></a>
+                  <a href="/categories/Code-analysis/" itemprop="url" rel="index"><span itemprop="name">Code analysis</span></a>
                 </span>
             </span>
 
@@ -689,7 +776,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2022-01-05 21:52:17" itemprop="dateModified" datetime="2022-01-05T21:52:17+08:00">2022-01-05</time>
+                <time title="Modified: 2022-01-06 12:10:21" itemprop="dateModified" datetime="2022-01-06T12:10:21+08:00">2022-01-06</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -712,7 +799,7 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <p>比特币的地址是由一个字符串表示的。比较常见的是以<code>1</code>开头的字符串，也有以<code>2</code>, <code>3</code>, <code>m</code>, 和 <code>n</code> 开头的字符串。关于这些字符串的区别和联系，笔者一直有很多问题，也在网上搜过很多答案。因此，这篇文章主要是做一个问题和答案的汇总，也包括我自己的一些理解。<br>
+          <p>比特币的地址是由一个字符串表示的。比较常见的是以<code>1</code>开头的字符串，也有以<code>2</code>, <code>3</code>, <code>m</code>, 和 <code>n</code> 开头的字符串。关于这些字符串的区别和联系，笔者一直有很多问题，也在网上搜过很多答案。因此，这篇文章主要是做一个问题和答案的汇总，也包括我自己的一些理解。
           <!--noindex-->
             <div class="post-button">
               <a class="btn" href="/2019/03/18/bitcoin-protocol-addr-format/#more" rel="contents">
@@ -770,7 +857,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2022-01-05 21:52:18" itemprop="dateModified" datetime="2022-01-05T21:52:18+08:00">2022-01-05</time>
+                <time title="Modified: 2022-01-06 12:09:24" itemprop="dateModified" datetime="2022-01-06T12:09:24+08:00">2022-01-06</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -793,7 +880,7 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <p>上一篇<a target="_blank" rel="noopener" href="https://blog.csdn.net/u014633283/article/details/88601341">博客</a>中，我们介绍了简单的<code>P2PKH</code>类型输出。这一篇博客，我们将介绍<code>OP_RETURN</code>类型的输出。<br>
+          <p>上一篇<a target="_blank" rel="noopener" href="https://seafooler.github.io/2019/03/16/bitcoin-protocol-p2pkh/">博客</a>中，我们介绍了简单的<code>P2PKH</code>类型输出。这一篇博客，我们将介绍<code>OP_RETURN</code>类型的输出。
           <!--noindex-->
             <div class="post-button">
               <a class="btn" href="/2019/03/17/bitcoin-protocol-op_return/#more" rel="contents">
@@ -874,91 +961,10 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <p>我们经常需要查看比特币中的一些交易数据，比如说一笔交易的发送方和接收方账户是什么，交易额为多少。其实，通过一些比特币的区块浏览器很容易能够查询到。区块浏览器其实是帮我们提前解析好了数据，并通过网页的形式展现出来。<br>比特币中真实存储在区块中的数据其实是一些<code>raw transaction</code>，这些<code>raw transaction</code>是怎么被解析出来的呢？或者说，<code>raw transaction</code>中的各个字段分别代表什么含义。<br>这篇博客将首先介绍<code>raw transaction</code>的一般格式。然后以一个简单的<code>raw transaction</code>为例，理解其中各个字段的含义。<br>这篇博客主要关注最简单的只包含<code>P2PKH</code>类型的交易。<br>
+          <p>我们经常需要查看比特币中的一些交易数据，比如说一笔交易的发送方和接收方账户是什么，交易额为多少。其实，通过一些比特币的区块浏览器很容易能够查询到。区块浏览器其实是帮我们提前解析好了数据，并通过网页的形式展现出来。 比特币中真实存储在区块中的数据其实是一些<code>raw transaction</code>，这些<code>raw transaction</code>是怎么被解析出来的呢？或者说，<code>raw transaction</code>中的各个字段分别代表什么含义。 这篇博客将首先介绍<code>raw transaction</code>的一般格式。然后以一个简单的<code>raw transaction</code>为例，理解其中各个字段的含义。 这篇博客主要关注最简单的只包含<code>P2PKH</code>类型的交易。
           <!--noindex-->
             <div class="post-button">
               <a class="btn" href="/2019/03/16/bitcoin-protocol-p2pkh/#more" rel="contents">
-                Read more &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://example.com/2019/01/23/btcd-source-code-analysis-2/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="Seafooler">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Seafooler's Blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2019/01/23/btcd-source-code-analysis-2/" class="post-title-link" itemprop="url">btcd源码解析——从“新区块的生成”开始 (2)</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2019-01-23 00:00:00" itemprop="dateCreated datePublished" datetime="2019-01-23T00:00:00+08:00">2019-01-23</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2022-01-05 21:10:27" itemprop="dateModified" datetime="2022-01-05T21:10:27+08:00">2022-01-05</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">In</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Code-analysis/" itemprop="url" rel="index"><span itemprop="name">Code-analysis</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>接着上一篇<a target="_blank" rel="noopener" href="https://blog.csdn.net/u014633283/article/details/86590287">博客</a>，我们继续来讲解作为客户端的<code>btcwallet</code>是如何工作的。也即，作为客户端的<code>btcwallet</code>是如何与<code>btcd</code>进程交互的。
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2019/01/23/btcd-source-code-analysis-2/#more" rel="contents">
                 Read more &raquo;
               </a>
             </div>
@@ -1047,20 +1053,20 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">44</span>
+          <span class="site-state-item-count">45</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
             <a href="/categories/">
           
-        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-count">7</span>
         <span class="site-state-item-name">categories</span></a>
       </div>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">17</span>
+        <span class="site-state-item-count">19</span>
         <span class="site-state-item-name">tags</span></a>
       </div>
   </nav>
