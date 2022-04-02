@@ -231,107 +231,84 @@
         <p>As for the chained <code>HotStuff</code>, there are two commitment rules for a block: <code>three-chain</code> or <code>two-chain+QC</code>. <code>Three-chain</code> rule is easy for understanding, while <code>two-chain+QC</code> is not.</p>
 <p>In this blog, we want to figure out why the commitement rule can be relaxed from a <code>three-chain</code> to a <code>two-chain+QC</code>? Or in other words, why a <code>two-chain+QC</code> can guarantee the safety, where <code>three-chain</code> can be considered as a special case of <code>two-chain+QC</code>?</p>
 <span id="more"></span>
-<h2 id="i.-commitment-rule-three-chain-or-two-chainqc">I. Commitment rule: <code>Three-chain</code> or <code>Two-chain+QC</code></h2>
-In the <code>HotStuff</code> paper, a block (<span class="math inline">\(b\)</span>) is allowed to be committed if the blocks following <span class="math inline">\(b\)</span> form a three-chain, shown as Figure 1: <img src="/images/understanding-safety-hotstuff/three-chain.png" height=138 />
-<center>
-<b>Figure 1. Three-chain rule</b>
-</center>
-In fact, the commitment requirement can be relaxed to under a two-chain and a general QC, as Figure 2 shows: <img src="/images/understanding-safety-hotstuff/two-chain+general-QC.png" height=138 />
-<center>
-<b>Figure 2. Two-chain+QC rule</b>
-</center>
-<p>In the figure, Blocks <span class="math inline">\(b\)</span>, <span class="math inline">\(b&#39;\)</span>, and <span class="math inline">\(b&#39;&#39;\)</span> form a two-chain, and Block <span class="math inline">\(b^*\)</span> contains a general QC to reference <span class="math inline">\(b&#39;&#39;\)</span>.</p>
-This relaxed commitment requirement can be found in both the <code>HotStuff</code> paper and the author's presentation slides. To be more specific, in Algorithm 4 of the <code>HotStuff</code> <a target="_blank" rel="noopener" href="https://dl.acm.org/doi/10.1145/3293611.3331591">paper</a>, lines 10-11 only check the two-chain rule and line 5 shows the general QC from <span class="math inline">\(b^*\)</span> to <span class="math inline">\(b&#39;&#39;\)</span>. Related pseudocodes are transcribed as follows: <img src="/images/understanding-safety-hotstuff/pseudocodes.png" height=188 />
-<center>
-<b>Figure 3. Pseudocodes in <code>HotStuff</code> paper</b>
-</center>
-The 23-rd and 24-th slides of <a target="_blank" rel="noopener" href="https://tedyin.com/archive/hotstuff-podc-slides.pdf">hotstuff-podc-slides</a> also take an example to show this relaxed requirement. For the convenience of readers, we copy these two slides as follows directly: <img src="/images/understanding-safety-hotstuff/two-chain+QC-rule-slide23.png" height=188 />
-<center>
-<b>Figure 4(a). Page 23 in <code>HotStuff</code> slides</b>
-</center>
+<h2 id="I-Commitment-rule-Three-chain-or-Two-chain-QC"><a href="#I-Commitment-rule-Three-chain-or-Two-chain-QC" class="headerlink" title="I. Commitment rule: Three-chain or Two-chain+QC"></a>I. Commitment rule: <code>Three-chain</code> or <code>Two-chain+QC</code></h2><p>In the <code>HotStuff</code> paper, a block ($b$) is allowed to be committed if the blocks following $b$ form a three-chain, shown as Figure 1:<br><img src="/images/understanding-safety-hotstuff/three-chain.png" height=138 /></p>
+<center><b>Figure 1. Three-chain rule</b></center>
+
+<p>In fact, the commitment requirement can be relaxed to under a two-chain and a general QC, as Figure 2 shows:<br><img src="/images/understanding-safety-hotstuff/two-chain+general-QC.png" height=138 /></p>
+<center><b>Figure 2. Two-chain+QC rule</b></center>
+In the figure, Blocks $b$, $b'$, and $b''$ form a two-chain, and Block $b^*$ contains a general QC to reference $b''$.
+
+This relaxed commitment requirement can be found in both the `HotStuff` paper and the author's presentation slides. To be more specific, in Algorithm 4 of the `HotStuff` [paper](https://dl.acm.org/doi/10.1145/3293611.3331591), lines 10-11 only check the two-chain rule and line 5 shows the general QC from $b^*$ to $b''$. Related pseudocodes are transcribed as follows:
+<img src="/images/understanding-safety-hotstuff/pseudocodes.png" height=188 />
+<center><b>Figure 3. Pseudocodes in `HotStuff` paper</b></center>
+
+<p>The 23-rd and 24-th slides of <a target="_blank" rel="noopener" href="https://tedyin.com/archive/hotstuff-podc-slides.pdf">hotstuff-podc-slides</a> also take an example to show this relaxed requirement. For the convenience of readers, we copy these two slides as follows directly:<br><img src="/images/understanding-safety-hotstuff/two-chain+QC-rule-slide23.png" height=188 /></p>
+<center><b>Figure 4(a). Page 23 in `HotStuff` slides</b></center>
 <img src="/images/understanding-safety-hotstuff/two-chain+QC-rule-slide24.png" height=188 />
-<center>
-<b>Figure 4(b). Page 24 in <code>HotStuff</code> slides</b>
-</center>
-<h2 id="ii.-how-can-two-chainqc-ensure-safety">II. How can <code>two-chain+QC</code> ensure safety?</h2>
-<p>We prove the safety in two ways: one is to draw an anology to <code>Pala</code>, and the other is to prove the safety directly.</p>
-<h3 id="a.-proof-by-an-analogy-to-pala">A. Proof by an analogy to <code>Pala</code></h3>
-<p>We argue that <code>HotStuff</code> is quite similar to <code>Pala</code>, whose voting rules are based on <code>epoch</code>. The distinction though is that <code>HotStuff</code> includes QC in the block, particularly in the descendant block. Therefore, we have the following analogies:</p>
+<center><b>Figure 4(b). Page 24 in `HotStuff` slides</b></center>
+
+
+<h2 id="II-How-can-two-chain-QC-ensure-safety"><a href="#II-How-can-two-chain-QC-ensure-safety" class="headerlink" title="II. How can two-chain+QC ensure safety?"></a>II. How can <code>two-chain+QC</code> ensure safety?</h2><p>We prove the safety in two ways: one is to draw an anology to <code>Pala</code>, and the other is to prove the safety directly.</p>
+<h3 id="A-Proof-by-an-analogy-to-Pala"><a href="#A-Proof-by-an-analogy-to-Pala" class="headerlink" title="A. Proof by an analogy to Pala"></a>A. Proof by an analogy to <code>Pala</code></h3><p>We argue that <code>HotStuff</code> is quite similar to <code>Pala</code>, whose voting rules are based on <code>epoch</code>. The distinction though is that <code>HotStuff</code> includes QC in the block, particularly in the descendant block.<br>Therefore, we have the following analogies:</p>
 <ul>
 <li>a general QC involving two blocks in <code>HotStuff</code> resembles the one certified block in <code>Pala</code>, shown by Figure 5(a).</li>
 <li>an one-chain plus a general QC in <code>HotStuff</code> resemble the two consecutive certified blocks in <code>Pala</code>, shown by Figure 5(b).</li>
 <li>a two-chain plus a general QC in <code>HotStuff</code> resemble the three consecutive certified blocks in <code>Pala</code>, shown by Figure 5(c).</li>
 </ul>
-<img src="/images/understanding-safety-hotstuff/hotstuff-pala-analogy-a.png" height=108 />
-<center>
-<b>Figure 5(a). General QC in <code>HotStuff</code> resembles <code>certified block</code> in <code>Pala</code></b>
-</center>
-<img src="/images/understanding-safety-hotstuff/hotstuff-pala-analogy-b.png" height=108 />
-<center>
-<b>Figure 5(b). <code>One-chain+QC</code> in <code>HotStuff</code> resembles <code>two consecutive certified block</code> in <code>Pala</code></b>
-</center>
-<img src="/images/understanding-safety-hotstuff/hotstuff-pala-analogy-c.png" height=108 />
-<center>
-<b>Figure 5(c). <code>Two-chain+QC</code> in <code>HotStuff</code> resembles <code>three consecutive certified block</code> in <code>Pala</code></b>
-</center>
-<p>Since we have proved <code>Pala</code>'s safety with two-consecutive-notarized blocks in a previous <a target="_blank" rel="noopener" href="https://seafooler.com/2021/09/26/comp-pala-streamlet">blog</a>, we can easily conclude that an <code>one-chain+QC</code> in <code>HotStuff</code> is enough to guarantee the safety.</p>
+<p><img src="/images/understanding-safety-hotstuff/hotstuff-pala-analogy-a.png" height=108 /></p>
+<center><b>Figure 5(a). General QC in `HotStuff` resembles `certified block` in `Pala`</b></center>
+
+<p><img src="/images/understanding-safety-hotstuff/hotstuff-pala-analogy-b.png" height=108 /></p>
+<center><b>Figure 5(b). `One-chain+QC` in `HotStuff` resembles `two consecutive certified block` in `Pala`</b></center>
+
+<p><img src="/images/understanding-safety-hotstuff/hotstuff-pala-analogy-c.png" height=108 /></p>
+<center><b>Figure 5(c). `Two-chain+QC` in `HotStuff` resembles `three consecutive certified block` in `Pala`</b></center>
+
+<p>Since we have proved <code>Pala</code>‘s safety with two-consecutive-notarized blocks in a previous <a target="_blank" rel="noopener" href="https://seafooler.com/2021/09/26/comp-pala-streamlet">blog</a>, we can easily conclude that an <code>one-chain+QC</code> in <code>HotStuff</code> is enough to guarantee the safety. </p>
 <p>In fact, <code>HotStuff</code> proposes a stronger requirement, namely <code>two-chain+QC</code>, which can definitely ensure the safety too.</p>
-<h3 id="b.-proof-by-analysing-hotstuff-directly">B. Proof by analysing <code>HotStuff</code> directly</h3>
-<p>An analogy to <code>Pala</code> may not be intuitive enough. Therefore, we do an analysis on <code>HotStuff</code> directly in this section.</p>
-<h4 id="lemma-1">1. Lemma 1</h4>
-<p>First, we put forward a lemma (Lemma 1) as follows:</p>
+<h3 id="B-Proof-by-analysing-HotStuff-directly"><a href="#B-Proof-by-analysing-HotStuff-directly" class="headerlink" title="B. Proof by analysing HotStuff directly"></a>B. Proof by analysing <code>HotStuff</code> directly</h3><p>An analogy to <code>Pala</code> may not be intuitive enough. Therefore, we do an analysis on <code>HotStuff</code> directly in this section.</p>
+<h4 id="1-Lemma-1"><a href="#1-Lemma-1" class="headerlink" title="1. Lemma 1"></a>1. Lemma 1</h4><p>First, we put forward a lemma (Lemma 1) as follows:</p>
 <blockquote>
-<p>If a block <span class="math inline">\(b\)</span> is referenced by a two-chain, any block <span class="math inline">\(d\)</span> referenced by a generic QC is either an ancestor or a descendant of <span class="math inline">\(b\)</span>.</p>
+<p>If a block $b$ is referenced by a two-chain, any block $d$ referenced by a generic QC is either an ancestor or a descendant of $b$.</p>
 </blockquote>
-Proof for the lemma is as follows. Consider an example in Figure 6. Assume in replica <span class="math inline">\(A\)</span>, block <span class="math inline">\(b\)</span> is referenced by a two-chain. Therefore, at least <span class="math inline">\(2f+1\)</span> replicas will possess an one-chain referencing <span class="math inline">\(b\)</span>. For a block <span class="math inline">\(d\)</span> in replica <span class="math inline">\(B\)</span>, which is contradictory to <span class="math inline">\(b\)</span>, it will not get votes from the above <span class="math inline">\(2f+1\)</span> replicas. The reason is that, QC in <span class="math inline">\(d\)</span> has the same view number as <span class="math inline">\(b\)</span>. Therefore, a replica voting for <span class="math inline">\(b\)</span> will not vote for <span class="math inline">\(d\)</span> and <span class="math inline">\(d\)</span> will not get <span class="math inline">\(2f+1\)</span> votes. In other words, all the blocks referenced by a generic QC must be an ancestor or a descendant of <span class="math inline">\(b\)</span>. <img src="/images/understanding-safety-hotstuff/lemma1.png" height=300 />
-<center>
-<b>Figure 6. Lemma 1</b>
-</center>
-<h4 id="proof-by-an-example">2. Proof by an example</h4>
-We will not prove the safety by a rigorous theoretical analysis, which will be boring and intuitive. By contrast, we prove it by an example in following figure. <img src="/images/understanding-safety-hotstuff/two-chain+QC+proof-direct.png" height=308 />
-<center>
-<b>Figure 7. Proof of two-chain+QC</b>
-</center>
-<p>In the example, we consider a scenario: if a block is committed by the <code>two-chain+QC</code> rule in a replica (<span class="math inline">\(A\)</span>), will a contradictory block (<span class="math inline">\(d\)</span> or <span class="math inline">\(e\)</span>) get a QC in other replicas (<span class="math inline">\(B\)</span>)?</p>
+<p>Proof for the lemma is as follows. Consider an example in Figure 6. Assume in replica $A$, block $b$ is referenced by a two-chain. Therefore, at least $2f+1$ replicas will possess an one-chain referencing $b$. For a block $d$ in replica $B$, which is contradictory to $b$, it will not get votes from the above $2f+1$ replicas. The reason is that, QC in $d$ has the same view number as $b$. Therefore, a replica voting for $b$ will not vote for $d$ and $d$ will not get $2f+1$ votes.<br>In other words, all the blocks referenced by a generic QC must be an ancestor or a descendant of $b$.<br><img src="/images/understanding-safety-hotstuff/lemma1.png" height=300 /></p>
+<center><b>Figure 6. Lemma 1</b></center>
+
+
+<h4 id="2-Proof-by-an-example"><a href="#2-Proof-by-an-example" class="headerlink" title="2. Proof by an example"></a>2. Proof by an example</h4><p>We will not prove the safety by a rigorous theoretical analysis, which will be boring and intuitive. By contrast, we prove it by an example in following figure.<br><img src="/images/understanding-safety-hotstuff/two-chain+QC+proof-direct.png" height=308 /></p>
+<center><b>Figure 7. Proof of two-chain+QC</b></center>
+
+<p>In the example, we consider a scenario: if a block is committed  by the <code>two-chain+QC</code> rule in a replica ($A$), will a contradictory block ($d$ or $e$) get a QC in other replicas ($B$)?</p>
 <p>The answer is no, which can be deduced by lemma 1 directly.</p>
-<h2 id="iii.-why-qctwo-chain-cannot-ensure-safety">III. Why <code>QC+two-chain</code> cannot ensure safety?</h2>
-We explain the reason by an example in Figure 8. <img src="/images/understanding-safety-hotstuff/QC+two-chain.png" height=308 />
-<center>
-<b>Figure 8. Example of QC+two-chain</b>
-</center>
-<p>In Figure 8, a replica <span class="math inline">\(A\)</span> commits a block by a <code>QC+two-chain</code>. Therefore, at least <span class="math inline">\(2f+1\)</span> replicas can lock the block by a <code>QC+one-chain</code>. However, we argue that a contradictory block in replica <span class="math inline">\(B\)</span> can get <span class="math inline">\(2f+1\)</span> votes too.</p>
-Next, we show how to construct the viewpoint in replica <span class="math inline">\(B\)</span> in the following figure. <img src="/images/understanding-safety-hotstuff/viewpoint-replicaB.png" height=308 />
-<center>
-<b>Figure 9. Viewpoint from replica B</b>
-</center>
+<h2 id="III-Why-QC-two-chain-cannot-ensure-safety"><a href="#III-Why-QC-two-chain-cannot-ensure-safety" class="headerlink" title="III. Why QC+two-chain cannot ensure safety?"></a>III. Why <code>QC+two-chain</code> cannot ensure safety?</h2><p>We explain the reason by an example in Figure 8.<br><img src="/images/understanding-safety-hotstuff/QC+two-chain.png" height=308 /></p>
+<center><b>Figure 8. Example of QC+two-chain</b></center>
+
+<p>In Figure 8, a replica $A$ commits a block by a <code>QC+two-chain</code>. Therefore, at least $2f+1$ replicas can lock the block by a <code>QC+one-chain</code>. However, we argue that a contradictory block in replica $B$ can get $2f+1$ votes too.</p>
+<p>Next, we show how to construct the viewpoint in replica $B$ in the following figure.<br><img src="/images/understanding-safety-hotstuff/viewpoint-replicaB.png" height=308 /></p>
+<center><b>Figure 9. Viewpoint from replica B</b></center>
+
 <p>Therefore, even if a block is committed in a replica, there may be another contradictory block being committed in other replicas.</p>
-<h2 id="iv.-why-one-chainqcone-chain-can-ensure-safety">IV. Why <code>one-chain+QC+one-chain</code> can ensure safety?</h2>
-<p>Exactly, a variant commitment rule <code>one-chain+QC+one-chain</code> can also ensure the safety. The proof is quite similar to the <code>two-chain+QC</code>.</p>
-<h3 id="a.-proof-by-an-analogy-to-pala-1">A. Proof by an analogy to <code>Pala</code></h3>
-<p>As explained before, <code>one-chain+QC</code> in <code>Hotstuff</code> is actually identical to the two-consecutive blocks in <code>Pala</code>, which can guarantee the safety.</p>
-<h3 id="b.-proof-by-analysing-hotstuff-directly-1">B. Proof by analysing <code>HotStuff</code> directly</h3>
-<h4 id="lemma-2">1. Lemma 2</h4>
-<p>We put forward Lemma 2 as follows, whose schematic diagram is shown by Figure 10:</p>
+<h2 id="IV-Why-one-chain-QC-one-chain-can-ensure-safety"><a href="#IV-Why-one-chain-QC-one-chain-can-ensure-safety" class="headerlink" title="IV. Why one-chain+QC+one-chain can ensure safety?"></a>IV. Why <code>one-chain+QC+one-chain</code> can ensure safety?</h2><p>Exactly, a variant commitment rule <code>one-chain+QC+one-chain</code> can also ensure the safety. The proof is quite similar to the <code>two-chain+QC</code>.</p>
+<h3 id="A-Proof-by-an-analogy-to-Pala-1"><a href="#A-Proof-by-an-analogy-to-Pala-1" class="headerlink" title="A. Proof by an analogy to Pala"></a>A. Proof by an analogy to <code>Pala</code></h3><p>As explained before, <code>one-chain+QC</code> in <code>Hotstuff</code> is actually identical to the two-consecutive blocks in <code>Pala</code>, which can guarantee the safety.</p>
+<h3 id="B-Proof-by-analysing-HotStuff-directly-1"><a href="#B-Proof-by-analysing-HotStuff-directly-1" class="headerlink" title="B. Proof by analysing HotStuff directly"></a>B. Proof by analysing <code>HotStuff</code> directly</h3><h4 id="1-Lemma-2"><a href="#1-Lemma-2" class="headerlink" title="1. Lemma 2"></a>1. Lemma 2</h4><p>We put forward Lemma 2 as follows, whose schematic diagram is shown by Figure 10:</p>
 <blockquote>
-<p>If a block <span class="math inline">\(b\)</span> is referenced by a <code>one-chain+QC</code>, any block <span class="math inline">\(d\)</span> referenced by a generic QC is either an ancestor or a descendant of <span class="math inline">\(b\)</span>.</p>
+<p>If a block $b$ is referenced by a <code>one-chain+QC</code>, any block $d$ referenced by a generic QC is either an ancestor or a descendant of $b$.</p>
 </blockquote>
-<img src="/images/understanding-safety-hotstuff/lemma2.png" height=228 />
-<center>
-<b>Figure 10. Lemma 2</b>
-</center>
-<p>The proof is also similar to Lemma 1, which is omitted here.</p>
-<h4 id="proof-by-an-example-1">2. Proof by an example</h4>
-The safety can be proved easily with Lemma 2. We simply show the proof by an example in the following figure. <img src="/images/understanding-safety-hotstuff/one-chain+QC+one-chain.png" height=308 />
-<center>
-<b>Figure 11. Example of one-chain+QC+one-chain</b>
-</center>
-<h2 id="v.-safety-of-two-phase-hotstuff">V. Safety of Two-phase HotStuff</h2>
-<p>Exactly, a two-phase <code>HotStuff</code> can guartantee the safety, which is presented at the end of the <code>HotStuff</code> paper. The proof for its safety is also easy, since <code>one-chain+QC</code> in <code>Hotstuff</code> is actually identical to the two-consecutive blocks in <code>Pala</code>.</p>
+<p><img src="/images/understanding-safety-hotstuff/lemma2.png" height=228 /></p>
+<center><b>Figure 10. Lemma 2</b></center>
+The proof is also similar to Lemma 1, which is omitted here.
+
+#### 2. Proof by an example
+The safety can be proved easily with Lemma 2. We simply show the proof by an example in the following figure.
+<img src="/images/understanding-safety-hotstuff/one-chain+QC+one-chain.png" height=308 />
+<center><b>Figure 11. Example of one-chain+QC+one-chain</b></center>
+
+
+<h2 id="V-Safety-of-Two-phase-HotStuff"><a href="#V-Safety-of-Two-phase-HotStuff" class="headerlink" title="V. Safety of Two-phase HotStuff"></a>V. Safety of Two-phase HotStuff</h2><p>Exactly, a two-phase <code>HotStuff</code> can guartantee the safety, which is presented at the end of the <code>HotStuff</code> paper. The proof for its safety is also easy, since <code>one-chain+QC</code> in <code>Hotstuff</code> is actually identical to the two-consecutive blocks in <code>Pala</code>. </p>
 <p>The reason why three-phase is needed is that it further provides the <code>responsiveness</code> property. The analysis on the <code>responsiveness</code> is made in the <a target="_blank" rel="noopener" href="https://seafooler.com/2022/04/02/understanding-responsiveness-hotstuff/">next blog</a>.</p>
-<h2 id="reference">Reference</h2>
-<ol type="1">
-<li>Chan, T. H., Pass, R., &amp; Shi, E. "Pala: A simple partially synchronous blockchain." Cryptology ePrint Archive, 2018.</li>
-<li>Yin, M., Malkhi, D., Reiter, M. K., Gueta, G. G., &amp; Abraham, I. "HotStuff: BFT consensus with linearity and responsiveness." In Proceedings of the 2019 ACM Symposium on Principles of Distributed Computing (PODC'19), pp. 347-356.</li>
+<h2 id="Reference"><a href="#Reference" class="headerlink" title="Reference"></a>Reference</h2><ol>
+<li>Chan, T. H., Pass, R., &amp; Shi, E. “Pala: A simple partially synchronous blockchain.” Cryptology ePrint Archive, 2018.</li>
+<li>Yin, M., Malkhi, D., Reiter, M. K., Gueta, G. G., &amp; Abraham, I. “HotStuff: BFT consensus with linearity and responsiveness.” In Proceedings of the 2019 ACM Symposium on Principles of Distributed Computing (PODC’19), pp. 347-356.</li>
 <li><a target="_blank" rel="noopener" href="https://tedyin.com/archive/hotstuff-podc-slides.pdf">hotstuff-podc-slides</a></li>
 </ol>
 
@@ -422,7 +399,7 @@ The safety can be proved easily with Lemma 2. We simply show the proof by an exa
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#i.-commitment-rule-three-chain-or-two-chainqc"><span class="nav-number">1.</span> <span class="nav-text">I. Commitment rule: Three-chain or Two-chain+QC</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ii.-how-can-two-chainqc-ensure-safety"><span class="nav-number">2.</span> <span class="nav-text">II. How can two-chain+QC ensure safety?</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#a.-proof-by-an-analogy-to-pala"><span class="nav-number">2.1.</span> <span class="nav-text">A. Proof by an analogy to Pala</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#b.-proof-by-analysing-hotstuff-directly"><span class="nav-number">2.2.</span> <span class="nav-text">B. Proof by analysing HotStuff directly</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#lemma-1"><span class="nav-number">2.2.1.</span> <span class="nav-text">1. Lemma 1</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#proof-by-an-example"><span class="nav-number">2.2.2.</span> <span class="nav-text">2. Proof by an example</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#iii.-why-qctwo-chain-cannot-ensure-safety"><span class="nav-number">3.</span> <span class="nav-text">III. Why QC+two-chain cannot ensure safety?</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#iv.-why-one-chainqcone-chain-can-ensure-safety"><span class="nav-number">4.</span> <span class="nav-text">IV. Why one-chain+QC+one-chain can ensure safety?</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#a.-proof-by-an-analogy-to-pala-1"><span class="nav-number">4.1.</span> <span class="nav-text">A. Proof by an analogy to Pala</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#b.-proof-by-analysing-hotstuff-directly-1"><span class="nav-number">4.2.</span> <span class="nav-text">B. Proof by analysing HotStuff directly</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#lemma-2"><span class="nav-number">4.2.1.</span> <span class="nav-text">1. Lemma 2</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#proof-by-an-example-1"><span class="nav-number">4.2.2.</span> <span class="nav-text">2. Proof by an example</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#v.-safety-of-two-phase-hotstuff"><span class="nav-number">5.</span> <span class="nav-text">V. Safety of Two-phase HotStuff</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#reference"><span class="nav-number">6.</span> <span class="nav-text">Reference</span></a></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#I-Commitment-rule-Three-chain-or-Two-chain-QC"><span class="nav-number">1.</span> <span class="nav-text">I. Commitment rule: Three-chain or Two-chain+QC</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#II-How-can-two-chain-QC-ensure-safety"><span class="nav-number">2.</span> <span class="nav-text">II. How can two-chain+QC ensure safety?</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#A-Proof-by-an-analogy-to-Pala"><span class="nav-number">2.1.</span> <span class="nav-text">A. Proof by an analogy to Pala</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#B-Proof-by-analysing-HotStuff-directly"><span class="nav-number">2.2.</span> <span class="nav-text">B. Proof by analysing HotStuff directly</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-Lemma-1"><span class="nav-number">2.2.1.</span> <span class="nav-text">1. Lemma 1</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-Proof-by-an-example"><span class="nav-number">2.2.2.</span> <span class="nav-text">2. Proof by an example</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#III-Why-QC-two-chain-cannot-ensure-safety"><span class="nav-number">3.</span> <span class="nav-text">III. Why QC+two-chain cannot ensure safety?</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#IV-Why-one-chain-QC-one-chain-can-ensure-safety"><span class="nav-number">4.</span> <span class="nav-text">IV. Why one-chain+QC+one-chain can ensure safety?</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#A-Proof-by-an-analogy-to-Pala-1"><span class="nav-number">4.1.</span> <span class="nav-text">A. Proof by an analogy to Pala</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#B-Proof-by-analysing-HotStuff-directly-1"><span class="nav-number">4.2.</span> <span class="nav-text">B. Proof by analysing HotStuff directly</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-Lemma-2"><span class="nav-number">4.2.1.</span> <span class="nav-text">1. Lemma 2</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#V-Safety-of-Two-phase-HotStuff"><span class="nav-number">5.</span> <span class="nav-text">V. Safety of Two-phase HotStuff</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Reference"><span class="nav-number">6.</span> <span class="nav-text">Reference</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 

@@ -216,31 +216,29 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <p>承接上一篇博客:<a target="_blank" rel="noopener" href="https://seafooler.github.io/2020/04/23/distributed-system-models/">也谈分布式系统中的网络模型和故障模型</a>，本篇博客仍然想探讨一些分布式系统的理论知识。 <span id="more"></span></p>
-<h2 id="i.-写在前面">I. 写在前面</h2>
-<p>大家应该都听说过分布式系统理论中的<strong>FLP不可能性</strong>和<strong>CAP不可能三角</strong>，那么<code>FLP</code>和<code>CAP</code>之间是什么关系呢？<strong>等价</strong>还是<strong>包含</strong>？ 本篇博客，就想来谈谈<code>FLP</code>和<code>CAP</code>之间的关系。</p>
-<h2 id="ii.-理论回顾">II. 理论回顾</h2>
-<p>本节先分别回顾一下<code>FLP</code>和<code>CAP</code>这两个理论。 ### A. FLP不可能性 <a target="_blank" rel="noopener" href="https://dl.acm.org/doi/10.1145/3149.214121">Impossibility of Distributed Consensus with One Faulty Process</a>这篇论文对<code>FLP</code>不可能性的描述如下：</p>
+        <p>承接上一篇博客:<a target="_blank" rel="noopener" href="https://seafooler.github.io/2020/04/23/distributed-system-models/">也谈分布式系统中的网络模型和故障模型</a>，本篇博客仍然想探讨一些分布式系统的理论知识。<br><span id="more"></span></p>
+<h2 id="I-写在前面"><a href="#I-写在前面" class="headerlink" title="I. 写在前面"></a>I. 写在前面</h2><p>大家应该都听说过分布式系统理论中的<strong>FLP不可能性</strong>和<strong>CAP不可能三角</strong>，那么<code>FLP</code>和<code>CAP</code>之间是什么关系呢？<strong>等价</strong>还是<strong>包含</strong>？<br>本篇博客，就想来谈谈<code>FLP</code>和<code>CAP</code>之间的关系。</p>
+<h2 id="II-理论回顾"><a href="#II-理论回顾" class="headerlink" title="II. 理论回顾"></a>II. 理论回顾</h2><p>本节先分别回顾一下<code>FLP</code>和<code>CAP</code>这两个理论。</p>
+<h3 id="A-FLP不可能性"><a href="#A-FLP不可能性" class="headerlink" title="A. FLP不可能性"></a>A. FLP不可能性</h3><p><a target="_blank" rel="noopener" href="https://dl.acm.org/doi/10.1145/3149.214121">Impossibility of Distributed Consensus with One Faulty Process</a>这篇论文对<code>FLP</code>不可能性的描述如下：</p>
 <blockquote>
 <p>No completely asynchronous consensus protocol can tolerate even a single unannounced process death.</p>
 </blockquote>
-<p>翻译成大白话就是说：在一个异步的网络环境中，即使只有一个进程出现故障，也无法实现任何安全的共识算法。 在这篇论文中，作者也进行了一些假设：</p>
+<p>翻译成大白话就是说：在一个异步的网络环境中，即使只有一个进程出现故障，也无法实现任何安全的共识算法。<br>在这篇论文中，作者也进行了一些假设：</p>
 <ul>
-<li>节点故障只限定于<code>crash failure</code>，不考虑<code>Byzantine failure</code> ("do not consider Byzantine failures")</li>
-<li>消息通道是可靠的，消息只可能被延迟，但不会丢失也不会出现错误，且只会被传递一次 ("the message system is reliable—it delivers all messages correctly and exactly once")</li>
+<li>节点故障只限定于<code>crash failure</code>，不考虑<code>Byzantine failure</code> (“do not consider Byzantine failures”)</li>
+<li>消息通道是可靠的，消息只可能被延迟，但不会丢失也不会出现错误，且只会被传递一次 (“the message system is reliable—it delivers all messages correctly and exactly once”)</li>
 </ul>
-<p>总的来说，这些假设是比较强的假设。因为在如此强的假设下都无法实现安全的共识算法，那么在一些较弱的假设下就更无法实现。因此，<code>FLP</code>不可能性的适用性更广。 但论文中也指出，如果我们将假设进一步加强：<strong>假设网络模型是同步的，那么是可能实现安全的共识算法的</strong>。</p>
+<p>总的来说，这些假设是比较强的假设。因为在如此强的假设下都无法实现安全的共识算法，那么在一些较弱的假设下就更无法实现。因此，<code>FLP</code>不可能性的适用性更广。<br>但论文中也指出，如果我们将假设进一步加强：<strong>假设网络模型是同步的，那么是可能实现安全的共识算法的</strong>。</p>
 <blockquote>
-<p>By way of contrast, solutions are known for the synchronous case, the "Byzantine Generals" problem.</p>
+<p>By way of contrast, solutions are known for the synchronous case, the “Byzantine Generals” problem.</p>
 </blockquote>
 <p>也就是说，很多拜占庭条件下的共识算法都是在同步网络的假设下进行设计的。之所以同步网络下能实现共识算法，是因为同步网络使得“<strong>检测故障节点</strong>”成为了可能。</p>
-<p>回顾我们在上一篇博客:<a target="_blank" rel="noopener" href="https://seafooler.github.io/2020/04/23/distributed-system-models/">也谈分布式系统中的网络模型和故障模型</a>中讨论的各种故障模型，<code>FLP</code>不可能性属于最里面的第二层，如下如所示： <!-- ![故障模型](https://img-blog.csdnimg.cn/20200429154035171.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3UwMTQ2MzMyODM=,size_16,color_FFFFFF,t_70#pic_center) --> <img src="/images/relation-flp-cap.png" height=380 /></p>
-<h3 id="b.-cap不可能三角">B. CAP不可能三角</h3>
-<p>根据<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/CAP_theorem">维基百科</a>上的定义, <code>CAP</code>不可能三角是指：</p>
+<p>回顾我们在上一篇博客:<a target="_blank" rel="noopener" href="https://seafooler.github.io/2020/04/23/distributed-system-models/">也谈分布式系统中的网络模型和故障模型</a>中讨论的各种故障模型，<code>FLP</code>不可能性属于最里面的第二层，如下如所示：<br><!-- ![故障模型](https://img-blog.csdnimg.cn/20200429154035171.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3UwMTQ2MzMyODM=,size_16,color_FFFFFF,t_70#pic_center) --><br><img src="/images/relation-flp-cap.png" height=380 /></p>
+<h3 id="B-CAP不可能三角"><a href="#B-CAP不可能三角" class="headerlink" title="B. CAP不可能三角"></a>B. CAP不可能三角</h3><p>根据<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/CAP_theorem">维基百科</a>上的定义, <code>CAP</code>不可能三角是指：</p>
 <blockquote>
 <p>It is impossible for a distributed data store to simultaneously provide more than two out of the following three guarantees: <strong>consistency</strong>, <strong>availability</strong>, and <strong>partition tolerance</strong>.</p>
 </blockquote>
-<p>翻译成大白话是说：在分布式数据存储模型中，一致性、可用性和分区容错性，只能三者取其二。 <code>CAP</code>相关的假设如下：</p>
+<p>翻译成大白话是说：在分布式数据存储模型中，一致性、可用性和分区容错性，只能三者取其二。<br><code>CAP</code>相关的假设如下：</p>
 <ul>
 <li>故障模型为<code>Omission failure</code>，如上图最里面的第三层，即消息的传递无限晚，但有可能恢复（典型表现为网络分区）</li>
 <li>网络可能出现故障，消息可能会丢失（因为需要考虑分区容错性）</li>
@@ -251,68 +249,68 @@
 <li><code>Omission failure</code>描述了这样一类故障：对于某个特定消息而言，节点A可能永远无法接收到节点B的消息；但对于其他消息，节点A是可能收到消息的。前者表明可能出现了网络故障，后者表明该故障是可自动恢复的。</li>
 </ul>
 <p>由此可见，网络分区其实是<code>Omission failure</code>的一种特例。</p>
-<h2 id="iii.-flp和cap的关系">III. FLP和CAP的关系</h2>
-<p>先说结论：“<strong>FLP不可能性</strong>”和“<strong>CAP不可能三角</strong>”是两个不等价的理论。 以下借鉴博客<a target="_blank" rel="noopener" href="https://ug93tad.github.io/flpcap/">History of the Impossibles - CAP and FLP</a>中的内容，介绍<code>FLP</code>和<code>CAP</code>的不同。</p>
+<h2 id="III-FLP和CAP的关系"><a href="#III-FLP和CAP的关系" class="headerlink" title="III. FLP和CAP的关系"></a>III. FLP和CAP的关系</h2><p>先说结论：“<strong>FLP不可能性</strong>”和“<strong>CAP不可能三角</strong>”是两个不等价的理论。<br>以下借鉴博客<a target="_blank" rel="noopener" href="https://ug93tad.github.io/flpcap/">History of the Impossibles - CAP and FLP</a>中的内容，介绍<code>FLP</code>和<code>CAP</code>的不同。</p>
+<div class="table-container">
 <table>
 <thead>
-<tr class="header">
+<tr>
 <th>Properties</th>
 <th>FLP</th>
 <th>CAP</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td>Problem scope</td>
 <td>Distributed consensus</td>
 <td>Replicated storage</td>
 </tr>
-<tr class="even">
+<tr>
 <td>Failure model</td>
 <td>Crash failure</td>
 <td>Omission failure</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>Formalization</td>
 <td>Rigorous</td>
 <td>Gilbert &amp; Lynch approximation</td>
 </tr>
-<tr class="even">
+<tr>
 <td>Solutions</td>
 <td>Synchronous network model</td>
 <td>Crash failure</td>
 </tr>
 </tbody>
 </table>
-<h3 id="a.-problem-scope">A. Problem scope</h3>
-<p><code>FLP</code>讨论的分布式共识（<code>distributed consensus</code>）的问题。分布式共识可实现的功能包括：</p>
-<ol type="1">
+</div>
+<h3 id="A-Problem-scope"><a href="#A-Problem-scope" class="headerlink" title="A. Problem scope"></a>A. Problem scope</h3><p><code>FLP</code>讨论的分布式共识（<code>distributed consensus</code>）的问题。分布式共识可实现的功能包括：</p>
+<ol>
 <li>leader election</li>
 <li>replicated state machine</li>
 <li>distributed commit</li>
 </ol>
-<p>而CAP关注的是复制存储（<code>replicated storage</code>）的问题，<code>replicated storage</code>可以看作是<code>replicated state machine</code>的一个特例。 可以看出，复制存储是分布式共识的子问题。也即，<code>FLP</code>关注的问题更加通用，<code>CAP</code>问题是<code>FLP</code>问题的子集。</p>
+<p>而CAP关注的是复制存储（<code>replicated storage</code>）的问题，<code>replicated storage</code>可以看作是<code>replicated state machine</code>的一个特例。<br>可以看出，复制存储是分布式共识的子问题。也即，<code>FLP</code>关注的问题更加通用，<code>CAP</code>问题是<code>FLP</code>问题的子集。</p>
 <p>此外，</p>
 <ul>
 <li><code>CAP</code>中的复制存储问题只讨论了这样一类问题：同一份数据在不同节点上进行存储（主从复制即是这样一类问题）；</li>
 <li>而<code>FLP</code>中的分布式共识问题除了<code>CAP</code>中的问题外，还讨论了这样一类问题：多个任务（数据）被调度到不同节点上并行执行（存储），不同节点上的任务和状态可能是不同的（<code>2PC</code>协议即包含了这样一类问题）。</li>
 </ul>
 <p>由此也可见，<code>FLP</code>中讨论的问题更加复杂。一些方案可能无法解决<code>FLP</code>中的问题，但可能能够解决<code>CAP</code>中的问题，如III.B节中的在<code>Crash failure</code>模型假设下的方案。</p>
-<h3 id="b.-failure-model">B. Failure model</h3>
-<p>正如前面已经讨论过的，<code>FLP</code>中故障模型的假设更强，因而其得出的“不可能性”结论也适用于<code>CAP</code>场景（<code>Crash failure</code>）中；但<code>CAP</code>得出的“不可能三角”结论就不一定适用于<code>FLP</code>场景中 (<code>Omission failure</code>)。 结合我们在III.A节中的比较，容易得到以下结论：</p>
+<h3 id="B-Failure-model"><a href="#B-Failure-model" class="headerlink" title="B. Failure model"></a>B. Failure model</h3><p>正如前面已经讨论过的，<code>FLP</code>中故障模型的假设更强，因而其得出的“不可能性”结论也适用于<code>CAP</code>场景（<code>Crash failure</code>）中；但<code>CAP</code>得出的“不可能三角”结论就不一定适用于<code>FLP</code>场景中 (<code>Omission failure</code>)。<br>结合我们在III.A节中的比较，容易得到以下结论：</p>
 <ul>
 <li>在<code>Omission failure</code>故障模型中，既不可能达成分布式共识，也无法实现同时满足<code>CAP</code>的分布式存储</li>
 <li>在<code>Crash failure</code>故障模型中，虽然无法达成分布式共识，也可能实现同时满足<code>CAP</code>的分布式存储。Quora中的一个<a target="_blank" rel="noopener" href="https://qr.ae/pNrqv5">回答</a>即给出了这样一种方案设计。</li>
 </ul>
-<h3 id="c.-formalization">C. Formalization</h3>
-<p>“<strong>FLP不可能性</strong>”是进行了严格的理论验证的，但“<strong>CAP不可能三角</strong>”的证明却没那么严格。具体来说，<code>CAP</code>不可能三角的提出者（Brewer）和后来的证明者（Gilbert和Lynch），他们对于<code>CAP</code>理论的阐述是不太一致的。也即，证明者所证明的对象，实际上不是提出者一开始提出来的对象。</p>
-<h3 id="d.-solutions">D. Solutions</h3>
-<p>由于“FLP不可能性”和“CAP不可能三角”分别从理论上论证了，两个问题都是无法完美解决的。</p>
-<p>一个很自然的想法是，能够通过增强一下假设，使得该问题得以解决。 - 通过将网络模型增强为同步网络，分布式共识就得以实现。正如II.A节所说，很多解决拜占庭问题的共识算法就是这么做的 - 通过将故障模型加强为<code>crash failure</code>，复制存储也就得以实现，正如III.B节所说。</p>
-<h2 id="参考链接">参考链接</h2>
-<ol type="1">
+<h3 id="C-Formalization"><a href="#C-Formalization" class="headerlink" title="C. Formalization"></a>C. Formalization</h3><p>“<strong>FLP不可能性</strong>”是进行了严格的理论验证的，但“<strong>CAP不可能三角</strong>”的证明却没那么严格。具体来说，<code>CAP</code>不可能三角的提出者（Brewer）和后来的证明者（Gilbert和Lynch），他们对于<code>CAP</code>理论的阐述是不太一致的。也即，证明者所证明的对象，实际上不是提出者一开始提出来的对象。</p>
+<h3 id="D-Solutions"><a href="#D-Solutions" class="headerlink" title="D. Solutions"></a>D. Solutions</h3><p>由于“FLP不可能性”和“CAP不可能三角”分别从理论上论证了，两个问题都是无法完美解决的。</p>
+<p>一个很自然的想法是，能够通过增强一下假设，使得该问题得以解决。</p>
+<ul>
+<li>通过将网络模型增强为同步网络，分布式共识就得以实现。正如II.A节所说，很多解决拜占庭问题的共识算法就是这么做的</li>
+<li>通过将故障模型加强为<code>crash failure</code>，复制存储也就得以实现，正如III.B节所说。</li>
+</ul>
+<h2 id="参考链接"><a href="#参考链接" class="headerlink" title="参考链接"></a>参考链接</h2><ol>
 <li><a target="_blank" rel="noopener" href="https://ug93tad.github.io/flpcap/">History of the Impossibles - CAP and FLP</a></li>
-<li><a target="_blank" rel="noopener" href="https://www.quora.com/Distributed-Systems-Are-the-FLP-impossibility-result-and-Brewers-CAP-theorem-basically-equivalent">Distributed Systems: Are the FLP impossibility result and Brewer's CAP theorem basically equivalent?</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.quora.com/Distributed-Systems-Are-the-FLP-impossibility-result-and-Brewers-CAP-theorem-basically-equivalent">Distributed Systems: Are the FLP impossibility result and Brewer’s CAP theorem basically equivalent?</a></li>
 <li><a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Network_partition">Network partition</a></li>
 <li><a target="_blank" rel="noopener" href="https://www.zhihu.com/question/23841301">有人了解过FLP impossibility吗？</a></li>
 <li>Michael J. Fischer, Nancy A. Lynch, and Michael S. Paterson. Impossibility of distributed consensus with one faulty process. J. ACM 32, 2 (April 1985)</li>
@@ -407,7 +405,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#i.-%E5%86%99%E5%9C%A8%E5%89%8D%E9%9D%A2"><span class="nav-number">1.</span> <span class="nav-text">I. 写在前面</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ii.-%E7%90%86%E8%AE%BA%E5%9B%9E%E9%A1%BE"><span class="nav-number">2.</span> <span class="nav-text">II. 理论回顾</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#b.-cap%E4%B8%8D%E5%8F%AF%E8%83%BD%E4%B8%89%E8%A7%92"><span class="nav-number">2.1.</span> <span class="nav-text">B. CAP不可能三角</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#iii.-flp%E5%92%8Ccap%E7%9A%84%E5%85%B3%E7%B3%BB"><span class="nav-number">3.</span> <span class="nav-text">III. FLP和CAP的关系</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#a.-problem-scope"><span class="nav-number">3.1.</span> <span class="nav-text">A. Problem scope</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#b.-failure-model"><span class="nav-number">3.2.</span> <span class="nav-text">B. Failure model</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#c.-formalization"><span class="nav-number">3.3.</span> <span class="nav-text">C. Formalization</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#d.-solutions"><span class="nav-number">3.4.</span> <span class="nav-text">D. Solutions</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E9%93%BE%E6%8E%A5"><span class="nav-number">4.</span> <span class="nav-text">参考链接</span></a></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#I-%E5%86%99%E5%9C%A8%E5%89%8D%E9%9D%A2"><span class="nav-number">1.</span> <span class="nav-text">I. 写在前面</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#II-%E7%90%86%E8%AE%BA%E5%9B%9E%E9%A1%BE"><span class="nav-number">2.</span> <span class="nav-text">II. 理论回顾</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#A-FLP%E4%B8%8D%E5%8F%AF%E8%83%BD%E6%80%A7"><span class="nav-number">2.1.</span> <span class="nav-text">A. FLP不可能性</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#B-CAP%E4%B8%8D%E5%8F%AF%E8%83%BD%E4%B8%89%E8%A7%92"><span class="nav-number">2.2.</span> <span class="nav-text">B. CAP不可能三角</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#III-FLP%E5%92%8CCAP%E7%9A%84%E5%85%B3%E7%B3%BB"><span class="nav-number">3.</span> <span class="nav-text">III. FLP和CAP的关系</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#A-Problem-scope"><span class="nav-number">3.1.</span> <span class="nav-text">A. Problem scope</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#B-Failure-model"><span class="nav-number">3.2.</span> <span class="nav-text">B. Failure model</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#C-Formalization"><span class="nav-number">3.3.</span> <span class="nav-text">C. Formalization</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#D-Solutions"><span class="nav-number">3.4.</span> <span class="nav-text">D. Solutions</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E9%93%BE%E6%8E%A5"><span class="nav-number">4.</span> <span class="nav-text">参考链接</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 

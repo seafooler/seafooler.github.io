@@ -215,9 +215,8 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <p>比特币的地址是由一个字符串表示的。比较常见的是以<code>1</code>开头的字符串，也有以<code>2</code>, <code>3</code>, <code>m</code>, 和 <code>n</code> 开头的字符串。关于这些字符串的区别和联系，笔者一直有很多问题，也在网上搜过很多答案。因此，这篇文章主要是做一个问题和答案的汇总，也包括我自己的一些理解。 <span id="more"></span></p>
-<h2 id="i.-比特币地址以什么字符开头">I. 比特币地址以什么字符开头</h2>
-<p>本文列举一些最常见的地址类型，更详细的地址类型及其前缀字符见<a target="_blank" rel="noopener" href="https://en.bitcoin.it/wiki/List_of_address_prefixes">链接</a> <strong>主网 (Mainet)</strong>：</p>
+        <p>比特币的地址是由一个字符串表示的。比较常见的是以<code>1</code>开头的字符串，也有以<code>2</code>, <code>3</code>, <code>m</code>, 和 <code>n</code> 开头的字符串。关于这些字符串的区别和联系，笔者一直有很多问题，也在网上搜过很多答案。因此，这篇文章主要是做一个问题和答案的汇总，也包括我自己的一些理解。<br><span id="more"></span></p>
+<h2 id="I-比特币地址以什么字符开头"><a href="#I-比特币地址以什么字符开头" class="headerlink" title="I. 比特币地址以什么字符开头"></a>I. 比特币地址以什么字符开头</h2><p>本文列举一些最常见的地址类型，更详细的地址类型及其前缀字符见<a target="_blank" rel="noopener" href="https://en.bitcoin.it/wiki/List_of_address_prefixes">链接</a><br><strong>主网 (Mainet)</strong>：</p>
 <ul>
 <li><code>P2PKH</code>类型的地址以<code>1</code>开头</li>
 <li><code>P2SH</code>类型的地址以<code>3</code>开头</li>
@@ -227,8 +226,7 @@
 <li><code>P2PKH</code>类型的地址以<code>m</code>或<code>n</code>开头</li>
 <li><code>P2SH</code>类型的地址以<code>2</code>开头</li>
 </ul>
-<h2 id="ii.-比特币地址以什么字符开头">II. 比特币地址以什么字符开头</h2>
-<p>本节主要介绍主网上的<code>P2PKH</code>类型的地址相关变量。 比特币地址相关的变量形式包括：<code>ECDSA private key</code>, <code>ECDSA public key</code>， <code>SHA-256 hash value</code>, <code>RIPEMD-160 hash value</code>, <code>address</code>等，如下表所示。</p>
+<h2 id="II-比特币地址以什么字符开头"><a href="#II-比特币地址以什么字符开头" class="headerlink" title="II. 比特币地址以什么字符开头"></a>II. 比特币地址以什么字符开头</h2><p>本节主要介绍主网上的<code>P2PKH</code>类型的地址相关变量。<br>比特币地址相关的变量形式包括：<code>ECDSA private key</code>, <code>ECDSA public key</code>， <code>SHA-256 hash value</code>, <code>RIPEMD-160 hash value</code>, <code>address</code>等，如下表所示。</p>
 <ul>
 <li>下方的变量主要由上方的变量计算得到</li>
 <li>计算主要分为两种：可逆的和不可逆的。一般而言，生成公钥的计算和哈希计算是不可逆的；字符串拼接和编码是可逆的。</li>
@@ -239,13 +237,11 @@
 <li>更为详细的变量之间的推导计算参见<a target="_blank" rel="noopener" href="https://en.bitcoin.it/wiki/Technical_background_of_version_1_Bitcoin_addresses">链接</a>.</li>
 </ul>
 <p><img src="/images/bitcoin-addr-format.png" height=412 /></p>
-<h2 id="iii.-比特币p2pkh类型地址的位数">III. 比特币P2PKH类型地址的位数</h2>
-<blockquote>
-<p>经常访问一些比特币区块浏览器的数据，我们可以发先比特币的<code>P2PKH</code>的地址位数不全是一样的。举例来说，<a target="_blank" rel="noopener" href="https://www.blockchain.com/btc/address/11111111111111111111BZbvjr">11111111111111111111BZbvjr</a>只有<code>26</code>位，而<a target="_blank" rel="noopener" href="https://www.blockchain.com/btc/address/1BnWPuYQ57dRcWMERGCBnHwv9tKLiw4JFB">1BnWPuYQ57dRcWMERGCBnHwv9tKLiw4JFB</a>地址有<code>34</code>位。 我们在上表中，也提前列出了<code>common bitcoin address</code>的长度区间为<code>26</code>到<code>35</code>. 那么，为什么这些地址的长度会不同呢？</p>
+<h2 id="III-比特币P2PKH类型地址的位数"><a href="#III-比特币P2PKH类型地址的位数" class="headerlink" title="III. 比特币P2PKH类型地址的位数"></a>III. 比特币P2PKH类型地址的位数</h2><blockquote>
+<p>经常访问一些比特币区块浏览器的数据，我们可以发先比特币的<code>P2PKH</code>的地址位数不全是一样的。举例来说，<a target="_blank" rel="noopener" href="https://www.blockchain.com/btc/address/11111111111111111111BZbvjr">11111111111111111111BZbvjr</a>只有<code>26</code>位，而<a target="_blank" rel="noopener" href="https://www.blockchain.com/btc/address/1BnWPuYQ57dRcWMERGCBnHwv9tKLiw4JFB">1BnWPuYQ57dRcWMERGCBnHwv9tKLiw4JFB</a>地址有<code>34</code>位。<br>我们在上表中，也提前列出了<code>common bitcoin address</code>的长度区间为<code>26</code>到<code>35</code>. 那么，为什么这些地址的长度会不同呢？</p>
 </blockquote>
 <p>观察上表，容易发现一直到<code>8</code>号变量，所有的变量长度都是固定且相同的。但问题就出来了从<code>8</code>号变量向<code>9</code>号变量转化的计算中。这个计算是个<strong>Base58Check编码过程</strong>，其将若干个<strong>前缀0</strong>表示为一个<strong>字符“1”</strong>，这直接导致了地址变量的长度不一样。</p>
-<h2 id="参考链接">参考链接</h2>
-<ul>
+<h2 id="参考链接"><a href="#参考链接" class="headerlink" title="参考链接"></a>参考链接</h2><ul>
 <li><a target="_blank" rel="noopener" href="https://en.bitcoin.it/wiki/List_of_address_prefixes">List of address prefixes</a></li>
 <li><a target="_blank" rel="noopener" href="https://en.bitcoin.it/wiki/Technical_background_of_version_1_Bitcoin_addresses">Technical background of version 1 Bitcoin addresses</a></li>
 <li><a target="_blank" rel="noopener" href="https://bitcoin.stackexchange.com/questions/36944/what-are-the-minimum-and-maximum-lengths-of-a-mainnet-bitcoin-address">What are the minimum and maximum lengths of a Mainnet Bitcoin address?</a></li>
@@ -338,7 +334,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#i.-%E6%AF%94%E7%89%B9%E5%B8%81%E5%9C%B0%E5%9D%80%E4%BB%A5%E4%BB%80%E4%B9%88%E5%AD%97%E7%AC%A6%E5%BC%80%E5%A4%B4"><span class="nav-number">1.</span> <span class="nav-text">I. 比特币地址以什么字符开头</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ii.-%E6%AF%94%E7%89%B9%E5%B8%81%E5%9C%B0%E5%9D%80%E4%BB%A5%E4%BB%80%E4%B9%88%E5%AD%97%E7%AC%A6%E5%BC%80%E5%A4%B4"><span class="nav-number">2.</span> <span class="nav-text">II. 比特币地址以什么字符开头</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#iii.-%E6%AF%94%E7%89%B9%E5%B8%81p2pkh%E7%B1%BB%E5%9E%8B%E5%9C%B0%E5%9D%80%E7%9A%84%E4%BD%8D%E6%95%B0"><span class="nav-number">3.</span> <span class="nav-text">III. 比特币P2PKH类型地址的位数</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E9%93%BE%E6%8E%A5"><span class="nav-number">4.</span> <span class="nav-text">参考链接</span></a></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#I-%E6%AF%94%E7%89%B9%E5%B8%81%E5%9C%B0%E5%9D%80%E4%BB%A5%E4%BB%80%E4%B9%88%E5%AD%97%E7%AC%A6%E5%BC%80%E5%A4%B4"><span class="nav-number">1.</span> <span class="nav-text">I. 比特币地址以什么字符开头</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#II-%E6%AF%94%E7%89%B9%E5%B8%81%E5%9C%B0%E5%9D%80%E4%BB%A5%E4%BB%80%E4%B9%88%E5%AD%97%E7%AC%A6%E5%BC%80%E5%A4%B4"><span class="nav-number">2.</span> <span class="nav-text">II. 比特币地址以什么字符开头</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#III-%E6%AF%94%E7%89%B9%E5%B8%81P2PKH%E7%B1%BB%E5%9E%8B%E5%9C%B0%E5%9D%80%E7%9A%84%E4%BD%8D%E6%95%B0"><span class="nav-number">3.</span> <span class="nav-text">III. 比特币P2PKH类型地址的位数</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E9%93%BE%E6%8E%A5"><span class="nav-number">4.</span> <span class="nav-text">参考链接</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 

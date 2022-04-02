@@ -208,7 +208,7 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <p>在前一篇<a target="_blank" rel="noopener" href="https://seafooler.github.io/2020/03/05/btcd-source-code-analysis-11/">博客</a>中，我们介绍了比特币签名机制的基础知识。本篇博客我们将从原理层介绍签名流程。<a target="_blank" rel="noopener" href="https://seafooler.github.io/2020/03/07/btcd-source-code-analysis-13/">下一篇博客</a>从<code>btcd</code>源码层面讲解签名流程。
+          <p>在前一篇<a target="_blank" rel="noopener" href="https://seafooler.github.io/2020/03/05/btcd-source-code-analysis-11/">博客</a>中，我们介绍了比特币签名机制的基础知识。本篇博客我们将从原理层介绍签名流程。<a target="_blank" rel="noopener" href="https://seafooler.github.io/2020/03/07/btcd-source-code-analysis-13/">下一篇博客</a>从<code>btcd</code>源码层面讲解签名流程。<br>
           <!--noindex-->
             <div class="post-button">
               <a class="btn" href="/2020/03/06/btcd-source-code-analysis-12/#more" rel="contents">
@@ -282,12 +282,17 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <p>在前面的比特币源码分析中，我们有意忽略了签名机制部分的介绍。 但比特币的签名机制远非我们想象的那么简单，正如这篇博客<a target="_blank" rel="noopener" href="https://curiosity-driven.org/bitcoin-contracts#kickstarter">Bitcoin contracts</a>所言：</p>
+          <p>在前面的比特币源码分析中，我们有意忽略了签名机制部分的介绍。<br>但比特币的签名机制远非我们想象的那么简单，正如这篇博客<a target="_blank" rel="noopener" href="https://curiosity-driven.org/bitcoin-contracts#kickstarter">Bitcoin contracts</a>所言：</p>
 <blockquote>
-<p>Bitcoin achieves high flexibility due to three features: 1. scripts — unlocking funds in transactions is done using a simple scripting language, 2. signature hash flags — indicate which parts of the transaction are signed, 3. sequence numbers and lock time — mark transactions as not valid until specified time.</p>
+<p>Bitcoin achieves high flexibility due to three features:</p>
+<ol>
+<li>scripts — unlocking funds in transactions is done using a simple scripting language,</li>
+<li>signature hash flags — indicate which parts of the transaction are signed,</li>
+<li>sequence numbers and lock time — mark transactions as not valid until specified time.</li>
+</ol>
 </blockquote>
-<p>换句话说，正是因为不同签名格式(<code>signature hash flags</code>)的存在，才使得比特币的编程功能更加灵活多变。 接下来的三篇博客即从原理和源码两个角度来分析比特币的签名机制。 本篇博客先介绍基础知识，<a target="_blank" rel="noopener" href="https://seafooler.github.io/2020/03/06/btcd-source-code-analysis-12/">第二篇博客</a>介绍签名流程的基本原理，<a target="_blank" rel="noopener" href="https://seafooler.github.io/2020/03/07/btcd-source-code-analysis-13/">第三篇博客</a>从<code>btcd</code>源码层面讲解签名流程。</p>
-<p>源码分析所针对的<code>btcd</code>版本为: ed77733ec07dfc8a513741138419b8d9d3de9d2d
+<p>换句话说，正是因为不同签名格式(<code>signature hash flags</code>)的存在，才使得比特币的编程功能更加灵活多变。<br>接下来的三篇博客即从原理和源码两个角度来分析比特币的签名机制。<br>本篇博客先介绍基础知识，<a target="_blank" rel="noopener" href="https://seafooler.github.io/2020/03/06/btcd-source-code-analysis-12/">第二篇博客</a>介绍签名流程的基本原理，<a target="_blank" rel="noopener" href="https://seafooler.github.io/2020/03/07/btcd-source-code-analysis-13/">第三篇博客</a>从<code>btcd</code>源码层面讲解签名流程。</p>
+<p>源码分析所针对的<code>btcd</code>版本为: ed77733ec07dfc8a513741138419b8d9d3de9d2d<br>
           <!--noindex-->
             <div class="post-button">
               <a class="btn" href="/2020/03/05/btcd-source-code-analysis-11/#more" rel="contents">
@@ -361,7 +366,7 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <p>前一篇博客<a target="_blank" rel="noopener" href="https://seafooler.github.io/2020/02/28/btcd-source-code-analysis-9/">btcd源码解析——交易创建</a>中的III.B节介绍了创建<code>output</code>的细节，本篇博客主要介绍<code>input</code>的创建细节。
+          <p>前一篇博客<a target="_blank" rel="noopener" href="https://seafooler.github.io/2020/02/28/btcd-source-code-analysis-9/">btcd源码解析——交易创建</a>中的III.B节介绍了创建<code>output</code>的细节，本篇博客主要介绍<code>input</code>的创建细节。<br>
           <!--noindex-->
             <div class="post-button">
               <a class="btn" href="/2020/03/02/btcd-source-code-analysis-10/#more" rel="contents">
@@ -435,13 +440,13 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <p>从本节开始，我们从源码层面关注比特币交易的构建过程。 其中，我们尤其会关注比特币解锁脚本（为了使用<code>UTXO</code>）和新的锁定脚本（为了生成新的<code>UTXO</code>）的创建细节。我们相信通过跟踪两种脚本的创建过程，我们将对于比特币的交易细节理解得更为深入。</p>
-<p>新交易的创建会涉及到两个代码仓库（<code>btcd</code>和<code>btcwallet</code>）编译生成的三个可执行文件（<code>btcd</code>，<code>btcctl</code>，和<code>btcwallet</code>）。 <code>btcd</code>和<code>btcwallet</code>代码版本号如下所示：</p>
+          <p>从本节开始，我们从源码层面关注比特币交易的构建过程。<br>其中，我们尤其会关注比特币解锁脚本（为了使用<code>UTXO</code>）和新的锁定脚本（为了生成新的<code>UTXO</code>）的创建细节。我们相信通过跟踪两种脚本的创建过程，我们将对于比特币的交易细节理解得更为深入。</p>
+<p>新交易的创建会涉及到两个代码仓库（<code>btcd</code>和<code>btcwallet</code>）编译生成的三个可执行文件（<code>btcd</code>，<code>btcctl</code>，和<code>btcwallet</code>）。<br><code>btcd</code>和<code>btcwallet</code>代码版本号如下所示：</p>
 <ul>
 <li><code>btcd</code>版本：[git commit log]: ed77733ec07dfc8a513741138419b8d9d3de9d2d</li>
 <li><code>btcwallet</code>版本：[git commit log]: ae9416ad7623598121a7c8ad67a202c1be767155</li>
 </ul>
-<p>读者如果没有阅读过之前的这两篇博客<a target="_blank" rel="noopener" href="https://seafooler.github.io/2019/01/21/btcd-source-code-analysis-0/">btcd源码解析</a>和<a target="_blank" rel="noopener" href="https://seafooler.github.io/2019/01/22/btcd-source-code-analysis-1/">btcd源码解析——从“新区块的生成”开始</a>，<strong>强烈建议</strong>先阅读完再来阅读本篇博客。
+<p>读者如果没有阅读过之前的这两篇博客<a target="_blank" rel="noopener" href="https://seafooler.github.io/2019/01/21/btcd-source-code-analysis-0/">btcd源码解析</a>和<a target="_blank" rel="noopener" href="https://seafooler.github.io/2019/01/22/btcd-source-code-analysis-1/">btcd源码解析——从“新区块的生成”开始</a>，<strong>强烈建议</strong>先阅读完再来阅读本篇博客。<br>
           <!--noindex-->
             <div class="post-button">
               <a class="btn" href="/2020/02/28/btcd-source-code-analysis-9/#more" rel="contents">
@@ -519,7 +524,7 @@
 <blockquote>
 <p>由于block的数据存储过程比较复杂，我们在后面会再写一篇博客介绍：从P2P连接中接收到的block数据是如何存储的</p>
 </blockquote>
-<p>本篇博客主要就来介绍“区块数据的存储过程”。
+<p>本篇博客主要就来介绍“区块数据的存储过程”。<br>
           <!--noindex-->
             <div class="post-button">
               <a class="btn" href="/2019/08/05/btcd-source-code-analysis-8/#more" rel="contents">
@@ -593,7 +598,7 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <p>上一篇博客<a target="_blank" rel="noopener" href="https://seafooler.github.io/2019/07/25/btcd-source-code-analysis-6/">btcd源码解析——peer节点之间的区块数据同步(2)——headersFirstMode模式</a>介绍了<code>headersFirstMode</code>模式下，<code>peer</code>节点之间的数据同步过程。本篇博客将介绍<code>非headersFirstMode</code>模式下的数据同步过程。 因为本篇博客中的许多函数都已经在上一篇博客中进行了讲解，且在此不会过多赘述，强烈建议读者在阅读完上一篇博客之后再来阅读本篇博客。
+          <p>上一篇博客<a target="_blank" rel="noopener" href="https://seafooler.github.io/2019/07/25/btcd-source-code-analysis-6/">btcd源码解析——peer节点之间的区块数据同步(2)——headersFirstMode模式</a>介绍了<code>headersFirstMode</code>模式下，<code>peer</code>节点之间的数据同步过程。本篇博客将介绍<code>非headersFirstMode</code>模式下的数据同步过程。<br>因为本篇博客中的许多函数都已经在上一篇博客中进行了讲解，且在此不会过多赘述，强烈建议读者在阅读完上一篇博客之后再来阅读本篇博客。<br>
           <!--noindex-->
             <div class="post-button">
               <a class="btn" href="/2019/07/29/btcd-source-code-analysis-7/#more" rel="contents">
@@ -667,7 +672,7 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <p>上一篇博客<a target="_blank" rel="noopener" href="https://seafooler.github.io/2019/07/24/btcd-source-code-analysis-5/">btcd源码解析——peer节点之间的区块数据同步 (1)</a>中，我们介绍了peer A是如何发起数据同步的请求的，当时讲到存在两种模式：<code>headersFirstMode</code>模式和<code>非headersFirstMode</code>模式。本篇博客，我们将介绍<code>headersFirstMode</code>模式下数据同步的细节。
+          <p>上一篇博客<a target="_blank" rel="noopener" href="https://seafooler.github.io/2019/07/24/btcd-source-code-analysis-5/">btcd源码解析——peer节点之间的区块数据同步 (1)</a>中，我们介绍了peer A是如何发起数据同步的请求的，当时讲到存在两种模式：<code>headersFirstMode</code>模式和<code>非headersFirstMode</code>模式。本篇博客，我们将介绍<code>headersFirstMode</code>模式下数据同步的细节。<br>
           <!--noindex-->
             <div class="post-button">
               <a class="btn" href="/2019/07/25/btcd-source-code-analysis-6/#more" rel="contents">
@@ -748,7 +753,7 @@
 <li>第三篇介绍<code>非headersFirstMode</code>模式下的数据同步</li>
 </ul>
 <p>源码解析是基于<a target="_blank" rel="noopener" href="https://github.com/btcsuite/btcd">btcd</a>仓库<code>c26ffa870fd817666a857af1bf6498fabba1ffe3</code>的<code>commit id</code> 版本。</p>
-<p>我们假设<code>peer B</code>是先启动的节点，<code>peer A</code>后启动。<code>peer A</code>在启动后需要从<code>peer B</code>同步数据，那么<code>peer A</code>应该首先向<code>peer B</code>发送数据请求。
+<p>我们假设<code>peer B</code>是先启动的节点，<code>peer A</code>后启动。<code>peer A</code>在启动后需要从<code>peer B</code>同步数据，那么<code>peer A</code>应该首先向<code>peer B</code>发送数据请求。<br>
           <!--noindex-->
             <div class="post-button">
               <a class="btn" href="/2019/07/24/btcd-source-code-analysis-5/#more" rel="contents">
@@ -822,7 +827,7 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <p>我们接着上一篇<a target="_blank" rel="noopener" href="https://seafooler.github.io/2019/07/21/btcd-source-code-analysis-3/">博客</a>，继续讲解<code>P2P</code><strong>主动连接的管理</strong>和<strong>被动接受连接</strong>的过程。
+          <p>我们接着上一篇<a target="_blank" rel="noopener" href="https://seafooler.github.io/2019/07/21/btcd-source-code-analysis-3/">博客</a>，继续讲解<code>P2P</code><strong>主动连接的管理</strong>和<strong>被动接受连接</strong>的过程。<br>
           <!--noindex-->
             <div class="post-button">
               <a class="btn" href="/2019/07/22/btcd-source-code-analysis-4/#more" rel="contents">
@@ -896,7 +901,7 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <p>从这一篇博客开始，我们将介绍<code>btcd</code>节点之间<code>P2P</code>连接建立的过程。考虑到内容太长，分为上下两篇博客来讲解。这两篇博客之后，我们将继续介绍节点之间数据的同步过程。 源码解析是基于<a target="_blank" rel="noopener" href="https://github.com/btcsuite/btcd">btcd</a>仓库<code>c26ffa870fd817666a857af1bf6498fabba1ffe3</code>的<code>commit id</code> 版本。
+          <p>从这一篇博客开始，我们将介绍<code>btcd</code>节点之间<code>P2P</code>连接建立的过程。考虑到内容太长，分为上下两篇博客来讲解。这两篇博客之后，我们将继续介绍节点之间数据的同步过程。<br>源码解析是基于<a target="_blank" rel="noopener" href="https://github.com/btcsuite/btcd">btcd</a>仓库<code>c26ffa870fd817666a857af1bf6498fabba1ffe3</code>的<code>commit id</code> 版本。<br>
           <!--noindex-->
             <div class="post-button">
               <a class="btn" href="/2019/07/21/btcd-source-code-analysis-3/#more" rel="contents">

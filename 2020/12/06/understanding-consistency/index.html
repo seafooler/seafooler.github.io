@@ -21,12 +21,12 @@
     var CONFIG = {"hostname":"example.com","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":{"disqus":{"text":"Load Disqus","order":-1}}},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
   </script>
 
-  <meta name="description" content="分布式系统中存在着各种“一致性”的概念，本篇博客主要对这些概念进行一个总结。 本篇博客没有太多原创的内容，主要是从自己的视角将一些博客和书籍中的知识进行汇总，留作日后的复习。">
+  <meta name="description" content="分布式系统中存在着各种“一致性”的概念，本篇博客主要对这些概念进行一个总结。本篇博客没有太多原创的内容，主要是从自己的视角将一些博客和书籍中的知识进行汇总，留作日后的复习。">
 <meta property="og:type" content="article">
 <meta property="og:title" content="对分布式系统中各种一致性的理解">
 <meta property="og:url" content="http://example.com/2020/12/06/understanding-consistency/index.html">
 <meta property="og:site_name" content="Seafooler&#39;s Blog">
-<meta property="og:description" content="分布式系统中存在着各种“一致性”的概念，本篇博客主要对这些概念进行一个总结。 本篇博客没有太多原创的内容，主要是从自己的视角将一些博客和书籍中的知识进行汇总，留作日后的复习。">
+<meta property="og:description" content="分布式系统中存在着各种“一致性”的概念，本篇博客主要对这些概念进行一个总结。本篇博客没有太多原创的内容，主要是从自己的视角将一些博客和书籍中的知识进行汇总，留作日后的复习。">
 <meta property="og:locale" content="en_US">
 <meta property="og:image" content="http://example.com/images/understanding-consistency/comp-linearizability-sequential.png">
 <meta property="og:image" content="http://example.com/images/understanding-consistency/comp-casual-sequential-pram.png">
@@ -218,55 +218,53 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <p>分布式系统中存在着各种“一致性”的概念，本篇博客主要对这些概念进行一个总结。 本篇博客没有太多原创的内容，主要是从自己的视角将一些博客和书籍中的知识进行汇总，留作日后的复习。 <span id="more"></span></p>
-<h2 id="i.-四种一致性">I. 四种一致性</h2>
-<ul>
+        <p>分布式系统中存在着各种“一致性”的概念，本篇博客主要对这些概念进行一个总结。<br>本篇博客没有太多原创的内容，主要是从自己的视角将一些博客和书籍中的知识进行汇总，留作日后的复习。<br><span id="more"></span></p>
+<h2 id="I-四种一致性"><a href="#I-四种一致性" class="headerlink" title="I. 四种一致性"></a>I. 四种一致性</h2><ul>
 <li>Linearizability：跟时间相关，严格按照时间顺序</li>
 <li>Sequential：跟时间无关，但要求<strong>所有操作</strong>在所有进程上被看到的顺序必须一致相同</li>
 <li>Casual：跟时间无关，但要求<strong>有因果关系</strong>的操作在所有进程上被看到的顺序必须一致</li>
 <li>PRAM：跟时间无关，但要求同一个进程中的多个写操作在所有进程上被看到的顺序必须一致，而不同进程上的写操作可以不一致。其忽略了读操作所带来的因果关系的要求</li>
 </ul>
-<h2 id="ii.-linearizability和sequential比较">II. Linearizability和Sequential比较</h2>
-<!-- ![Linearizability v.s. Sequential](https://img-blog.csdnimg.cn/20201206173217648.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3UwMTQ2MzMyODM=,size_16,color_FFFFFF,t_70) -->
+<h2 id="II-Linearizability和Sequential比较"><a href="#II-Linearizability和Sequential比较" class="headerlink" title="II. Linearizability和Sequential比较"></a>II. Linearizability和Sequential比较</h2><!-- ![Linearizability v.s. Sequential](https://img-blog.csdnimg.cn/20201206173217648.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3UwMTQ2MzMyODM=,size_16,color_FFFFFF,t_70) -->
 <p><img src="/images/understanding-consistency/comp-linearizability-sequential.png" height=356 /></p>
-<ol type="1">
+<ol>
 <li>图a是满足Sequential Consistency（顺序一致性），但是不满足Linearizability Consistency（线性一致性）。原因在于，从全局时钟的观点来看，P2进程对变量X的读操作在P1进程对变量X的写操作之后，然而读出来的却是旧的数据。但是这个图却是满足Sequential Consistency（顺序一致性）的，因为两个进程P1,P2的一致性并没有冲突。从这两个进程的角度来看，顺序应该是这样的：Write(y,2) , Read(x,0) , Write(x,4), Read(y,2)，每个进程内部的读写顺序都是合理的，但是显然这个顺序与全局时钟下看到的顺序并不一样。</li>
 <li>图b满足Linearizability Consistency（线性一致性），因为每个读操作都读到了该变量的最新写的结果，同时两个进程看到的操作顺序与全局时钟的顺序一样，都是Write(y,2) , Read(x,4) , Write(x,4), Read(y,2)。</li>
 <li>图c不满足Sequential Consistency（顺序一致性），当然也就不满足Linearizability Consistency（线性一致性）。因为从进程P1的角度看，它对变量Y的读操作返回了结果0。那么就是说，P1进程的对变量Y的读操作在P2进程对变量Y的写操作之前，这意味着它认为的顺序是这样的：write(x,4) , Read(y,0) , Write(y,2), Read(x,0)，显然这个顺序又是不能被满足的，因为最后一个对变量x的读操作读出来也是旧的数据。因此这个顺序是有冲突的，不满足顺序一致性。</li>
 <li>两者的详细比较</li>
 </ol>
+<div class="table-container">
 <table>
 <thead>
-<tr class="header">
-<th style="text-align: center;">Linearizability</th>
-<th style="text-align: center;">Sequential consistency</th>
+<tr>
+<th style="text-align:center">Linearizability</th>
+<th style="text-align:center">Sequential consistency</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
-<td style="text-align: center;">单一进程要求按照时间序</td>
-<td style="text-align: center;">单一进程内要求按照编程序</td>
+<tr>
+<td style="text-align:center">单一进程要求按照时间序</td>
+<td style="text-align:center">单一进程内要求按照编程序</td>
 </tr>
-<tr class="even">
-<td style="text-align: center;">不同进程要求按照时间序</td>
-<td style="text-align: center;">不同进程读写顺序无要求</td>
+<tr>
+<td style="text-align:center">不同进程要求按照时间序</td>
+<td style="text-align:center">不同进程读写顺序无要求</td>
 </tr>
-<tr class="odd">
-<td style="text-align: center;">可以通过主动备份实现</td>
-<td style="text-align: center;">可以通过被动备份实现</td>
+<tr>
+<td style="text-align:center">可以通过主动备份实现</td>
+<td style="text-align:center">可以通过被动备份实现</td>
 </tr>
 </tbody>
 </table>
-<h2 id="iii.-casualsequential和pram比较">III. Casual、Sequential和PRAM比较</h2>
-<!-- ![Casual v.s. Sequential v.s. PRAM](https://img-blog.csdnimg.cn/20201206191151501.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3UwMTQ2MzMyODM=,size_16,color_FFFFFF,t_70) -->
+</div>
+<h2 id="III-Casual、Sequential和PRAM比较"><a href="#III-Casual、Sequential和PRAM比较" class="headerlink" title="III. Casual、Sequential和PRAM比较"></a>III. Casual、Sequential和PRAM比较</h2><!-- ![Casual v.s. Sequential v.s. PRAM](https://img-blog.csdnimg.cn/20201206191151501.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3UwMTQ2MzMyODM=,size_16,color_FFFFFF,t_70) -->
 <p><img src="/images/understanding-consistency/comp-casual-sequential-pram.png" height=556 /></p>
-<ol type="1">
+<ol>
 <li>图a满足 Sequential Consistency（顺序一致性），因此也满足Casual Consistency（因果一致性），因为从这个系统中的四个进程的角度看，它们都有相同的顺序也有相同的因果关系。</li>
 <li>图b满足Casual Consistency（因果一致性）但是不满足 Sequential Consistency（顺序一致性）。首先P1和P2的写是没有因果关系的，从P3看来，Read(x,7) 表示P2的 Write(x,7)一定在P3的Read(x,7)之前， P3的Read(x,2)表示P1的Write(x,2)一定在P3的Read(x,2)之前，又因为P3中Read(x,7) 在Read(x,2)之前（本地因果顺序），因此，从P3角度看P1和P2的执行顺序应该是：Write(x,7)、Write(x,2)、Write(x,4)。同样的分析方法，可以得出从P4角度看P1和P2的执行顺序应该是：Write(x,2)、Write(x,4)、Write(x,7)。<u><strong>由于P3和P4看到的执行顺序不一致，因此这不满足Sequential Consistency（顺序一致性）要求。</strong></u></li>
 <li>图c展示了比Casual Consistency（因果一致性）更弱的一种一致性模型： PRAM（Pipelined Random Access Memory）管道式存储器，是Lipton和Sandberg于1988年在学术报告”PRAM: A scalable shared memory”中提出。如前所述， <u><strong>Sequential Consistency（顺序一致性）要求所有进程看到的程序执行顺序必须一致，而Casual Consistency（因果一致性）降低了一致性要求，它要求有因果关系的操作在所有进程上看到必须一致</strong></u>，而PRAM Consistency进一步降低一致性要求。先看PRAM定义：“…Writes done by a single process are received by all other processes in the order in which they were issued, but writes from different processes may be seen in a different order by different processes.” 意即在PRAM中，不同进程可以看到不同的执行顺序，但在某一进程上的多个写操作，在所有进程上看到的顺序必须一致，而不同进程上的写操作在不同进程上看起来其执行顺序则可以不一致。图c展示的例子而言，从P4角度看，无法对P1和P2中的操作进行排序，从而得到P4中的视图，因此肯定不满足Casual Consistency。但如果不考虑P2中读操作带来的因果关系，P4依次看到了P2中的Write(x,7)和P1中的Write(x,2)和Write(x,4)，其满足PRAM的要求</li>
 </ol>
-<h2 id="参考文献">参考文献</h2>
-<ul>
+<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><ul>
 <li><a target="_blank" rel="noopener" href="http://www.bailis.org/blog/linearizability-versus-serializability/">Linearizability versus Serializability</a></li>
 <li><a target="_blank" rel="noopener" href="http://kaiyuan.me/2018/04/21/consistency-concept/">分布式系统一致性</a></li>
 <li><a target="_blank" rel="noopener" href="https://jepsen.io/consistency">Consistency Models</a></li>
@@ -362,7 +360,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#i.-%E5%9B%9B%E7%A7%8D%E4%B8%80%E8%87%B4%E6%80%A7"><span class="nav-number">1.</span> <span class="nav-text">I. 四种一致性</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ii.-linearizability%E5%92%8Csequential%E6%AF%94%E8%BE%83"><span class="nav-number">2.</span> <span class="nav-text">II. Linearizability和Sequential比较</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#iii.-casualsequential%E5%92%8Cpram%E6%AF%94%E8%BE%83"><span class="nav-number">3.</span> <span class="nav-text">III. Casual、Sequential和PRAM比较</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%8C%AE"><span class="nav-number">4.</span> <span class="nav-text">参考文献</span></a></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#I-%E5%9B%9B%E7%A7%8D%E4%B8%80%E8%87%B4%E6%80%A7"><span class="nav-number">1.</span> <span class="nav-text">I. 四种一致性</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#II-Linearizability%E5%92%8CSequential%E6%AF%94%E8%BE%83"><span class="nav-number">2.</span> <span class="nav-text">II. Linearizability和Sequential比较</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#III-Casual%E3%80%81Sequential%E5%92%8CPRAM%E6%AF%94%E8%BE%83"><span class="nav-number">3.</span> <span class="nav-text">III. Casual、Sequential和PRAM比较</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%8C%AE"><span class="nav-number">4.</span> <span class="nav-text">参考文献</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 

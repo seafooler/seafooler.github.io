@@ -21,12 +21,12 @@
     var CONFIG = {"hostname":"example.com","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":{"disqus":{"text":"Load Disqus","order":-1}}},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
   </script>
 
-  <meta name="description" content="我们经常需要查看比特币中的一些交易数据，比如说一笔交易的发送方和接收方账户是什么，交易额为多少。其实，通过一些比特币的区块浏览器很容易能够查询到。区块浏览器其实是帮我们提前解析好了数据，并通过网页的形式展现出来。 比特币中真实存储在区块中的数据其实是一些raw transaction，这些raw transaction是怎么被解析出来的呢？或者说，raw transaction中的各个字段分别代表">
+  <meta name="description" content="我们经常需要查看比特币中的一些交易数据，比如说一笔交易的发送方和接收方账户是什么，交易额为多少。其实，通过一些比特币的区块浏览器很容易能够查询到。区块浏览器其实是帮我们提前解析好了数据，并通过网页的形式展现出来。比特币中真实存储在区块中的数据其实是一些raw transaction，这些raw transaction是怎么被解析出来的呢？或者说，raw transaction中的各个字段分别代表什">
 <meta property="og:type" content="article">
 <meta property="og:title" content="理解比特币的raw transaction——P2PKH类型输出">
 <meta property="og:url" content="http://example.com/2019/03/16/bitcoin-protocol-p2pkh/index.html">
 <meta property="og:site_name" content="Seafooler&#39;s Blog">
-<meta property="og:description" content="我们经常需要查看比特币中的一些交易数据，比如说一笔交易的发送方和接收方账户是什么，交易额为多少。其实，通过一些比特币的区块浏览器很容易能够查询到。区块浏览器其实是帮我们提前解析好了数据，并通过网页的形式展现出来。 比特币中真实存储在区块中的数据其实是一些raw transaction，这些raw transaction是怎么被解析出来的呢？或者说，raw transaction中的各个字段分别代表">
+<meta property="og:description" content="我们经常需要查看比特币中的一些交易数据，比如说一笔交易的发送方和接收方账户是什么，交易额为多少。其实，通过一些比特币的区块浏览器很容易能够查询到。区块浏览器其实是帮我们提前解析好了数据，并通过网页的形式展现出来。比特币中真实存储在区块中的数据其实是一些raw transaction，这些raw transaction是怎么被解析出来的呢？或者说，raw transaction中的各个字段分别代表什">
 <meta property="og:locale" content="en_US">
 <meta property="og:image" content="http://example.com/images/bitcoin-protocol-p2pkh/raw-transaction.png">
 <meta property="og:image" content="http://example.com/images/bitcoin-protocol-p2pkh/scriptsig-scriptpubkey.png">
@@ -217,27 +217,22 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <p>我们经常需要查看比特币中的一些交易数据，比如说一笔交易的发送方和接收方账户是什么，交易额为多少。其实，通过一些比特币的区块浏览器很容易能够查询到。区块浏览器其实是帮我们提前解析好了数据，并通过网页的形式展现出来。 比特币中真实存储在区块中的数据其实是一些<code>raw transaction</code>，这些<code>raw transaction</code>是怎么被解析出来的呢？或者说，<code>raw transaction</code>中的各个字段分别代表什么含义。 这篇博客将首先介绍<code>raw transaction</code>的一般格式。然后以一个简单的<code>raw transaction</code>为例，理解其中各个字段的含义。 这篇博客主要关注最简单的只包含<code>P2PKH</code>类型的交易。 <span id="more"></span></p>
-<h2 id="i.-raw-transaction的一般格式">I. Raw transaction的一般格式</h2>
-<h3 id="a.-raw-transaction的总体描述">A. Raw transaction的总体描述</h3>
-<!-- ![raw transaction的总体描述](https://img-blog.csdnimg.cn/20190316162608568.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3UwMTQ2MzMyODM=,size_16,color_FFFFFF,t_70) -->
-<p><img src="/images/bitcoin-protocol-p2pkh/raw-transaction.png" height=312 /> 一个<code>raw transaction</code>的一般格式如上表所示，该表格参考<a target="_blank" rel="noopener" href="http://www.righto.com/2014/02/bitcoins-hard-way-using-raw-bitcoin.html">该博客</a>. 需要注意的是：</p>
+        <p>我们经常需要查看比特币中的一些交易数据，比如说一笔交易的发送方和接收方账户是什么，交易额为多少。其实，通过一些比特币的区块浏览器很容易能够查询到。区块浏览器其实是帮我们提前解析好了数据，并通过网页的形式展现出来。<br>比特币中真实存储在区块中的数据其实是一些<code>raw transaction</code>，这些<code>raw transaction</code>是怎么被解析出来的呢？或者说，<code>raw transaction</code>中的各个字段分别代表什么含义。<br>这篇博客将首先介绍<code>raw transaction</code>的一般格式。然后以一个简单的<code>raw transaction</code>为例，理解其中各个字段的含义。<br>这篇博客主要关注最简单的只包含<code>P2PKH</code>类型的交易。<br><span id="more"></span></p>
+<h2 id="I-Raw-transaction的一般格式"><a href="#I-Raw-transaction的一般格式" class="headerlink" title="I. Raw transaction的一般格式"></a>I. Raw transaction的一般格式</h2><h3 id="A-Raw-transaction的总体描述"><a href="#A-Raw-transaction的总体描述" class="headerlink" title="A. Raw transaction的总体描述"></a>A. Raw transaction的总体描述</h3><!-- ![raw transaction的总体描述](https://img-blog.csdnimg.cn/20190316162608568.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3UwMTQ2MzMyODM=,size_16,color_FFFFFF,t_70) -->
+<p><img src="/images/bitcoin-protocol-p2pkh/raw-transaction.png" height=312 /><br>一个<code>raw transaction</code>的一般格式如上表所示，该表格参考<a target="_blank" rel="noopener" href="http://www.righto.com/2014/02/bitcoins-hard-way-using-raw-bitcoin.html">该博客</a>.<br>需要注意的是：</p>
 <ul>
 <li>若交易中的某个字段包含多个字节，字节可能按照小端（低位字节在前，高位字节在后）或大端进行排序，表格中已经注明</li>
 <li>发送方地址可由<code>scriptSig</code>中的<code>PubK</code>计算得到，可借助在线工具<a target="_blank" rel="noopener" href="https://bitcoinvalued.com/tools.php">bitcoinvalued</a>实现转换</li>
 <li>接收方地址可由<code>scriptPubKey</code>中的<code>PubKHash</code>计算得到，可借助在线工具<a target="_blank" rel="noopener" href="https://bitcoinvalued.com/tools.php">bitcoinvalued</a>实现转换</li>
 </ul>
-<h3 id="b.-scriptsig和scriptpubkey字段">B. scriptSig和scriptPubKey字段</h3>
-<!-- ![scriptSig和scriptPubKey字段描述](https://img-blog.csdnimg.cn/20190316163328309.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3UwMTQ2MzMyODM=,size_16,color_FFFFFF,t_70) -->
-<p><img src="/images/bitcoin-protocol-p2pkh/scriptsig-scriptpubkey.png" height=256 /> 其中各种<code>op</code>操作符的含义可参考<a target="_blank" rel="noopener" href="https://en.bitcoin.it/wiki/Script">链接</a>。 需要指出的是，位于区间<code>0x01-0x4b</code>的操作符都是用来将紧接着的数据入栈的。<code>scriptSig</code>中的<code>op</code>操作符大多是这样的操作符，如<code>0x47</code>, <code>0x21</code>等。</p>
-<h2 id="ii.-举例说明">II. 举例说明</h2>
-<p>不失一般性地，本文以测试网testnet中的一个交易<code>64f14bf86bbc45b2cc924c3a5da547868754af3e79493fe60aadfc1718ae9cce</code>来举例。该交易的<code>raw transaction</code>可以从本地同步的测试网节点中获得，也可以通过查询<a target="_blank" rel="noopener" href="https://testnet.smartbit.com.au/tx/64f14bf86bbc45b2cc924c3a5da547868754af3e79493fe60aadfc1718ae9cce">smartbit</a>区块浏览器获得。信息如下所示:</p>
+<h3 id="B-scriptSig和scriptPubKey字段"><a href="#B-scriptSig和scriptPubKey字段" class="headerlink" title="B. scriptSig和scriptPubKey字段"></a>B. scriptSig和scriptPubKey字段</h3><!-- ![scriptSig和scriptPubKey字段描述](https://img-blog.csdnimg.cn/20190316163328309.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3UwMTQ2MzMyODM=,size_16,color_FFFFFF,t_70) -->
+<p><img src="/images/bitcoin-protocol-p2pkh/scriptsig-scriptpubkey.png" height=256 /><br>其中各种<code>op</code>操作符的含义可参考<a target="_blank" rel="noopener" href="https://en.bitcoin.it/wiki/Script">链接</a>。<br>需要指出的是，位于区间<code>0x01-0x4b</code>的操作符都是用来将紧接着的数据入栈的。<code>scriptSig</code>中的<code>op</code>操作符大多是这样的操作符，如<code>0x47</code>, <code>0x21</code>等。</p>
+<h2 id="II-举例说明"><a href="#II-举例说明" class="headerlink" title="II. 举例说明"></a>II. 举例说明</h2><p>不失一般性地，本文以测试网testnet中的一个交易<code>64f14bf86bbc45b2cc924c3a5da547868754af3e79493fe60aadfc1718ae9cce</code>来举例。该交易的<code>raw transaction</code>可以从本地同步的测试网节点中获得，也可以通过查询<a target="_blank" rel="noopener" href="https://testnet.smartbit.com.au/tx/64f14bf86bbc45b2cc924c3a5da547868754af3e79493fe60aadfc1718ae9cce">smartbit</a>区块浏览器获得。信息如下所示:</p>
 <blockquote>
 <p>010000000196c472ac5cbc3cf6acae1493d4d32f119f39ec9e440176b2fb7de6e6024b9f21010000006a473044022034519a85fb5299e180865dda936c5d53edabaaf6d15cd1740aac9878b76238e002207345fcb5a62deeb8d9d80e5b412bd24d09151c2008b7fef10eb5f13e484d1e0d01210207c9ece04a9b5ef3ff441f3aad6bb63e323c05047a820ab45ebbe61385aa7446ffffffff0140420f00000000001976a914053496c1ea3d54d649ed54de490fda342522244088ac00000000</p>
 </blockquote>
-<p>对该信息按照上图中字段进行划分，结果如下所示： <!-- ![举例说明](https://img-blog.csdnimg.cn/20190316170120407.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3UwMTQ2MzMyODM=,size_16,color_FFFFFF,t_70) --> <img src="/images/bitcoin-protocol-p2pkh/tx-decoding.png" height=512 /></p>
-<h2 id="参考链接">参考链接</h2>
-<ul>
+<p>对该信息按照上图中字段进行划分，结果如下所示：<br><!-- ![举例说明](https://img-blog.csdnimg.cn/20190316170120407.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3UwMTQ2MzMyODM=,size_16,color_FFFFFF,t_70) --><br><img src="/images/bitcoin-protocol-p2pkh/tx-decoding.png" height=512 /></p>
+<h2 id="参考链接"><a href="#参考链接" class="headerlink" title="参考链接"></a>参考链接</h2><ul>
 <li><a target="_blank" rel="noopener" href="https://www.siliconian.com/blog/16-bitcoin-blockchain/22-deconstructing-bitcoin-transactions">Deconstructing Bitcoin Transactions Part 1</a></li>
 <li><a target="_blank" rel="noopener" href="https://bitcoin.stackexchange.com/questions/3374/how-to-redeem-a-basic-tx">How to redeem a basic Tx?</a></li>
 </ul>
@@ -329,7 +324,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#i.-raw-transaction%E7%9A%84%E4%B8%80%E8%88%AC%E6%A0%BC%E5%BC%8F"><span class="nav-number">1.</span> <span class="nav-text">I. Raw transaction的一般格式</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#a.-raw-transaction%E7%9A%84%E6%80%BB%E4%BD%93%E6%8F%8F%E8%BF%B0"><span class="nav-number">1.1.</span> <span class="nav-text">A. Raw transaction的总体描述</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#b.-scriptsig%E5%92%8Cscriptpubkey%E5%AD%97%E6%AE%B5"><span class="nav-number">1.2.</span> <span class="nav-text">B. scriptSig和scriptPubKey字段</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ii.-%E4%B8%BE%E4%BE%8B%E8%AF%B4%E6%98%8E"><span class="nav-number">2.</span> <span class="nav-text">II. 举例说明</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E9%93%BE%E6%8E%A5"><span class="nav-number">3.</span> <span class="nav-text">参考链接</span></a></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#I-Raw-transaction%E7%9A%84%E4%B8%80%E8%88%AC%E6%A0%BC%E5%BC%8F"><span class="nav-number">1.</span> <span class="nav-text">I. Raw transaction的一般格式</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#A-Raw-transaction%E7%9A%84%E6%80%BB%E4%BD%93%E6%8F%8F%E8%BF%B0"><span class="nav-number">1.1.</span> <span class="nav-text">A. Raw transaction的总体描述</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#B-scriptSig%E5%92%8CscriptPubKey%E5%AD%97%E6%AE%B5"><span class="nav-number">1.2.</span> <span class="nav-text">B. scriptSig和scriptPubKey字段</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#II-%E4%B8%BE%E4%BE%8B%E8%AF%B4%E6%98%8E"><span class="nav-number">2.</span> <span class="nav-text">II. 举例说明</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E9%93%BE%E6%8E%A5"><span class="nav-number">3.</span> <span class="nav-text">参考链接</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
