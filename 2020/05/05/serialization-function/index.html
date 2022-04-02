@@ -216,23 +216,22 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <p>我们应该都用过各种序列化（serialization）的方法（如Python中的pickle.dumps），甚至自己也写过一些序列化的小工具，但可能很少深入思考过序列化的作用。本篇博客即对该问题进行探讨。<br><span id="more"></span></p>
-<h2 id="I-写在前面"><a href="#I-写在前面" class="headerlink" title="I. 写在前面"></a>I. 写在前面</h2><p>维基百科对于序列化的解释比较冗长；相比之下，百度百科的解释更为简单：</p>
-<blockquote>
-<p>序列化 (Serialization)是将对象的状态信息转换为可以存储或传输的形式的过程</p>
-</blockquote>
+        <p>我们应该都用过各种序列化（serialization）的方法（如Python中的pickle.dumps），甚至自己也写过一些序列化的小工具，但可能很少深入思考过序列化的作用。本篇博客即对该问题进行探讨。 <span id="more"></span></p>
+<h2 id="i.-写在前面">I. 写在前面</h2>
+<p>维基百科对于序列化的解释比较冗长；相比之下，百度百科的解释更为简单： &gt; 序列化 (Serialization)是将对象的状态信息转换为可以存储或传输的形式的过程</p>
 <p>这里面重点强调了两个概念：格式的转变和转变的目的</p>
 <ul>
 <li>[格式的转变] 转变前的格式是<strong>对象状态信息</strong>，转变后的格式是“<strong>可以存储或传输的形式</strong>”</li>
 <li>[转变的目的] 转变成字节流后的目的主要有两个：1. 存储到磁盘； 2. 通过网络进行传输</li>
 </ul>
-<p>存储和传输的本质是一样的，都是I/O。我们后面就以磁盘存储为例进行说明。<br>转变后的格式（即：可存储或传输的形式）比较抽象。因为我们以磁盘存储为例进行说明，为方便表述，我们后面就以“<strong>存储格式</strong>”简称该转变后的格式。<br>序列化的作用又可以简单理解为：<strong>把内存中的数据存储到磁盘中的过程</strong>。<br>那么，一个随之而来的问题便是：</p>
+<p>存储和传输的本质是一样的，都是I/O。我们后面就以磁盘存储为例进行说明。 转变后的格式（即：可存储或传输的形式）比较抽象。因为我们以磁盘存储为例进行说明，为方便表述，我们后面就以“<strong>存储格式</strong>”简称该转变后的格式。 序列化的作用又可以简单理解为：<strong>把内存中的数据存储到磁盘中的过程</strong>。 那么，一个随之而来的问题便是：</p>
 <ul>
 <li>对象状态格式和存储格式的本质区别是什么？</li>
 <li>或者：内存数据和磁盘数据的本质区别是什么？</li>
 </ul>
-<h2 id="II-问题阐述"><a href="#II-问题阐述" class="headerlink" title="II. 问题阐述"></a>II. 问题阐述</h2><p>我们知道，内存和磁盘本质上都是存储二进制数据的。<br>那么，</p>
-<ol>
+<h2 id="ii.-问题阐述">II. 问题阐述</h2>
+<p>我们知道，内存和磁盘本质上都是存储二进制数据的。 那么，</p>
+<ol type="1">
 <li>为什么不直接把内存中的数据<strong>复制</strong>一份到磁盘中呢？</li>
 <li>为什么要进行序列化？</li>
 <li>如果只是为了数据持久化，直接进行数据的<strong>拷贝</strong>可以吗？</li>
@@ -240,20 +239,22 @@
 <li>既然内存和磁盘的存储本质是一样的，不考虑内存和磁盘的数据存取速度差异，使用<strong>磁盘直接和cache、CPU进行数据交互</strong>可以吗（即跳过内存这一级别）？这个想法似乎和NVM有些不谋而合了。</li>
 </ol>
 <p>这些问题其实说的是同一个问题。</p>
-<h2 id="III-解释"><a href="#III-解释" class="headerlink" title="III. 解释"></a>III. 解释</h2><h3 id="A-一些不够完整的解释"><a href="#A-一些不够完整的解释" class="headerlink" title="A. 一些不够完整的解释"></a>A. 一些不够完整的解释</h3><p>以上一系列问题中，“为什么要进行序列化”这个问题可能是最直接的。在网上也能搜索到一些答案，包括：</p>
-<ul>
-<li>跨语言：某种编程语言（Java）在磁盘上存储的数据，有可能被别的编程语言（C++）读取</li>
-<li>跨平台：这个问题在网络传输时更为突出，在A机器上可能为小端序，在B机器上则为大端序</li>
-</ul>
-<p>这些答案虽然也有道理，但我觉得还不够完整。<br>假设我们使用同一门编程语言，在同一个机器上，还需要进行序列化吗？<br>答案是：<strong>可能需要</strong>。</p>
-<h3 id="B-一种完整的解释"><a href="#B-一种完整的解释" class="headerlink" title="B. 一种完整的解释"></a>B. 一种完整的解释</h3><p>我们知道，序列化其实主要是进行了数据格式的转换，即从内存格式转换为磁盘格式。<br>进行该转换还有两个很重要的原因：去地址和节省空间。</p>
-<h4 id="1-去地址"><a href="#1-去地址" class="headerlink" title="1. 去地址"></a>1. 去地址</h4><p>对于一些包含地址或引用的数据结构（如二叉树），对象第一次在内存中的地址，和数据落盘后重新加载到内存中的地址，极有可能是不同的。<br>因此，需要对这种数据结构的对象，进行一些“去地址”的操作。该操作往往便是通过“序列化”来完成。</p>
-<p>可能有人会想到在将对象落盘时，同时记录下对象中的内存地址。第二次加载对象时，按照之前记录的地址进行内存分配。<br>但内存一般是由多个应用共享的，第二次加载对象时，之前地址对应的内存空间可能已经被占用了。</p>
-<h4 id="2-节省空间"><a href="#2-节省空间" class="headerlink" title="2. 节省空间"></a>2. 节省空间</h4><p>前面提到一个问题：为什么不直接把内存中的数据<strong>复制</strong>一份到磁盘中呢？<br><strong>复制</strong>操作对于一些简单的数据结构（尤其是<strong>内存连续</strong>的数据结构）是可行的，比如说一个byte。在不考虑字节顺序（大/小端序）的前提下，一个int也是可行的。实际上，序列化操作对于这些简单数据结构也是这么复制处理的。<br>但对于二叉树这种复杂的数据结构，<strong>复制</strong>操作便不可行了。</p>
-<p>现代操作系统的内存管理往往了采用了“内存分页”、“逻辑空间”的机制。逻辑空间连续的页面在物理空间中往往是分散的。<br>对于二叉树这种复杂的数据结构，树中不同的节点可能存储在不同的内存页面中，这些页面分散在内存的不同地方。<br>如下图所示，一棵二叉树的三个节点分别对应内存中编号为1，10，15的三块内存空间。如果进行简单复制，需要将1~15编号的整块内存数据复制到磁盘中，即使2，3，4等编号的内存空间跟当前二叉树无关。这便造成了<strong>严重的磁盘空间浪费</strong>。<br><!-- ![复制](https://img-blog.csdnimg.cn/20200505183002763.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3UwMTQ2MzMyODM=,size_16,color_FFFFFF,t_70#pic_center) --><br><img src="/images/serialization-function/tree-mem-disk-copy.png" height=312 /></p>
-<p>这里引申出另外一个问题：既然物理内存是共享使用的（如，编号为2的内存空间可以由其他对象甚至应用使用），那么磁盘空间可以共享使用吗？如将<strong>红色</strong>框中的磁盘空间也提供给别的应用使用。这似乎可以解决“磁盘空间浪费”的问题。<br>理论上这是可以的，但这要求在磁盘管理层面对这些“可共享”的空间进行记录、管理和再分配。相当于在磁盘层面实现一套类似于“内存分页”和“逻辑空间”映射的机制，这大大增加了磁盘管理的复杂度。</p>
-<p>采用“序列化”的方法的目的之一，也是为了解决“磁盘空间浪费”的问题。与磁盘层面的管理不同，“序列化”相当于在应用层面进行了管理，将数据更紧密地存储在一起，如下图所示：<br><!-- ![序列化](https://img-blog.csdnimg.cn/20200505183030254.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3UwMTQ2MzMyODM=,size_16,color_FFFFFF,t_70#pic_center) --><br><img src="/images/serialization-function/serialization-deserialization.png" height=312 /></p>
-<h2 id="4-小结"><a href="#4-小结" class="headerlink" title="4. 小结"></a>4. 小结</h2><p>序列化操作的本质是<strong>将对象中的字节组织成(顺序的)字节流的过程</strong>。<br>序列化的主要目的包括四点：</p>
+<h2 id="iii.-解释">III. 解释</h2>
+<h3 id="a.-一些不够完整的解释">A. 一些不够完整的解释</h3>
+<p>以上一系列问题中，“为什么要进行序列化”这个问题可能是最直接的。在网上也能搜索到一些答案，包括： - 跨语言：某种编程语言（Java）在磁盘上存储的数据，有可能被别的编程语言（C++）读取 - 跨平台：这个问题在网络传输时更为突出，在A机器上可能为小端序，在B机器上则为大端序</p>
+<p>这些答案虽然也有道理，但我觉得还不够完整。 假设我们使用同一门编程语言，在同一个机器上，还需要进行序列化吗？ 答案是：<strong>可能需要</strong>。</p>
+<h3 id="b.-一种完整的解释">B. 一种完整的解释</h3>
+<p>我们知道，序列化其实主要是进行了数据格式的转换，即从内存格式转换为磁盘格式。 进行该转换还有两个很重要的原因：去地址和节省空间。</p>
+<h4 id="去地址">1. 去地址</h4>
+<p>对于一些包含地址或引用的数据结构（如二叉树），对象第一次在内存中的地址，和数据落盘后重新加载到内存中的地址，极有可能是不同的。 因此，需要对这种数据结构的对象，进行一些“去地址”的操作。该操作往往便是通过“序列化”来完成。</p>
+<p>可能有人会想到在将对象落盘时，同时记录下对象中的内存地址。第二次加载对象时，按照之前记录的地址进行内存分配。 但内存一般是由多个应用共享的，第二次加载对象时，之前地址对应的内存空间可能已经被占用了。</p>
+<h4 id="节省空间">2. 节省空间</h4>
+<p>前面提到一个问题：为什么不直接把内存中的数据<strong>复制</strong>一份到磁盘中呢？ <strong>复制</strong>操作对于一些简单的数据结构（尤其是<strong>内存连续</strong>的数据结构）是可行的，比如说一个byte。在不考虑字节顺序（大/小端序）的前提下，一个int也是可行的。实际上，序列化操作对于这些简单数据结构也是这么复制处理的。 但对于二叉树这种复杂的数据结构，<strong>复制</strong>操作便不可行了。</p>
+<p>现代操作系统的内存管理往往了采用了“内存分页”、“逻辑空间”的机制。逻辑空间连续的页面在物理空间中往往是分散的。 对于二叉树这种复杂的数据结构，树中不同的节点可能存储在不同的内存页面中，这些页面分散在内存的不同地方。 如下图所示，一棵二叉树的三个节点分别对应内存中编号为1，10，15的三块内存空间。如果进行简单复制，需要将1~15编号的整块内存数据复制到磁盘中，即使2，3，4等编号的内存空间跟当前二叉树无关。这便造成了<strong>严重的磁盘空间浪费</strong>。 <!-- ![复制](https://img-blog.csdnimg.cn/20200505183002763.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3UwMTQ2MzMyODM=,size_16,color_FFFFFF,t_70#pic_center) --> <img src="/images/serialization-function/tree-mem-disk-copy.png" height=312 /></p>
+<p>这里引申出另外一个问题：既然物理内存是共享使用的（如，编号为2的内存空间可以由其他对象甚至应用使用），那么磁盘空间可以共享使用吗？如将<strong>红色</strong>框中的磁盘空间也提供给别的应用使用。这似乎可以解决“磁盘空间浪费”的问题。 理论上这是可以的，但这要求在磁盘管理层面对这些“可共享”的空间进行记录、管理和再分配。相当于在磁盘层面实现一套类似于“内存分页”和“逻辑空间”映射的机制，这大大增加了磁盘管理的复杂度。</p>
+<p>采用“序列化”的方法的目的之一，也是为了解决“磁盘空间浪费”的问题。与磁盘层面的管理不同，“序列化”相当于在应用层面进行了管理，将数据更紧密地存储在一起，如下图所示： <!-- ![序列化](https://img-blog.csdnimg.cn/20200505183030254.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3UwMTQ2MzMyODM=,size_16,color_FFFFFF,t_70#pic_center) --> <img src="/images/serialization-function/serialization-deserialization.png" height=312 /></p>
+<h2 id="小结">4. 小结</h2>
+<p>序列化操作的本质是<strong>将对象中的字节组织成(顺序的)字节流的过程</strong>。 序列化的主要目的包括四点：</p>
 <ul>
 <li>实现数据的跨语言使用</li>
 <li>实现数据的跨平台使用</li>
@@ -261,7 +262,8 @@
 <li>降低磁盘存储空间</li>
 </ul>
 <p>实现后两者目的的根本原因是：<strong>对象对内存地址的操作</strong>。</p>
-<h2 id="参考链接"><a href="#参考链接" class="headerlink" title="参考链接"></a>参考链接</h2><ol>
+<h2 id="参考链接">参考链接</h2>
+<ol type="1">
 <li><a target="_blank" rel="noopener" href="https://cs.stackexchange.com/questions/72102/understanding-serialization/72103#72103?newreg=2d03c33980d84e6eb65506136dba480d">Understanding serialization</a></li>
 <li><a target="_blank" rel="noopener" href="https://zh.wikipedia.org/wiki/%E5%BA%8F%E5%88%97%E5%8C%96">维基百科 - 序列化</a></li>
 <li><a target="_blank" rel="noopener" href="https://baike.baidu.com/item/%E5%BA%8F%E5%88%97%E5%8C%96/2890184?fr=aladdin">百度百科 - 序列化</a></li>
@@ -357,7 +359,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#I-%E5%86%99%E5%9C%A8%E5%89%8D%E9%9D%A2"><span class="nav-number">1.</span> <span class="nav-text">I. 写在前面</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#II-%E9%97%AE%E9%A2%98%E9%98%90%E8%BF%B0"><span class="nav-number">2.</span> <span class="nav-text">II. 问题阐述</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#III-%E8%A7%A3%E9%87%8A"><span class="nav-number">3.</span> <span class="nav-text">III. 解释</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#A-%E4%B8%80%E4%BA%9B%E4%B8%8D%E5%A4%9F%E5%AE%8C%E6%95%B4%E7%9A%84%E8%A7%A3%E9%87%8A"><span class="nav-number">3.1.</span> <span class="nav-text">A. 一些不够完整的解释</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#B-%E4%B8%80%E7%A7%8D%E5%AE%8C%E6%95%B4%E7%9A%84%E8%A7%A3%E9%87%8A"><span class="nav-number">3.2.</span> <span class="nav-text">B. 一种完整的解释</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-%E5%8E%BB%E5%9C%B0%E5%9D%80"><span class="nav-number">3.2.1.</span> <span class="nav-text">1. 去地址</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-%E8%8A%82%E7%9C%81%E7%A9%BA%E9%97%B4"><span class="nav-number">3.2.2.</span> <span class="nav-text">2. 节省空间</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-%E5%B0%8F%E7%BB%93"><span class="nav-number">4.</span> <span class="nav-text">4. 小结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E9%93%BE%E6%8E%A5"><span class="nav-number">5.</span> <span class="nav-text">参考链接</span></a></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#i.-%E5%86%99%E5%9C%A8%E5%89%8D%E9%9D%A2"><span class="nav-number">1.</span> <span class="nav-text">I. 写在前面</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ii.-%E9%97%AE%E9%A2%98%E9%98%90%E8%BF%B0"><span class="nav-number">2.</span> <span class="nav-text">II. 问题阐述</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#iii.-%E8%A7%A3%E9%87%8A"><span class="nav-number">3.</span> <span class="nav-text">III. 解释</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#a.-%E4%B8%80%E4%BA%9B%E4%B8%8D%E5%A4%9F%E5%AE%8C%E6%95%B4%E7%9A%84%E8%A7%A3%E9%87%8A"><span class="nav-number">3.1.</span> <span class="nav-text">A. 一些不够完整的解释</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#b.-%E4%B8%80%E7%A7%8D%E5%AE%8C%E6%95%B4%E7%9A%84%E8%A7%A3%E9%87%8A"><span class="nav-number">3.2.</span> <span class="nav-text">B. 一种完整的解释</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%8E%BB%E5%9C%B0%E5%9D%80"><span class="nav-number">3.2.1.</span> <span class="nav-text">1. 去地址</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%8A%82%E7%9C%81%E7%A9%BA%E9%97%B4"><span class="nav-number">3.2.2.</span> <span class="nav-text">2. 节省空间</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%B0%8F%E7%BB%93"><span class="nav-number">4.</span> <span class="nav-text">4. 小结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E9%93%BE%E6%8E%A5"><span class="nav-number">5.</span> <span class="nav-text">参考链接</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 

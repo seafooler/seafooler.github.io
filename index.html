@@ -283,8 +283,8 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <p>In the classical paper <a target="_blank" rel="noopener" href="https://dl.acm.org/doi/abs/10.1145/3335772.3335936">The Byzantine Generals Problem</a>, Lamport et al. proposed two recursive protocols to achieve the Byzantine consensus, namely <code>oral message protocol</code> and <code>signed message protocol</code>.<br>Although the authors have proved the correctness of the protocols, the proof seems to be not intuitive enough.</p>
-<p>In this blog, we try to prove the <code>oral message protocol</code> by myself. Particularly, I will attach the figures to make the proof more readable.<br>
+          <p>In the classical paper <a target="_blank" rel="noopener" href="https://dl.acm.org/doi/abs/10.1145/3335772.3335936">The Byzantine Generals Problem</a>, Lamport et al. proposed two recursive protocols to achieve the Byzantine consensus, namely <code>oral message protocol</code> and <code>signed message protocol</code>. Although the authors have proved the correctness of the protocols, the proof seems to be not intuitive enough.</p>
+<p>In this blog, we try to prove the <code>oral message protocol</code> by myself. Particularly, I will attach the figures to make the proof more readable.
           <!--noindex-->
             <div class="post-button">
               <a class="btn" href="/2022/04/01/lamport-oral-message-protocol/#more" rel="contents">
@@ -433,7 +433,7 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <p>Many thanks to all, especially my wife.<br>On this Christmas Eve, my loved baby girl comes to this world.<br>
+          <p>Many thanks to all, especially my wife. On this Christmas Eve, my loved baby girl comes to this world.
           <!--noindex-->
             <div class="post-button">
               <a class="btn" href="/2021/12/24/daughter-birth/#more" rel="contents">
@@ -583,7 +583,7 @@
 
       
           <p>Inspired by the blockchain data structures, lots of streamlined BFT (Byzantine Fault Tolerant) consensus algorithms have been proposed recently, including <code>Tendermint</code>[1], <code>Pili</code>[2], <code>Pala</code>[3], <code>HotStuff</code>[4], and <code>Streamlet</code>[5]. Among them, two extremely-simple ones are quite similar and even born from the same research group (i.e., <a target="_blank" rel="noopener" href="http://elaineshi.com/">Prof. Elaine Shi</a>). <code>Streamlet</code> is claimed to be an improved variant of <code>Pala</code>, which seems to be simpler.</p>
-<p>In this blog, we try to make a comparison between <code>Pala</code> and <code>Streamlet</code>. Note that we only consider the <strong>basic</strong> <code>Pala</code>, which takes a democracy-favoring proposer rotation approach, similar to <code>Streamlet</code>.<br>Furthermore, we want to figure out how can <code>Streamlet</code> simplify the consensus and are the improvements made at any costs?<br>
+<p>In this blog, we try to make a comparison between <code>Pala</code> and <code>Streamlet</code>. Note that we only consider the <strong>basic</strong> <code>Pala</code>, which takes a democracy-favoring proposer rotation approach, similar to <code>Streamlet</code>. Furthermore, we want to figure out how can <code>Streamlet</code> simplify the consensus and are the improvements made at any costs?
           <!--noindex-->
             <div class="post-button">
               <a class="btn" href="/2021/09/26/comp-pala-streamlet/#more" rel="contents">
@@ -659,13 +659,13 @@
       
           <p>在<code>HotStuff</code>的<code>PODC</code>版本<a target="_blank" rel="noopener" href="https://dl.acm.org/doi/10.1145/3293611.3331591">论文</a>和<code>Arxiv</code>版本<a target="_blank" rel="noopener" href="https://arxiv.org/abs/1803.05069">论文</a>中，多次将不同共识协议的活性(<code>liveness</code>)和响应度(<code>responsiveness</code>)进行比较。此外，一些博客和其他相关论文中也有关于<code>liveness</code>问题和<code>responsiveness</code>问题的叙述。其中涉及到两点叙述：</p>
 <blockquote>
-<ol>
-<li><code>Tendermint</code>中在<code>leader</code>切换的时候需要等待一个最大的网络延迟$\Delta$，导致<code>Tendermint</code>无法做到<code>optimistic responsiveness</code></li>
-<li>如果<code>Tendermint</code>在<code>leader</code>切换的时候不等待$\Delta$，将导致<code>Tendermint</code>中无法进行有效共识，从而破坏协议的<code>liveness</code>。</li>
+<ol type="1">
+<li><code>Tendermint</code>中在<code>leader</code>切换的时候需要等待一个最大的网络延迟<span class="math inline">\(\Delta\)</span>，导致<code>Tendermint</code>无法做到<code>optimistic responsiveness</code></li>
+<li>如果<code>Tendermint</code>在<code>leader</code>切换的时候不等待<span class="math inline">\(\Delta\)</span>，将导致<code>Tendermint</code>中无法进行有效共识，从而破坏协议的<code>liveness</code>。</li>
 </ol>
 </blockquote>
 <p>但笔者在看这两点叙述的时候，总感觉论文作者和博主没有将问题讲透，看得云里雾里的。可能大佬们觉得这两点叙述很容易理解，甚至是一些一点就该通的常识。</p>
-<p>为了真正弄懂以上两点叙述，笔者查阅了大量资料，并将自己的一些理解整理在这篇博客中。这篇博客需要读者对共识算法已经有了一定的理解。<br>
+<p>为了真正弄懂以上两点叙述，笔者查阅了大量资料，并将自己的一些理解整理在这篇博客中。这篇博客需要读者对共识算法已经有了一定的理解。
           <!--noindex-->
             <div class="post-button">
               <a class="btn" href="/2021/09/20/liveness-responsiveness-lock/#more" rel="contents">
@@ -741,7 +741,7 @@
       
           <p>In recent years, more and more blockchain systems are proposed to improve the system performance. One of the significant directions taken by these works is to parallelize the block creation and dissemination, with OHIE [1] and Occam [2] as representatives.</p>
 <p>In this blog, we try to raise a model to unify these new blockchain systems. Also, we are surprised to find that this model can even unify a class of asynchronous blockchain systems, such as HoneybadgerBFT [3].</p>
-<p>At the end of this blog, we further propose a simpler blockchain system under this model.<br>
+<p>At the end of this blog, we further propose a simpler blockchain system under this model.
           <!--noindex-->
             <div class="post-button">
               <a class="btn" href="/2021/08/15/unification-parallel-block/#more" rel="contents">
@@ -815,8 +815,8 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <p>While I was reading the <code>HoneybadgerBFT</code> <a target="_blank" rel="noopener" href="https://dl.acm.org/doi/abs/10.1145/2976749.2978399">paper</a>, a question came to me is that “<strong>Reliable Broadcast (<code>RBC</code>) seems to implement the functions of a consensus algorithm already, why an extra phase of Asynchronous Binary Agreement (<code>ABA</code>) is needed</strong>“?</p>
-<p>In this blog, we will try to answer this question.<br>
+          <p>While I was reading the <code>HoneybadgerBFT</code> <a target="_blank" rel="noopener" href="https://dl.acm.org/doi/abs/10.1145/2976749.2978399">paper</a>, a question came to me is that "<strong>Reliable Broadcast (<code>RBC</code>) seems to implement the functions of a consensus algorithm already, why an extra phase of Asynchronous Binary Agreement (<code>ABA</code>) is needed</strong>"?</p>
+<p>In this blog, we will try to answer this question.
           <!--noindex-->
             <div class="post-button">
               <a class="btn" href="/2021/07/06/think-honeybadger/#more" rel="contents">
@@ -890,8 +890,8 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <p>The birth of blockchain brings a new option when designing a consensus algorithm, that the requests can be packaged as blocks and blocks can be linked with the hash values.<br>Almost all the newly born consensus algorithms, such as <code>Tendermint</code>, <code>HotStuff</code>, <code>Pala</code>, and <code>Streamlet</code>, adopt the blockchain structures.</p>
-<p>A question is that <strong>what benefits can the blockchain structure bring to the consensus design</strong>? Or in other words, <strong>what problem can the blockchain structures deal with</strong>? Besides, another relevant question is that <strong>how does the consensus (e.g., <code>PBFT</code>) without adopting the blockchain strucuture deal with the same problem?</strong><br>
+          <p>The birth of blockchain brings a new option when designing a consensus algorithm, that the requests can be packaged as blocks and blocks can be linked with the hash values. Almost all the newly born consensus algorithms, such as <code>Tendermint</code>, <code>HotStuff</code>, <code>Pala</code>, and <code>Streamlet</code>, adopt the blockchain structures.</p>
+<p>A question is that <strong>what benefits can the blockchain structure bring to the consensus design</strong>? Or in other words, <strong>what problem can the blockchain structures deal with</strong>? Besides, another relevant question is that <strong>how does the consensus (e.g., <code>PBFT</code>) without adopting the blockchain strucuture deal with the same problem?</strong>
           <!--noindex-->
             <div class="post-button">
               <a class="btn" href="/2021/05/30/blockchain-ds-function/#more" rel="contents">

@@ -218,11 +218,18 @@
         <p>As the representaives of streamlined BFT consensus algorithms, <code>Tendermint</code>[1], <code>Pala</code>[2], <code>Streamlet</code>[3], and <code>HotStuff</code>[4] reseamble each other to a great extent. However, taking a close look at these algorithms, we can find they picks different routines in many aspects, such as inclusion of <code>QC</code> in blocks, echo mechanism, and so on.</p>
 <p>In this blog, we make a detailed comparison between these representative algorihms.</p>
 <span id="more"></span>
-<h2 id="Comparison"><a href="#Comparison" class="headerlink" title="Comparison"></a>Comparison</h2><p>Our comparison results are shown in the following table. For the sake of consistency, we denote <code>QC</code> as the $2f+1$ signatures for a block and <code>epoch</code> as the round/epoch charged by a proposer.</p>
-<div class="table-container">
+<h2 id="comparison">Comparison</h2>
+<p>Our comparison results are shown in the following table. For the sake of consistency, we denote <code>QC</code> as the <span class="math inline">\(2f+1\)</span> signatures for a block and <code>epoch</code> as the round/epoch charged by a proposer.</p>
 <table>
+<colgroup>
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+</colgroup>
 <thead>
-<tr>
+<tr class="header">
 <th>Aspect</th>
 <th><strong>Tendermint</strong></th>
 <th><strong>Pala</strong></th>
@@ -231,49 +238,49 @@
 </tr>
 </thead>
 <tbody>
-<tr>
+<tr class="odd">
 <td>Pipeline</td>
 <td>No</td>
 <td>Yes</td>
 <td>Yes</td>
 <td>Yes</td>
 </tr>
-<tr>
+<tr class="even">
 <td>Lock*</td>
 <td>Yes</td>
 <td>Implicitly yes</td>
 <td>No</td>
 <td>Yes</td>
 </tr>
-<tr>
+<tr class="odd">
 <td>Proposal</td>
 <td>Repropose the block locked by it</td>
 <td>Propose a new block extending from the locked (largest-epoch notarized) block</td>
 <td>Propose a new block extending from the highest notarized block</td>
 <td>Propose a new block extending from the highest notarized (prepareQC) block</td>
 </tr>
-<tr>
+<tr class="even">
 <td>Vote(safety)</td>
 <td>Vote for the block it has locked before</td>
 <td>Vote for the block extending from its locked (largest-epoch notarized) block</td>
 <td>Vote for the block extending from its highest notarized block</td>
 <td>Vote for the block extending from its locked (lockedQC) block</td>
 </tr>
-<tr>
+<tr class="odd">
 <td>Vote(liveness)/unlock</td>
 <td>Unlock once seeing a larger-epoch <code>QC</code></td>
 <td>Unlock once seeing a larger-epoch <code>QC</code></td>
 <td>Vote for a block extending from a larger-or-equal-height <code>QC</code></td>
 <td>Vote for a block extending from a larger-epoch lockedQC</td>
 </tr>
-<tr>
+<tr class="even">
 <td><code>QC</code> in the block+</td>
 <td>Yes</td>
 <td>No</td>
 <td>No</td>
 <td>Yes</td>
 </tr>
-<tr>
+<tr class="odd">
 <td>Echo#</td>
 <td>No</td>
 <td>Yes</td>
@@ -282,16 +289,16 @@
 </tr>
 </tbody>
 </table>
-</div>
 <p>* Although the lock mechanism is not clarified by <code>Pala</code> explicitly, it is implicitly defined by the following specification: a replica only votes for the block extending from a larger-or-equal-epoch <code>QC</code>. Usually, it maintains its locally largest-epoch <code>QC</code>. Once seeing a new larger-or-equal-epoch <code>QC</code>, it will replace its maintained largest-epoch <code>QC</code> with the new one. The largest-epoch <code>QC</code> maintained by a replica will be only one at any time, which is considered to be locked on. As for <code>Streamlet</code>, it can vote for any block extending from a larger-or-equal-height <code>QC</code>. From another prospective, we can also consider <strong>Streamlet</strong> to lock on all the highest <code>QC</code>s, which may be multiple.</p>
-<p>+, # We may find that the consensus with <code>QC</code> in the block does not need the echo mechanism. The reason is that a <code>QC</code> in the new block functions as echoing replicas’ votes. If neither <code>QC</code> in the block nor the echo mechanism is adopted, the algorithm will lose the <code>liveness</code> property, which is detailed analyzed by Dr. Malkhi’s <a target="_blank" rel="noopener" href="https://dahliamalkhi.github.io/posts/2020/12/what-they-didnt-teach-you-in-streamlet/">blog</a>.</p>
-<h2 id="Reference"><a href="#Reference" class="headerlink" title="Reference"></a>Reference</h2><ol>
-<li>Buchman, E. “Tendermint: Byzantine fault tolerance in the age of blockchains.” Doctoral dissertation, 2016.</li>
-<li>Chan, T. H., Pass, R., &amp; Shi, E. “Pala: A simple partially synchronous blockchain.” Cryptology ePrint Archive, 2018.</li>
-<li>Chan, B. Y., &amp; Shi, E.  “Streamlet: Textbook streamlined blockchains.” In Proceedings of the 2nd ACM Conference on Advances in Financial Technologies (AFT’20), pp. 1-11.</li>
-<li>Yin, M., Malkhi, D., Reiter, M. K., Gueta, G. G., &amp; Abraham, I. “HotStuff: BFT consensus with linearity and responsiveness.” In Proceedings of the 2019 ACM Symposium on Principles of Distributed Computing (PODC’19), pp. 347-356.</li>
-<li>“What They Did not Teach you in Streamlet.” <a target="_blank" rel="noopener" href="https://dahliamalkhi.github.io/posts/2020/12/what-they-didnt-teach-you-in-streamlet/">https://dahliamalkhi.github.io/posts/2020/12/what-they-didnt-teach-you-in-streamlet/</a></li>
-<li>“Lecture 14: Blockchain protocols with finality: Streamlet and HotStuf.” <a target="_blank" rel="noopener" href="https://courses.grainger.illinois.edu/ece598pv/sp2021/lectureslides2021/ECE_598_PV_course_notes14.pdf">https://courses.grainger.illinois.edu/ece598pv/sp2021/lectureslides2021/ECE_598_PV_course_notes14.pdf</a></li>
+<p>+, # We may find that the consensus with <code>QC</code> in the block does not need the echo mechanism. The reason is that a <code>QC</code> in the new block functions as echoing replicas' votes. If neither <code>QC</code> in the block nor the echo mechanism is adopted, the algorithm will lose the <code>liveness</code> property, which is detailed analyzed by Dr. Malkhi's <a target="_blank" rel="noopener" href="https://dahliamalkhi.github.io/posts/2020/12/what-they-didnt-teach-you-in-streamlet/">blog</a>.</p>
+<h2 id="reference">Reference</h2>
+<ol type="1">
+<li>Buchman, E. "Tendermint: Byzantine fault tolerance in the age of blockchains." Doctoral dissertation, 2016.</li>
+<li>Chan, T. H., Pass, R., &amp; Shi, E. "Pala: A simple partially synchronous blockchain." Cryptology ePrint Archive, 2018.</li>
+<li>Chan, B. Y., &amp; Shi, E. "Streamlet: Textbook streamlined blockchains." In Proceedings of the 2nd ACM Conference on Advances in Financial Technologies (AFT'20), pp. 1-11.</li>
+<li>Yin, M., Malkhi, D., Reiter, M. K., Gueta, G. G., &amp; Abraham, I. "HotStuff: BFT consensus with linearity and responsiveness." In Proceedings of the 2019 ACM Symposium on Principles of Distributed Computing (PODC'19), pp. 347-356.</li>
+<li>"What They Did not Teach you in Streamlet." https://dahliamalkhi.github.io/posts/2020/12/what-they-didnt-teach-you-in-streamlet/</li>
+<li>"Lecture 14: Blockchain protocols with finality: Streamlet and HotStuf." https://courses.grainger.illinois.edu/ece598pv/sp2021/lectureslides2021/ECE_598_PV_course_notes14.pdf</li>
 </ol>
 
     </div>
@@ -383,7 +390,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Comparison"><span class="nav-number">1.</span> <span class="nav-text">Comparison</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Reference"><span class="nav-number">2.</span> <span class="nav-text">Reference</span></a></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#comparison"><span class="nav-number">1.</span> <span class="nav-text">Comparison</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#reference"><span class="nav-number">2.</span> <span class="nav-text">Reference</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 

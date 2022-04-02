@@ -208,7 +208,7 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <p>比特币的地址是由一个字符串表示的。比较常见的是以<code>1</code>开头的字符串，也有以<code>2</code>, <code>3</code>, <code>m</code>, 和 <code>n</code> 开头的字符串。关于这些字符串的区别和联系，笔者一直有很多问题，也在网上搜过很多答案。因此，这篇文章主要是做一个问题和答案的汇总，也包括我自己的一些理解。<br>
+          <p>比特币的地址是由一个字符串表示的。比较常见的是以<code>1</code>开头的字符串，也有以<code>2</code>, <code>3</code>, <code>m</code>, 和 <code>n</code> 开头的字符串。关于这些字符串的区别和联系，笔者一直有很多问题，也在网上搜过很多答案。因此，这篇文章主要是做一个问题和答案的汇总，也包括我自己的一些理解。
           <!--noindex-->
             <div class="post-button">
               <a class="btn" href="/2019/03/18/bitcoin-protocol-addr-format/#more" rel="contents">
@@ -282,7 +282,7 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <p>上一篇<a target="_blank" rel="noopener" href="https://seafooler.github.io/2019/03/16/bitcoin-protocol-p2pkh/">博客</a>中，我们介绍了简单的<code>P2PKH</code>类型输出。这一篇博客，我们将介绍<code>OP_RETURN</code>类型的输出。<br>
+          <p>上一篇<a target="_blank" rel="noopener" href="https://seafooler.github.io/2019/03/16/bitcoin-protocol-p2pkh/">博客</a>中，我们介绍了简单的<code>P2PKH</code>类型输出。这一篇博客，我们将介绍<code>OP_RETURN</code>类型的输出。
           <!--noindex-->
             <div class="post-button">
               <a class="btn" href="/2019/03/17/bitcoin-protocol-op_return/#more" rel="contents">
@@ -356,7 +356,7 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <p>我们经常需要查看比特币中的一些交易数据，比如说一笔交易的发送方和接收方账户是什么，交易额为多少。其实，通过一些比特币的区块浏览器很容易能够查询到。区块浏览器其实是帮我们提前解析好了数据，并通过网页的形式展现出来。<br>比特币中真实存储在区块中的数据其实是一些<code>raw transaction</code>，这些<code>raw transaction</code>是怎么被解析出来的呢？或者说，<code>raw transaction</code>中的各个字段分别代表什么含义。<br>这篇博客将首先介绍<code>raw transaction</code>的一般格式。然后以一个简单的<code>raw transaction</code>为例，理解其中各个字段的含义。<br>这篇博客主要关注最简单的只包含<code>P2PKH</code>类型的交易。<br>
+          <p>我们经常需要查看比特币中的一些交易数据，比如说一笔交易的发送方和接收方账户是什么，交易额为多少。其实，通过一些比特币的区块浏览器很容易能够查询到。区块浏览器其实是帮我们提前解析好了数据，并通过网页的形式展现出来。 比特币中真实存储在区块中的数据其实是一些<code>raw transaction</code>，这些<code>raw transaction</code>是怎么被解析出来的呢？或者说，<code>raw transaction</code>中的各个字段分别代表什么含义。 这篇博客将首先介绍<code>raw transaction</code>的一般格式。然后以一个简单的<code>raw transaction</code>为例，理解其中各个字段的含义。 这篇博客主要关注最简单的只包含<code>P2PKH</code>类型的交易。
           <!--noindex-->
             <div class="post-button">
               <a class="btn" href="/2019/03/16/bitcoin-protocol-p2pkh/#more" rel="contents">
@@ -430,7 +430,7 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <p>接着上一篇<a target="_blank" rel="noopener" href="https://seafooler.github.io/019/01/22/btcd-source-code-analysis-1">博客</a>，我们继续来讲解作为客户端的<code>btcwallet</code>是如何工作的。也即，作为客户端的<code>btcwallet</code>是如何与<code>btcd</code>进程交互的。<br>
+          <p>接着上一篇<a target="_blank" rel="noopener" href="https://seafooler.github.io/019/01/22/btcd-source-code-analysis-1">博客</a>，我们继续来讲解作为客户端的<code>btcwallet</code>是如何工作的。也即，作为客户端的<code>btcwallet</code>是如何与<code>btcd</code>进程交互的。
           <!--noindex-->
             <div class="post-button">
               <a class="btn" href="/2019/01/23/btcd-source-code-analysis-2/#more" rel="contents">
@@ -504,7 +504,7 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <p>我们从“新区块的生成“开始我们的<code>btcd</code>源码之旅。<br>
+          <p>我们从“新区块的生成“开始我们的<code>btcd</code>源码之旅。
           <!--noindex-->
             <div class="post-button">
               <a class="btn" href="/2019/01/22/btcd-source-code-analysis-1/#more" rel="contents">
@@ -578,7 +578,7 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <p>因为学习的需要，这一年半和接下来更长的时间都会与<code>Bitcoin</code>打交道。不可避免地，需要对<code>Bitcoin</code>的源码进行修改。<br>网上找过一些<code>Bitcoin</code>源码分析的资源，但大多都是基于<code>C++</code>实现的源码。笔者对<code>C++</code>并不是很熟悉，相反，用<code>Go</code>语言用得更多一些。所以，这个系列的博客会针对<code>Go</code>语言实现的<code>Bitcoin</code>进行分析，也即<a target="_blank" rel="noopener" href="https://github.com/btcsuite/btcd">btcd</a>。因为<code>btcd</code>的实现中将<code>wallet</code>的功能独立了出来，形成一个新的项目<a target="_blank" rel="noopener" href="https://github.com/btcsuite/btcwallet">btcdwallet</a>，因此我们也会对<code>btcdwallet</code>的代码实现进行分析。<br>
+          <p>因为学习的需要，这一年半和接下来更长的时间都会与<code>Bitcoin</code>打交道。不可避免地，需要对<code>Bitcoin</code>的源码进行修改。 网上找过一些<code>Bitcoin</code>源码分析的资源，但大多都是基于<code>C++</code>实现的源码。笔者对<code>C++</code>并不是很熟悉，相反，用<code>Go</code>语言用得更多一些。所以，这个系列的博客会针对<code>Go</code>语言实现的<code>Bitcoin</code>进行分析，也即<a target="_blank" rel="noopener" href="https://github.com/btcsuite/btcd">btcd</a>。因为<code>btcd</code>的实现中将<code>wallet</code>的功能独立了出来，形成一个新的项目<a target="_blank" rel="noopener" href="https://github.com/btcsuite/btcwallet">btcdwallet</a>，因此我们也会对<code>btcdwallet</code>的代码实现进行分析。
           <!--noindex-->
             <div class="post-button">
               <a class="btn" href="/2019/01/21/btcd-source-code-analysis-0/#more" rel="contents">
@@ -652,7 +652,7 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <p>一直觉得<code>Ethereum</code>相关的开发工具挺繁杂的，网上关于怎么“编写、部署和调用智能合约”的教程也比较多，但这些教程基本上都是基于<code>truffle</code>框架、<code>geth</code>终端等工具进行合约的部署的调用。既然<code>web3</code>只是<code>nodejs</code>环境下的一个<code>JavaScript</code>模块，我一直想通过最简单、纯粹的<strong>nodejs环境</strong>去直接使用<code>web3</code>，这样能够对<code>web3</code>模块有个比较立体的认识。于是，便有了这篇博文。<br>
+          <p>一直觉得<code>Ethereum</code>相关的开发工具挺繁杂的，网上关于怎么“编写、部署和调用智能合约”的教程也比较多，但这些教程基本上都是基于<code>truffle</code>框架、<code>geth</code>终端等工具进行合约的部署的调用。既然<code>web3</code>只是<code>nodejs</code>环境下的一个<code>JavaScript</code>模块，我一直想通过最简单、纯粹的<strong>nodejs环境</strong>去直接使用<code>web3</code>，这样能够对<code>web3</code>模块有个比较立体的认识。于是，便有了这篇博文。
           <!--noindex-->
             <div class="post-button">
               <a class="btn" href="/2018/10/21/nodejs-web3/#more" rel="contents">
@@ -726,7 +726,7 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <p>网上已有很多相关教程，但由于<code>geth</code>从1.6版本移除了编译<code>Solidity</code>的功能，如<a target="_blank" rel="noopener" href="https://github.com/ethereum/go-ethereum/issues/3793">链接</a>所述，许多教程中介绍的方法都失效了。本文综合了网上已有的一些教程，介绍了新的可行方法。<br>
+          <p>网上已有很多相关教程，但由于<code>geth</code>从1.6版本移除了编译<code>Solidity</code>的功能，如<a target="_blank" rel="noopener" href="https://github.com/ethereum/go-ethereum/issues/3793">链接</a>所述，许多教程中介绍的方法都失效了。本文综合了网上已有的一些教程，介绍了新的可行方法。
           <!--noindex-->
             <div class="post-button">
               <a class="btn" href="/2018/03/02/eth-priv-contract/#more" rel="contents">
