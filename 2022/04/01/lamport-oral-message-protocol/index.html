@@ -32,7 +32,7 @@
 <meta property="og:image" content="http://example.com/images/lamport-oral-message-protocol/lemma2.png">
 <meta property="og:image" content="http://example.com/images/lamport-oral-message-protocol/theorem.png">
 <meta property="article:published_time" content="2022-03-31T16:00:00.000Z">
-<meta property="article:modified_time" content="2022-04-01T16:17:33.962Z">
+<meta property="article:modified_time" content="2022-04-02T06:58:28.188Z">
 <meta property="article:author" content="Seafooler">
 <meta property="article:tag" content="Consensus">
 <meta property="article:tag" content="Byzantine_general">
@@ -220,7 +220,7 @@
       
         <p>In the classical paper <a target="_blank" rel="noopener" href="https://dl.acm.org/doi/abs/10.1145/3335772.3335936">The Byzantine Generals Problem</a>, Lamport et al. proposed two recursive protocols to achieve the Byzantine consensus, namely <code>oral message protocol</code> and <code>signed message protocol</code>. Although the authors have proved the correctness of the protocols, the proof seems to be not intuitive enough.</p>
 <p>In this blog, we try to prove the <code>oral message protocol</code> by myself. Particularly, I will attach the figures to make the proof more readable. <span id="more"></span></p>
-<h1 id="symbols-description">1. Symbols Description</h1>
+<h2 id="symbols-description">1. Symbols Description</h2>
 <p><span class="math inline">\(S\)</span>: the set of all the replicas {<span class="math inline">\(p_1\)</span>, <span class="math inline">\(p_2\)</span>, ..., <span class="math inline">\(p_m\)</span>}</p>
 <p><span class="math inline">\(H\)</span>: the set of all the honest replicas</p>
 <p><span class="math inline">\(F(n, f, S)\)</span>: <span class="math inline">\(f\)</span> Byzantine replicas in <span class="math inline">\(n\)</span> replicas</p>
@@ -228,23 +228,23 @@
 <p><span class="math inline">\(F^{L \in H}(n, f, S)\)</span>: <span class="math inline">\(F(n, f, S)\)</span> where the leader is honest.</p>
 <p><span class="math inline">\(M(y^1, y^2, ..., y^r)\)</span>: a function which outputs the value of the majority</p>
 <p><span class="math inline">\(M_i\)</span>: <span class="math inline">\(M(y^1, y^2, ..., y^r)\)</span> run by the replica <span class="math inline">\(p_i\)</span></p>
-<h1 id="oral-message-protocol">2. Oral Message Protocol</h1>
-<h2 id="protocol-definition">2.1 Protocol Definition</h2>
+<h2 id="oral-message-protocol">2. Oral Message Protocol</h2>
+<h3 id="protocol-definition">2.1 Protocol Definition</h3>
 <p><span class="math inline">\(F^{L=p_l, r}(n, S)\)</span> = <span class="math inline">\(M(y^{1, r-1}, y^{2, r-1}, ..., y^{n-1, r-1})\)</span>, where: <span class="math display">\[
 y^{k,r} = \begin{cases}
     F^{L=p_k, r}(n-1, S|p_l), &amp; r \geq 1 \\
     x_{p_l -&gt;p_k}, &amp; r=0
 \end{cases} .............(1)
 \]</span> and <span class="math inline">\(x_{p_l -&gt;p_k}\)</span> represents the message sent from <span class="math inline">\(p_l\)</span> to <span class="math inline">\(p_k\)</span>. For a system with up to <span class="math inline">\(f\)</span> Byzantine replicas, each replica runs the protocol with initial <span class="math inline">\(r\)</span> as <span class="math inline">\(f\)</span>, namely <span class="math inline">\(F^{r=f}\)</span>.</p>
-<h2 id="theorem-1">2.2 Theorem 1</h2>
+<h3 id="theorem-1">2.2 Theorem 1</h3>
 <p>For a system consisted of <span class="math inline">\(n\)</span> replicas, wherein at most <span class="math inline">\(f\)</span> replicas are Byzantine, if <span class="math inline">\(n \geq\)</span> 3<span class="math inline">\(f\)</span>+1 and each honest replica runs the <code>oral message protocol</code>, then <span class="math inline">\(\forall p_i, p_j \in H\)</span>: <span class="math inline">\(F_i\)</span> = <span class="math inline">\(F_j\)</span>. Furthermore, if the leader <span class="math inline">\(L\)</span> is honest and broadcasts <span class="math inline">\(m\)</span>, <span class="math inline">\(\forall p_i \in H\)</span>: <span class="math inline">\(F_i^{L,r}\)</span> = <span class="math inline">\(m\)</span>.</p>
 <p>In other words, Theorem 1 argues that the <code>oral message protocol</code> can achieve the consensus.</p>
-<h1 id="proof-of-message-protocol">3. Proof of Message Protocol</h1>
+<h2 id="proof-of-message-protocol">3. Proof of Message Protocol</h2>
 <p>We first propose and prove two lemmas, i.e., Lemma 1 and Lemma 2. Based on these two lemmas, we finally prove Theorem 1.</p>
-<h2 id="lemma-1">3.1 Lemma 1</h2>
-<h3 id="description-of-lemma-1">3.1.1 Description of Lemma 1</h3>
+<h3 id="lemma-1">3.1 Lemma 1</h3>
+<h4 id="description-of-lemma-1">3.1.1 Description of Lemma 1</h4>
 <p>If <span class="math inline">\(n \geq 2f+2\)</span> and <span class="math inline">\(F_i^{L \in H, r}(n-1, f)\)</span> = <span class="math inline">\(F_j^{L \in H, r}(n-1, f)\)</span>, then <span class="math inline">\(F_i^{L \in H, r+1}(n,f)\)</span> = <span class="math inline">\(F_j^{L \in H, r+1}(n, f)\)</span>.</p>
-<h3 id="proof-of-lemma-1">3.1.2 Proof of Lemma 1</h3>
+<h4 id="proof-of-lemma-1">3.1.2 Proof of Lemma 1</h4>
 <p>Let <span class="math inline">\(y_i^{k, r}\)</span> denote the value of <span class="math inline">\(y^{k,r}\)</span> figured out by the replica <span class="math inline">\(p_i\)</span>.</p>
 <p>According to the assumption that <span class="math inline">\(F_i^{L \in H, r}(n-1, f)\)</span> = <span class="math inline">\(F_j^{L \in H, r}(n-1, f)\)</span>, for a cluster of <span class="math inline">\(n-1\)</span> replicas, if the leader <span class="math inline">\(p_k \in H\)</span>, then: <span class="math display">\[
 \forall p_i, p_j \in H, y_i^{k, r}=y_j^{k, r} .............(2)
@@ -252,7 +252,7 @@ y^{k,r} = \begin{cases}
 <p>Therefore, for a cluster <span class="math inline">\(S\)</span> of <span class="math inline">\(n\)</span> replicas, if the leader <span class="math inline">\(p_l \in H\)</span> and broadcasts the message <span class="math inline">\(m\)</span>, <span class="math inline">\(\forall p_k \in H\)</span>, <span class="math inline">\(p_k\)</span> receives <span class="math inline">\(m\)</span> and will broadcast <span class="math inline">\(m\)</span> in the sub-round of <span class="math inline">\(F^{L=p_k, r}(n-1, f, S|p_k)\)</span>.</p>
 <p>In the sub-round of <span class="math inline">\(F^{L=p_k, r}(n-1, f, S|p_l)\)</span>, according to Equation (2), <span class="math inline">\(\forall p_i, p_j \in H\)</span>, <span class="math inline">\(y_i^{k, r}\)</span>=<span class="math inline">\(y_j^{k, r}\)</span>=<span class="math inline">\(m\)</span>.</p>
 <p>In other words, for a replica <span class="math inline">\(p_a\)</span>, if <span class="math inline">\(p_k \in H\)</span>, the input argument <span class="math inline">\(y_k\)</span> for the function <span class="math inline">\(M_a\)</span> will be the same as <span class="math inline">\(m\)</span>. Since <span class="math inline">\(n \geq 2f+2\)</span>, the majority of the input arguments for <span class="math inline">\(M_a\)</span> will be the same as <span class="math inline">\(m\)</span>. Therefore, <span class="math inline">\(F_i^{L \in H, r+1}(n, f)\)</span> = <span class="math inline">\(F_j^{L \in H, r+1}(n, f)\)</span>.</p>
-<h3 id="a-simple-example-to-demonstrate-lemma-1">3.1.3 A simple example to demonstrate Lemma 1</h3>
+<h4 id="a-simple-example-to-demonstrate-lemma-1">3.1.3 A simple example to demonstrate Lemma 1</h4>
 <p>We demonstrate the proof by a simple example, as shown by Figure 1. Figure 1. shows the Lemma 1 when there are six replicas with two Byzantine ones. Particularly, the leader is honest. We consider the situation where <span class="math inline">\(r\)</span>=0.</p>
 <p>In the left figure, the honest replicas will accept the messages from the leader directly, according to the <span class="math inline">\(r\)</span>=0 case in Equation(1). Namely, <span class="math inline">\(F_k^{L=p_j,r=0}\)</span>=<span class="math inline">\(x_{p_j}\)</span>, where <span class="math inline">\(x_{p_j}\)</span> denotes the messages sent from <span class="math inline">\(p_j\)</span>.</p>
 <p>In the right figure, the honest leader <span class="math inline">\(p_1\)</span> broadcasts <span class="math inline">\(m\)</span>. Each honest replica (<span class="math inline">\(p_2\)</span>, <span class="math inline">\(p_3\)</span>, and <span class="math inline">\(p_4\)</span>) will also broadcast <span class="math inline">\(m\)</span> in the sub-round of <span class="math inline">\(F\)</span>. Therefore, the arguments for the function <span class="math inline">\(M\)</span> will contain three messages of <span class="math inline">\(m\)</span> and decide <span class="math inline">\(m\)</span> as the result.</p>
@@ -260,21 +260,21 @@ y^{k,r} = \begin{cases}
 <center>
 <b>Figure 1. Example to demonstrate Lemma 1</b>
 </center>
-<h1 id="lemma-2">3.2 Lemma 2</h1>
-<h3 id="description-of-lemma-2">3.2.1 Description of Lemma 2</h3>
+<h2 id="lemma-2">3.2 Lemma 2</h2>
+<h4 id="description-of-lemma-2">3.2.1 Description of Lemma 2</h4>
 <p>If <span class="math inline">\(n \geq\)</span> 3<span class="math inline">\(f\)</span> and <span class="math inline">\(f \geq\)</span> 2, <span class="math inline">\(\forall p_i, p_j \in H\)</span>, <span class="math inline">\(F_i^{L \in H, r=f-1}(n, f)\)</span>=<span class="math inline">\(F_j^{L \in H, r=f-1}(n, f)\)</span></p>
-<h3 id="proof-of-lemma-2">3.2.2 Proof of Lemma 2</h3>
+<h4 id="proof-of-lemma-2">3.2.2 Proof of Lemma 2</h4>
 <p>When the round <span class="math inline">\(r\)</span> is 0, <span class="math inline">\(y^{k, r=0}\)</span>=<span class="math inline">\(F^{L \in H, r=0}\)</span> = <span class="math inline">\(x_{p_l -&gt;p_k}\)</span>.</p>
 <p>Therefore, <span class="math inline">\(F^{L \in H, r=1}(2f+2, f)\)</span> = <span class="math inline">\(M(y^{1, r=0},y^{2, r=0}, ..., y^{2f+1, r=0} )\)</span>=<span class="math inline">\(M(x_{p_l -&gt;p_1}, x_{p_l -&gt;p_2}, ..., x_{p_l -&gt;p_{2f+1}})\)</span>. Since the replica set {<span class="math inline">\(p_1, p_2, ..., p_{2f+1}\)</span>} contains <span class="math inline">\(f\)</span>+1 honest replicas, the value set {<span class="math inline">\(x_{p_l -&gt;p_1}, x_{p_l -&gt;p_2}, ..., x_{p_l -&gt;p_{2f+1}}\)</span>} contains at least <span class="math inline">\(f\)</span>+1 same message <span class="math inline">\(x\)</span> broadcast by <span class="math inline">\(p_l\)</span>. Thus, <span class="math inline">\(F_i^{L \in H, r=1}(2f+2,f)\)</span>=<span class="math inline">\(F_j^{L \in H, r=1}(2f+2,f)\)</span>=<span class="math inline">\(x\)</span>.</p>
 <p>According to Lemma 1, we have <span class="math inline">\(F_i^{L \in H, r=2}(2f+3,f)\)</span>=<span class="math inline">\(F_j^{L \in H, r=2}(2f+3,f)\)</span>.</p>
 <p>By analogy, we have <span class="math inline">\(F_i^{L \in H, r=f-1}(2f+f,f)\)</span>=<span class="math inline">\(F_j^{L \in H, r=f-1}(2f+f,f)\)</span>. Namely, for <span class="math inline">\(n\)</span>=3<span class="math inline">\(f\)</span>, <span class="math inline">\(F_i^{L \in H, r=f-1}(n,f)\)</span>=<span class="math inline">\(F_j^{L \in H, r=f-1}(n,f)\)</span>.</p>
 <p>Furthermore, we have <span class="math inline">\(\forall n \geq\)</span> 3<span class="math inline">\(f\)</span>, <span class="math inline">\(F_i^{L \in H, r=f-1}(n,f)\)</span>=<span class="math inline">\(F_j^{L \in H, r=f-1}(n,f)\)</span></p>
-<h3 id="a-figure-to-depict-the-proof-of-lemma-2">3.2.3 A figure to depict the proof of Lemma 2</h3>
+<h4 id="a-figure-to-depict-the-proof-of-lemma-2">3.2.3 A figure to depict the proof of Lemma 2</h4>
 <img src="/images/lamport-oral-message-protocol/lemma2.png" height=512 />
 <center>
 <b>Figure 2. Schematic diagram to depict the proof of Lemma 2</b>
 </center>
-<h2 id="proof-of-theorem-1">3.3 Proof of Theorem 1</h2>
+<h3 id="proof-of-theorem-1">3.3 Proof of Theorem 1</h3>
 <p>We will prove it via the mathematical induction.</p>
 <ol type="1">
 <li>When <span class="math inline">\(f\)</span>=1 and <span class="math inline">\(n\)</span>=4, it is easy to prove the correctness of Theorem 1.</li>
@@ -318,7 +318,10 @@ y^{k,r} = \begin{cases}
     <a href="/2022/01/24/understanding-safety-hotstuff/" rel="prev" title="Understanding the Safety of Chained HotStuff">
       <i class="fa fa-chevron-left"></i> Understanding the Safety of Chained HotStuff
     </a></div>
-      <div class="post-nav-item"></div>
+      <div class="post-nav-item">
+    <a href="/2022/04/02/understanding-responsiveness-hotstuff/" rel="next" title="Understanding the Responsiveness of Chained HotStuff">
+      Understanding the Responsiveness of Chained HotStuff <i class="fa fa-chevron-right"></i>
+    </a></div>
     </div>
       </footer>
     
@@ -377,7 +380,7 @@ y^{k,r} = \begin{cases}
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#symbols-description"><span class="nav-number">1.</span> <span class="nav-text">1. Symbols Description</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#oral-message-protocol"><span class="nav-number">2.</span> <span class="nav-text">2. Oral Message Protocol</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#protocol-definition"><span class="nav-number">2.1.</span> <span class="nav-text">2.1 Protocol Definition</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#theorem-1"><span class="nav-number">2.2.</span> <span class="nav-text">2.2 Theorem 1</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#proof-of-message-protocol"><span class="nav-number">3.</span> <span class="nav-text">3. Proof of Message Protocol</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#lemma-1"><span class="nav-number">3.1.</span> <span class="nav-text">3.1 Lemma 1</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#description-of-lemma-1"><span class="nav-number">3.1.1.</span> <span class="nav-text">3.1.1 Description of Lemma 1</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#proof-of-lemma-1"><span class="nav-number">3.1.2.</span> <span class="nav-text">3.1.2 Proof of Lemma 1</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#a-simple-example-to-demonstrate-lemma-1"><span class="nav-number">3.1.3.</span> <span class="nav-text">3.1.3 A simple example to demonstrate Lemma 1</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#lemma-2"><span class="nav-number">4.</span> <span class="nav-text">3.2 Lemma 2</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#description-of-lemma-2"><span class="nav-number">4.0.1.</span> <span class="nav-text">3.2.1 Description of Lemma 2</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#proof-of-lemma-2"><span class="nav-number">4.0.2.</span> <span class="nav-text">3.2.2 Proof of Lemma 2</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#a-figure-to-depict-the-proof-of-lemma-2"><span class="nav-number">4.0.3.</span> <span class="nav-text">3.2.3 A figure to depict the proof of Lemma 2</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#proof-of-theorem-1"><span class="nav-number">4.1.</span> <span class="nav-text">3.3 Proof of Theorem 1</span></a></li></ol></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#symbols-description"><span class="nav-number">1.</span> <span class="nav-text">1. Symbols Description</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#oral-message-protocol"><span class="nav-number">2.</span> <span class="nav-text">2. Oral Message Protocol</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#protocol-definition"><span class="nav-number">2.1.</span> <span class="nav-text">2.1 Protocol Definition</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#theorem-1"><span class="nav-number">2.2.</span> <span class="nav-text">2.2 Theorem 1</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#proof-of-message-protocol"><span class="nav-number">3.</span> <span class="nav-text">3. Proof of Message Protocol</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#lemma-1"><span class="nav-number">3.1.</span> <span class="nav-text">3.1 Lemma 1</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#description-of-lemma-1"><span class="nav-number">3.1.1.</span> <span class="nav-text">3.1.1 Description of Lemma 1</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#proof-of-lemma-1"><span class="nav-number">3.1.2.</span> <span class="nav-text">3.1.2 Proof of Lemma 1</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#a-simple-example-to-demonstrate-lemma-1"><span class="nav-number">3.1.3.</span> <span class="nav-text">3.1.3 A simple example to demonstrate Lemma 1</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#lemma-2"><span class="nav-number">4.</span> <span class="nav-text">3.2 Lemma 2</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#description-of-lemma-2"><span class="nav-number">4.0.1.</span> <span class="nav-text">3.2.1 Description of Lemma 2</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#proof-of-lemma-2"><span class="nav-number">4.0.2.</span> <span class="nav-text">3.2.2 Proof of Lemma 2</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#a-figure-to-depict-the-proof-of-lemma-2"><span class="nav-number">4.0.3.</span> <span class="nav-text">3.2.3 A figure to depict the proof of Lemma 2</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#proof-of-theorem-1"><span class="nav-number">4.1.</span> <span class="nav-text">3.3 Proof of Theorem 1</span></a></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -391,7 +394,7 @@ y^{k,r} = \begin{cases}
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">47</span>
+          <span class="site-state-item-count">48</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>

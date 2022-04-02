@@ -43,7 +43,7 @@
 <meta property="og:image" content="http://example.com/images/understanding-safety-hotstuff/lemma2.png">
 <meta property="og:image" content="http://example.com/images/understanding-safety-hotstuff/one-chain+QC+one-chain.png">
 <meta property="article:published_time" content="2022-01-23T16:00:00.000Z">
-<meta property="article:modified_time" content="2022-01-24T16:22:04.563Z">
+<meta property="article:modified_time" content="2022-04-02T10:53:41.279Z">
 <meta property="article:author" content="Seafooler">
 <meta property="article:tag" content="Blockchain - Consensus - HotStuff">
 <meta name="twitter:card" content="summary">
@@ -283,7 +283,7 @@ The 23-rd and 24-th slides of <a target="_blank" rel="noopener" href="https://te
 <blockquote>
 <p>If a block <span class="math inline">\(b\)</span> is referenced by a two-chain, any block <span class="math inline">\(d\)</span> referenced by a generic QC is either an ancestor or a descendant of <span class="math inline">\(b\)</span>.</p>
 </blockquote>
-Proof for the lemma is as follows. Consider an example in Figure 6. Assume in replica <span class="math inline">\(A\)</span>, block <span class="math inline">\(b\)</span> is referenced by a two-chain. Therefore, at least two replicas will possess an one-chain referencing <span class="math inline">\(b\)</span>. For a block <span class="math inline">\(d\)</span> in replica <span class="math inline">\(B\)</span>, which is contradictory to <span class="math inline">\(b\)</span>, it will not get votes from the above <span class="math inline">\(2f+1\)</span> replicas. The reason is that, QC in <span class="math inline">\(d\)</span> has the same view number as <span class="math inline">\(b\)</span>. Therefore, a replica voting for <span class="math inline">\(b\)</span> will not vote for <span class="math inline">\(d\)</span> and <span class="math inline">\(d\)</span> will not get <span class="math inline">\(2f+1\)</span> votes. In other words, all the blocks referenced by a generic QC must be an ancestor or a descendant of <span class="math inline">\(b\)</span>. <img src="/images/understanding-safety-hotstuff/lemma1.png" height=238 />
+Proof for the lemma is as follows. Consider an example in Figure 6. Assume in replica <span class="math inline">\(A\)</span>, block <span class="math inline">\(b\)</span> is referenced by a two-chain. Therefore, at least <span class="math inline">\(2f+1\)</span> replicas will possess an one-chain referencing <span class="math inline">\(b\)</span>. For a block <span class="math inline">\(d\)</span> in replica <span class="math inline">\(B\)</span>, which is contradictory to <span class="math inline">\(b\)</span>, it will not get votes from the above <span class="math inline">\(2f+1\)</span> replicas. The reason is that, QC in <span class="math inline">\(d\)</span> has the same view number as <span class="math inline">\(b\)</span>. Therefore, a replica voting for <span class="math inline">\(b\)</span> will not vote for <span class="math inline">\(d\)</span> and <span class="math inline">\(d\)</span> will not get <span class="math inline">\(2f+1\)</span> votes. In other words, all the blocks referenced by a generic QC must be an ancestor or a descendant of <span class="math inline">\(b\)</span>. <img src="/images/understanding-safety-hotstuff/lemma1.png" height=300 />
 <center>
 <b>Figure 6. Lemma 1</b>
 </center>
@@ -327,7 +327,7 @@ The safety can be proved easily with Lemma 2. We simply show the proof by an exa
 </center>
 <h2 id="v.-safety-of-two-phase-hotstuff">V. Safety of Two-phase HotStuff</h2>
 <p>Exactly, a two-phase <code>HotStuff</code> can guartantee the safety, which is presented at the end of the <code>HotStuff</code> paper. The proof for its safety is also easy, since <code>one-chain+QC</code> in <code>Hotstuff</code> is actually identical to the two-consecutive blocks in <code>Pala</code>.</p>
-<p>The reason why three-phase is needed is that it further provides the <code>responsiveness</code> property. The analysis on the <code>responsiveness</code> is made in the next blog.</p>
+<p>The reason why three-phase is needed is that it further provides the <code>responsiveness</code> property. The analysis on the <code>responsiveness</code> is made in the <a target="_blank" rel="noopener" href="https://seafooler.com/2022/04/02/understanding-responsiveness-hotstuff/">next blog</a>.</p>
 <h2 id="reference">Reference</h2>
 <ol type="1">
 <li>Chan, T. H., Pass, R., &amp; Shi, E. "Pala: A simple partially synchronous blockchain." Cryptology ePrint Archive, 2018.</li>
@@ -436,7 +436,7 @@ The safety can be proved easily with Lemma 2. We simply show the proof by an exa
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">47</span>
+          <span class="site-state-item-count">48</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
